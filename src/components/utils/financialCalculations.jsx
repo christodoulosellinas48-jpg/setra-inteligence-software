@@ -1,0 +1,176 @@
+// Industry benchmarks by business type
+export const BENCHMARKS = {
+  cafe: {
+    foodCostRatio: { healthy: 30, warning: 35, risk: 40 },
+    staffCostRatio: { healthy: 30, warning: 35, risk: 40 },
+    fixedCostRatio: { healthy: 15, warning: 20, risk: 25 },
+    profitMargin: { healthy: 15, warning: 10, risk: 5 },
+    displayName: 'Café'
+  },
+  restaurant: {
+    foodCostRatio: { healthy: 32, warning: 38, risk: 45 },
+    staffCostRatio: { healthy: 33, warning: 38, risk: 45 },
+    fixedCostRatio: { healthy: 12, warning: 18, risk: 22 },
+    profitMargin: { healthy: 12, warning: 8, risk: 4 },
+    displayName: 'Restaurant'
+  },
+  bakery: {
+    foodCostRatio: { healthy: 28, warning: 33, risk: 38 },
+    staffCostRatio: { healthy: 28, warning: 33, risk: 38 },
+    fixedCostRatio: { healthy: 18, warning: 22, risk: 28 },
+    profitMargin: { healthy: 18, warning: 12, risk: 6 },
+    displayName: 'Bakery'
+  },
+  food_truck: {
+    foodCostRatio: { healthy: 28, warning: 33, risk: 40 },
+    staffCostRatio: { healthy: 25, warning: 30, risk: 35 },
+    fixedCostRatio: { healthy: 10, warning: 15, risk: 20 },
+    profitMargin: { healthy: 20, warning: 15, risk: 8 },
+    displayName: 'Food Truck'
+  }
+};
+
+export function calculateFinancials(data, businessType) {
+  const benchmarks = BENCHMARKS[businessType] || BENCHMARKS.restaurant;
+  
+  const revenue = data.monthly_revenue || 0;
+  const foodCost = data.purchases_food_bev || 0;
+  const staffCost = data.staff_costs || 0;
+  const fixedCost = data.rent_fixed_costs || 0;
+  const utilities = data.utilities || 0;
+  const otherOps = data.other_operating || 0;
+  
+  const totalCosts = foodCost + staffCost + fixedCost + utilities + otherOps;
+  const netProfit = revenue - totalCosts;
+  
+  // Ratios (as percentages)
+  const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+  const foodCostRatio = revenue > 0 ? (foodCost / revenue) * 100 : 0;
+  const staffCostRatio = revenue > 0 ? (staffCost / revenue) * 100 : 0;
+  const fixedCostRatio = revenue > 0 ? (fixedCost / revenue) * 100 : 0;
+  
+  // Break-even calculation
+  const variableCostRatio = (foodCost + staffCost * 0.3) / (revenue || 1);
+  const fixedCostsTotal = fixedCost + utilities + otherOps + staffCost * 0.7;
+  const breakEvenRevenue = variableCostRatio < 1 ? fixedCostsTotal / (1 - variableCostRatio) : 0;
+  
+  // Status determination
+  const getStatus = (value, thresholds, inverse = false) => {
+    if (inverse) {
+      if (value >= thresholds.healthy) return 'healthy';
+      if (value >= thresholds.warning) return 'warning';
+      return 'risk';
+    }
+    if (value <= thresholds.healthy) return 'healthy';
+    if (value <= thresholds.warning) return 'warning';
+    return 'risk';
+  };
+  
+  const profitMarginStatus = getStatus(profitMargin, benchmarks.profitMargin, true);
+  const foodCostStatus = getStatus(foodCostRatio, benchmarks.foodCostRatio);
+  const staffCostStatus = getStatus(staffCostRatio, benchmarks.staffCostRatio);
+  const fixedCostStatus = getStatus(fixedCostRatio, benchmarks.fixedCostRatio);
+  
+  // Overall health score (0-100)
+  const statusScores = { healthy: 100, warning: 60, risk: 20 };
+  const healthScore = Math.round(
+    (statusScores[profitMarginStatus] * 0.4 +
+     statusScores[foodCostStatus] * 0.25 +
+     statusScores[staffCostStatus] * 0.25 +
+     statusScores[fixedCostStatus] * 0.1)
+  );
+  
+  const overallStatus = healthScore >= 75 ? 'healthy' : healthScore >= 50 ? 'warning' : 'risk';
+  
+  return {
+    netProfit,
+    profitMargin,
+    foodCostRatio,
+    staffCostRatio,
+    fixedCostRatio,
+    breakEvenRevenue,
+    profitMarginStatus,
+    foodCostStatus,
+    staffCostStatus,
+    fixedCostStatus,
+    overallStatus,
+    healthScore,
+    benchmarks
+  };
+}
+
+export function generateInsights(calculations, businessType) {
+  const insights = [];
+  const { netProfit, profitMargin, foodCostRatio, staffCostRatio, fixedCostRatio, benchmarks } = calculations;
+  
+  // Profit insights
+  if (profitMargin < benchmarks.profitMargin.risk) {
+    insights.push({
+      type: 'warning',
+      message: `Your profit margin of ${profitMargin.toFixed(1)}% is critically below the ${benchmarks.profitMargin.healthy}% target for ${BENCHMARKS[businessType]?.displayName || 'your business'}. Immediate cost optimization is essential.`
+    });
+  } else if (profitMargin < benchmarks.profitMargin.warning) {
+    insights.push({
+      type: 'warning',
+      message: `Profit margin at ${profitMargin.toFixed(1)}% shows room for improvement. Industry leaders achieve ${benchmarks.profitMargin.healthy}%+ margins.`
+    });
+  } else if (profitMargin >= benchmarks.profitMargin.healthy) {
+    insights.push({
+      type: 'success',
+      message: `Excellent profit margin of ${profitMargin.toFixed(1)}%! You're outperforming typical ${BENCHMARKS[businessType]?.displayName || 'hospitality'} benchmarks.`
+    });
+  }
+  
+  // Food cost insights
+  if (foodCostRatio > benchmarks.foodCostRatio.warning) {
+    insights.push({
+      type: 'warning',
+      message: `Food & beverage costs at ${foodCostRatio.toFixed(1)}% exceed healthy thresholds. Consider supplier renegotiation, menu engineering, or portion control.`
+    });
+  }
+  
+  // Staff cost insights
+  if (staffCostRatio > benchmarks.staffCostRatio.warning) {
+    insights.push({
+      type: 'warning',
+      message: `Staff costs at ${staffCostRatio.toFixed(1)}% are above optimal range. Review scheduling efficiency and peak-hour staffing optimization.`
+    });
+  }
+  
+  // Fixed cost insights
+  if (fixedCostRatio > benchmarks.fixedCostRatio.warning) {
+    insights.push({
+      type: 'tip',
+      message: `Fixed cost load at ${fixedCostRatio.toFixed(1)}% indicates high overhead. Increasing revenue volume could significantly improve your cost structure.`
+    });
+  }
+  
+  // Break-even insight
+  if (netProfit < 0) {
+    insights.push({
+      type: 'warning',
+      message: `Currently operating at a €${Math.abs(netProfit).toLocaleString()} monthly loss. Focus on revenue growth and cost reduction simultaneously.`
+    });
+  }
+  
+  // Add general tips if few insights
+  if (insights.length < 3) {
+    insights.push({
+      type: 'tip',
+      message: 'Regular expense tracking and monthly financial reviews are key to maintaining healthy margins in hospitality.'
+    });
+  }
+  
+  return insights.slice(0, 4);
+}
+
+export function simulateChanges(baseData, businessType, revenueChange, foodCostChange, staffCostChange) {
+  const simulatedData = {
+    ...baseData,
+    monthly_revenue: baseData.monthly_revenue * (1 + revenueChange / 100),
+    purchases_food_bev: baseData.purchases_food_bev * (1 + foodCostChange / 100),
+    staff_costs: baseData.staff_costs * (1 + staffCostChange / 100)
+  };
+  
+  return calculateFinancials(simulatedData, businessType);
+}
