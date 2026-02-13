@@ -102,7 +102,7 @@ export default function Onboarding() {
           >
             <div className="text-center mb-10">
               <h1 className="text-4xl font-bold text-white mb-4">
-                Welcome to Margin Control
+                Welcome to Ellinas THE SETTING (beta test)
               </h1>
               <p className="text-slate-400 text-lg max-w-2xl mx-auto">
                 Select your business type to receive tailored benchmarks and insights optimized for your industry.

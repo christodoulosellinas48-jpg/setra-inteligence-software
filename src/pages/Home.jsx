@@ -27,7 +27,7 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <div className="text-center">
         <RefreshCw className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-4" />
-        <p className="text-slate-400">Loading Margin Control...</p>
+        <p className="text-slate-400">Loading Ellinas THE SETTING...</p>
       </div>
     </div>
   );
