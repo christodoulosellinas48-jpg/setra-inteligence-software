@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw
+  ChevronRight, RefreshCw, BarChart3
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -118,13 +118,23 @@ export default function Dashboard() {
             >
               ← Back to Setup
             </Button>
-            <Button 
-              onClick={() => setShowUploadModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Expense
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('Reports'))}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Reports
+              </Button>
+              <Button 
+                onClick={() => setShowUploadModal(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Expense
+              </Button>
+            </div>
           </div>
         </div>
       </header>

@@ -50,12 +50,14 @@
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
+import Reports from './pages/Reports';
 
 
 export const PAGES = {
     "Onboarding": Onboarding,
     "Dashboard": Dashboard,
     "Home": Home,
+    "Reports": Reports,
 }
 
 export const pagesConfig = {
