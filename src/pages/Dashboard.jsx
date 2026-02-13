@@ -112,6 +112,13 @@ export default function Dashboard() {
               <p className="text-slate-500 text-sm">{businessDisplayName} • Financial Intelligence</p>
             </div>
             <Button 
+              variant="ghost"
+              onClick={() => navigate(createPageUrl('Onboarding'))}
+              className="text-slate-400 hover:text-white"
+            >
+              ← Back to Setup
+            </Button>
+            <Button 
               onClick={() => setShowUploadModal(true)}
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
