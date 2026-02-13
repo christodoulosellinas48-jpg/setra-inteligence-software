@@ -24,7 +24,7 @@ import {
   generateInsights, 
   simulateChanges,
   BENCHMARKS 
-} from '@/components/utils/financialCalculations.js';
+} from '@/components/dashboard/financialCalculations';
 
 export default function Dashboard() {
   const navigate = useNavigate();

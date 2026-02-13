@@ -43,18 +43,15 @@ export function calculateFinancials(data, businessType) {
   const totalCosts = foodCost + staffCost + fixedCost + utilities + otherOps;
   const netProfit = revenue - totalCosts;
   
-  // Ratios (as percentages)
   const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
   const foodCostRatio = revenue > 0 ? (foodCost / revenue) * 100 : 0;
   const staffCostRatio = revenue > 0 ? (staffCost / revenue) * 100 : 0;
   const fixedCostRatio = revenue > 0 ? (fixedCost / revenue) * 100 : 0;
   
-  // Break-even calculation
   const variableCostRatio = (foodCost + staffCost * 0.3) / (revenue || 1);
   const fixedCostsTotal = fixedCost + utilities + otherOps + staffCost * 0.7;
   const breakEvenRevenue = variableCostRatio < 1 ? fixedCostsTotal / (1 - variableCostRatio) : 0;
   
-  // Status determination
   const getStatus = (value, thresholds, inverse = false) => {
     if (inverse) {
       if (value >= thresholds.healthy) return 'healthy';
@@ -71,7 +68,6 @@ export function calculateFinancials(data, businessType) {
   const staffCostStatus = getStatus(staffCostRatio, benchmarks.staffCostRatio);
   const fixedCostStatus = getStatus(fixedCostRatio, benchmarks.fixedCostRatio);
   
-  // Overall health score (0-100)
   const statusScores = { healthy: 100, warning: 60, risk: 20 };
   const healthScore = Math.round(
     (statusScores[profitMarginStatus] * 0.4 +
@@ -103,7 +99,6 @@ export function generateInsights(calculations, businessType) {
   const insights = [];
   const { netProfit, profitMargin, foodCostRatio, staffCostRatio, fixedCostRatio, benchmarks } = calculations;
   
-  // Profit insights
   if (profitMargin < benchmarks.profitMargin.risk) {
     insights.push({
       type: 'warning',
@@ -121,7 +116,6 @@ export function generateInsights(calculations, businessType) {
     });
   }
   
-  // Food cost insights
   if (foodCostRatio > benchmarks.foodCostRatio.warning) {
     insights.push({
       type: 'warning',
@@ -129,7 +123,6 @@ export function generateInsights(calculations, businessType) {
     });
   }
   
-  // Staff cost insights
   if (staffCostRatio > benchmarks.staffCostRatio.warning) {
     insights.push({
       type: 'warning',
@@ -137,7 +130,6 @@ export function generateInsights(calculations, businessType) {
     });
   }
   
-  // Fixed cost insights
   if (fixedCostRatio > benchmarks.fixedCostRatio.warning) {
     insights.push({
       type: 'tip',
@@ -145,7 +137,6 @@ export function generateInsights(calculations, businessType) {
     });
   }
   
-  // Break-even insight
   if (netProfit < 0) {
     insights.push({
       type: 'warning',
@@ -153,7 +144,6 @@ export function generateInsights(calculations, businessType) {
     });
   }
   
-  // Add general tips if few insights
   if (insights.length < 3) {
     insights.push({
       type: 'tip',
