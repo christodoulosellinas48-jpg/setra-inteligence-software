@@ -262,12 +262,21 @@ function DashboardContent() {
         {financials && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <MetricCard
-              title="Net Profit"
+              title="Net Profit (After Tax)"
               value={financials.netProfit}
               prefix={currencySymbol}
               status={financials.netProfit >= 0 ? 'healthy' : 'risk'}
               icon={DollarSign}
               delay={0}
+            />
+            <MetricCard
+              title="Tax Amount"
+              value={financials.taxAmount}
+              prefix={currencySymbol}
+              status="neutral"
+              benchmark={`Rate: ${financials.taxRate}%`}
+              icon={DollarSign}
+              delay={0.1}
             />
             <MetricCard
               title="Profit Margin"
@@ -276,7 +285,7 @@ function DashboardContent() {
               status={financials.profitMarginStatus}
               benchmark={`Target: ${financials.benchmarks.profitMargin.healthy}%+`}
               icon={Percent}
-              delay={0.1}
+              delay={0.2}
             />
             <MetricCard
               title="Break-even Revenue"
@@ -284,7 +293,7 @@ function DashboardContent() {
               prefix={currencySymbol}
               status="neutral"
               icon={Target}
-              delay={0.2}
+              delay={0.3}
             />
             <MetricCard
               title="Food Cost Ratio"
@@ -293,7 +302,7 @@ function DashboardContent() {
               status={financials.foodCostStatus}
               benchmark={`Healthy: <${financials.benchmarks.foodCostRatio.healthy}%`}
               icon={TrendingUp}
-              delay={0.3}
+              delay={0.4}
             />
             <MetricCard
               title="Staff Cost Ratio"
@@ -302,7 +311,7 @@ function DashboardContent() {
               status={financials.staffCostStatus}
               benchmark={`Healthy: <${financials.benchmarks.staffCostRatio.healthy}%`}
               icon={TrendingUp}
-              delay={0.4}
+              delay={0.5}
             />
             <MetricCard
               title="Fixed Cost Load"
@@ -311,7 +320,7 @@ function DashboardContent() {
               status={financials.fixedCostStatus}
               benchmark={`Healthy: <${financials.benchmarks.fixedCostRatio.healthy}%`}
               icon={TrendingUp}
-              delay={0.5}
+              delay={0.6}
             />
           </div>
         )}
