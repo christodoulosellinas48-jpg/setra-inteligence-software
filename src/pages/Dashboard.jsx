@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw, BarChart3
+  ChevronRight, RefreshCw, BarChart3, Wallet, LineChart
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -119,6 +119,22 @@ export default function Dashboard() {
               ← Back to Setup
             </Button>
             <div className="flex items-center gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('Budgeting'))}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                Budget
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('Forecasting'))}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <LineChart className="w-4 h-4 mr-2" />
+                Forecast
+              </Button>
               <Button 
                 variant="outline"
                 onClick={() => navigate(createPageUrl('Reports'))}
