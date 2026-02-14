@@ -38,34 +38,40 @@ export default function CreateBusiness() {
 
   const handleCreate = async () => {
     if (!formData.name || !formData.business_type) return;
-    setLoading(true);
-
-    const user = await base44.auth.me();
     
-    const business = await base44.entities.Business.create({
-      ...formData,
-      owner_email: user.email,
-      monthly_revenue: 0,
-      rent_fixed_costs: 0,
-      staff_costs: 0,
-      purchases_food_bev: 0,
-      utilities: 0,
-      other_operating: 0
-    });
+    try {
+      setLoading(true);
 
-    // Create owner membership record
-    await base44.entities.BusinessMember.create({
-      business_id: business.id,
-      user_email: user.email,
-      role: 'owner',
-      invited_by: user.email,
-      invitation_status: 'accepted',
-      invited_at: new Date().toISOString(),
-      accepted_at: new Date().toISOString()
-    });
+      const user = await base44.auth.me();
+      
+      const business = await base44.entities.Business.create({
+        ...formData,
+        owner_email: user.email,
+        monthly_revenue: 0,
+        rent_fixed_costs: 0,
+        staff_costs: 0,
+        purchases_food_bev: 0,
+        utilities: 0,
+        other_operating: 0
+      });
 
-    localStorage.setItem('currentBusinessId', business.id);
-    navigate(createPageUrl('Dashboard'));
+      // Create owner membership record
+      await base44.entities.BusinessMember.create({
+        business_id: business.id,
+        user_email: user.email,
+        role: 'owner',
+        invited_by: user.email,
+        invitation_status: 'accepted',
+        invited_at: new Date().toISOString(),
+        accepted_at: new Date().toISOString()
+      });
+
+      localStorage.setItem('currentBusinessId', business.id);
+      navigate(createPageUrl('Dashboard'));
+    } catch (error) {
+      console.error('Error creating business:', error);
+      setLoading(false);
+    }
   };
 
   return (
