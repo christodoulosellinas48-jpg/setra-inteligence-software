@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Upload, FileText, Loader2 } from 'lucide-react';
+import { Upload, FileText, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,6 +21,8 @@ const EXPENSE_CATEGORIES = [
 export default function ExpenseUploadModal({ open, onOpenChange, onSave }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiSuggested, setAiSuggested] = useState(false);
   const [saving, setSaving] = useState(false);
   const [documentUrl, setDocumentUrl] = useState('');
   const [formData, setFormData] = useState({
@@ -32,16 +34,71 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave }) {
     notes: ''
   });
 
+  const analyzeWithAI = async (fileUrl) => {
+    setAnalyzing(true);
+    
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Analyze this expense document (receipt/invoice) and extract the following information. Be precise with numbers and dates.
+      
+Return the extracted data in JSON format with these fields:
+- supplier_name: The name of the vendor/supplier/merchant
+- invoice_total: The total amount as a number (without currency symbols)
+- vat_included: Boolean - true if VAT/tax is mentioned or included
+- expense_category: One of these exact values: "food_beverage", "staff_costs", "fixed_costs", "utilities", "operating_expenses", "one_off_expenses"
+- invoice_date: The date in YYYY-MM-DD format (if visible)
+- notes: Any relevant notes about the expense
+
+Category guidelines:
+- food_beverage: Food supplies, beverages, ingredients, restaurant supplies
+- staff_costs: Wages, salaries, contractor payments, training
+- fixed_costs: Rent, insurance, subscriptions, licenses, equipment leases
+- utilities: Electricity, water, gas, internet, phone
+- operating_expenses: Marketing, cleaning supplies, repairs, packaging
+- one_off_expenses: Equipment purchases, renovations, unusual expenses`,
+      file_urls: [fileUrl],
+      response_json_schema: {
+        type: "object",
+        properties: {
+          supplier_name: { type: "string" },
+          invoice_total: { type: "number" },
+          vat_included: { type: "boolean" },
+          expense_category: { type: "string" },
+          invoice_date: { type: "string" },
+          notes: { type: "string" }
+        }
+      }
+    });
+
+    if (result) {
+      setFormData(prev => ({
+        ...prev,
+        supplier_name: result.supplier_name || prev.supplier_name,
+        invoice_total: result.invoice_total ? String(result.invoice_total) : prev.invoice_total,
+        vat_included: result.vat_included ?? prev.vat_included,
+        expense_category: result.expense_category || prev.expense_category,
+        invoice_date: result.invoice_date || prev.invoice_date,
+        notes: result.notes || prev.notes
+      }));
+      setAiSuggested(true);
+    }
+    
+    setAnalyzing(false);
+  };
+
   const handleFileUpload = async (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
     
     setFile(selectedFile);
     setUploading(true);
+    setAiSuggested(false);
     
     const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
     setDocumentUrl(file_url);
     setUploading(false);
+    
+    // Automatically analyze the document with AI
+    await analyzeWithAI(file_url);
   };
 
   const handleSubmit = async () => {
@@ -58,17 +115,18 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave }) {
     onOpenChange(false);
     
     // Reset form
-    setFile(null);
-    setDocumentUrl('');
-    setFormData({
-      supplier_name: '',
-      invoice_total: '',
-      vat_included: false,
-      expense_category: '',
-      invoice_date: '',
-      notes: ''
-    });
-  };
+          setFile(null);
+          setDocumentUrl('');
+          setAiSuggested(false);
+          setFormData({
+            supplier_name: '',
+            invoice_total: '',
+            vat_included: false,
+            expense_category: '',
+            invoice_date: '',
+            notes: ''
+          });
+        };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -99,18 +157,41 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave }) {
                     <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-3" />
                     <p className="text-slate-400">Uploading document...</p>
                   </motion.div>
-                ) : file ? (
-                  <motion.div
-                    key="uploaded"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center"
-                  >
-                    <FileText className="w-10 h-10 text-emerald-400 mb-3" />
-                    <p className="text-white font-medium">{file.name}</p>
-                    <p className="text-slate-500 text-sm mt-1">Click to replace</p>
-                  </motion.div>
-                ) : (
+                ) : analyzing ? (
+                                        <motion.div
+                                          key="analyzing"
+                                          initial={{ opacity: 0 }}
+                                          animate={{ opacity: 1 }}
+                                          exit={{ opacity: 0 }}
+                                          className="flex flex-col items-center"
+                                        >
+                                          <div className="relative">
+                                            <Sparkles className="w-10 h-10 text-purple-400 mb-3 animate-pulse" />
+                                          </div>
+                                          <p className="text-purple-400 font-medium">AI Analyzing Document...</p>
+                                          <p className="text-slate-500 text-sm mt-1">Extracting expense details</p>
+                                        </motion.div>
+                                      ) : file ? (
+                                        <motion.div
+                                          key="uploaded"
+                                          initial={{ opacity: 0 }}
+                                          animate={{ opacity: 1 }}
+                                          className="flex flex-col items-center"
+                                        >
+                                          {aiSuggested ? (
+                                            <CheckCircle2 className="w-10 h-10 text-emerald-400 mb-3" />
+                                          ) : (
+                                            <FileText className="w-10 h-10 text-emerald-400 mb-3" />
+                                          )}
+                                          <p className="text-white font-medium">{file.name}</p>
+                                          {aiSuggested && (
+                                            <p className="text-emerald-400 text-sm mt-1 flex items-center gap-1">
+                                              <Sparkles className="w-3 h-3" /> AI auto-filled details
+                                            </p>
+                                          )}
+                                          <p className="text-slate-500 text-sm mt-1">Click to replace</p>
+                                        </motion.div>
+                                      ) : (
                   <motion.div
                     key="empty"
                     initial={{ opacity: 0 }}
