@@ -43,7 +43,7 @@ function DashboardContent() {
     staffCost: 0
   });
 
-  // Fetch pending invitations count
+  // Fetch pending invitations count - defer to avoid blocking render
   const { data: pendingInvitations = [] } = useQuery({
     queryKey: ['pendingInvitations', user?.email],
     queryFn: () => base44.entities.BusinessMember.filter({ 
@@ -51,16 +51,26 @@ function DashboardContent() {
       invitation_status: 'pending' 
     }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: []
   });
 
-  // Fetch expenses for current business - limit to recent 5
+  // Defer expenses query - only load when scrolled into view
+  const [shouldLoadExpenses, setShouldLoadExpenses] = useState(false);
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses', currentBusiness?.id],
     queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-created_date', 5),
-    enabled: !!currentBusiness,
+    enabled: !!currentBusiness && shouldLoadExpenses,
     staleTime: 2 * 60 * 1000 // 2 minutes
   });
+
+  // Load expenses after a short delay or when user scrolls
+  React.useEffect(() => {
+    if (currentBusiness) {
+      const timer = setTimeout(() => setShouldLoadExpenses(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentBusiness]);
 
   // Local state for immediate UI updates
   const [localBusinessData, setLocalBusinessData] = useState(currentBusiness || {});
@@ -95,9 +105,10 @@ function DashboardContent() {
     return calculateFinancials(localBusinessData, localBusinessData.business_type);
   }, [localBusinessData]);
 
-  // Calculate simulated financials
+  // Calculate simulated financials only if user changed values
+  const hasSimulationChanges = simulationValues.revenue !== 0 || simulationValues.foodCost !== 0 || simulationValues.staffCost !== 0;
   const simulatedFinancials = useMemo(() => {
-    if (!localBusinessData) return null;
+    if (!localBusinessData || !hasSimulationChanges) return null;
     return simulateChanges(
       localBusinessData,
       localBusinessData.business_type,
@@ -105,7 +116,7 @@ function DashboardContent() {
       simulationValues.foodCost,
       simulationValues.staffCost
     );
-  }, [localBusinessData, simulationValues]);
+  }, [localBusinessData, simulationValues, hasSimulationChanges]);
 
   // Generate insights
   const insights = useMemo(() => {
@@ -384,7 +395,7 @@ function DashboardContent() {
             </Suspense>
 
             {/* Simulated Results */}
-            {simulatedFinancials && (
+            {hasSimulationChanges && simulatedFinancials && (
               <div className="bg-slate-800/50 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Projected Impact</h3>
                 

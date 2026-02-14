@@ -14,6 +14,14 @@ export function BusinessProvider({ children }) {
     loadUserAndBusinesses();
   }, []);
 
+  // Cleanup effect to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      setBusinesses([]);
+      setCurrentBusiness(null);
+    };
+  }, []);
+
   const loadUserAndBusinesses = async () => {
     setLoading(true);
     const currentUser = await base44.auth.me();
