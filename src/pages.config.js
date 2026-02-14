@@ -48,7 +48,6 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import Budgeting from './pages/Budgeting';
-import CreateBusiness from './pages/CreateBusiness';
 import Dashboard from './pages/Dashboard';
 import Forecasting from './pages/Forecasting';
 import Home from './pages/Home';
@@ -56,11 +55,11 @@ import Invitations from './pages/Invitations';
 import Onboarding from './pages/Onboarding';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import CreateBusiness from './pages/CreateBusiness';
 
 
 export const PAGES = {
     "Budgeting": Budgeting,
-    "CreateBusiness": CreateBusiness,
     "Dashboard": Dashboard,
     "Forecasting": Forecasting,
     "Home": Home,
@@ -68,6 +67,7 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Reports": Reports,
     "Settings": Settings,
+    "CreateBusiness": CreateBusiness,
 }
 
 export const pagesConfig = {

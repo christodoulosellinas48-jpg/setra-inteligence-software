@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { Wine, Users, Coffee, PartyPopper, Cake, Store, ShoppingBag, Hotel, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import { Wine, Users, Coffee, PartyPopper, Cake, Store, ShoppingBag, Hotel, UtensilsCrossed, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
 
 const BUSINESS_TYPES = [
   { type: 'bar', icon: Wine, title: 'Bar', description: 'Pubs, cocktail bars, nightlife' },
@@ -16,9 +16,10 @@ const BUSINESS_TYPES = [
   { type: 'coffee_shop', icon: Coffee, title: 'Coffee Shop', description: 'Coffee houses, espresso bars' },
   { type: 'catering_events', icon: PartyPopper, title: 'Catering/Events', description: 'Event catering, banquets' },
   { type: 'confectionery', icon: Cake, title: 'Confectionery', description: 'Sweet shops, chocolatiers' },
-  { type: 'deli_cafe', icon: Store, title: 'Deli Cafe', description: 'Delicatessens, casual eateries' },
+  { type: 'deli_cava', icon: Store, title: 'Deli/Cava', description: 'Delicatessens, casual eateries' },
   { type: 'food_to_go', icon: ShoppingBag, title: 'Food To Go', description: 'Takeaway, quick service' },
-  { type: 'hotel_restaurant', icon: Hotel, title: 'Hotel Restaurant', description: 'Hotel dining, room service' }
+  { type: 'hotels', icon: Hotel, title: 'Hotels', description: 'Hotel dining, room service' },
+  { type: 'restaurant', icon: UtensilsCrossed, title: 'Restaurant', description: 'Full-service dining' }
 ];
 
 const CURRENCIES = [
@@ -36,13 +37,13 @@ export default function CreateBusiness() {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    business_type: '',
+    industry_group: '',
     currency: 'EUR',
     address: ''
   });
 
   const handleCreate = async () => {
-    if (!formData.name || !formData.business_type) return;
+    if (!formData.name || !formData.industry_group) return;
     
     try {
       setLoading(true);
@@ -132,15 +133,15 @@ export default function CreateBusiness() {
             </div>
 
             <div>
-              <Label className="text-slate-400 mb-3 block">Business Type *</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Label className="text-slate-400 mb-3 block">Industry Group *</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {BUSINESS_TYPES.map((bt) => {
                   const Icon = bt.icon;
-                  const isSelected = formData.business_type === bt.type;
+                  const isSelected = formData.industry_group === bt.type;
                   return (
                     <button
                       key={bt.type}
-                      onClick={() => setFormData({ ...formData, business_type: bt.type })}
+                      onClick={() => setFormData({ ...formData, industry_group: bt.type })}
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSelected
                           ? 'bg-emerald-500/10 border-emerald-500/50'
@@ -191,7 +192,7 @@ export default function CreateBusiness() {
 
             <Button
               onClick={handleCreate}
-              disabled={!formData.name || !formData.business_type || loading}
+              disabled={!formData.name || !formData.industry_group || loading}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6"
             >
               {loading ? (

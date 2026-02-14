@@ -35,12 +35,12 @@ export const BENCHMARKS = {
     profitMargin: { healthy: 20, warning: 15, risk: 8 },
     displayName: 'Confectionery'
   },
-  deli_cafe: {
+  deli_cava: {
     foodCostRatio: { healthy: 32, warning: 37, risk: 42 },
     staffCostRatio: { healthy: 28, warning: 33, risk: 38 },
     fixedCostRatio: { healthy: 15, warning: 20, risk: 25 },
     profitMargin: { healthy: 15, warning: 10, risk: 5 },
-    displayName: 'Deli Cafe'
+    displayName: 'Deli/Cava'
   },
   food_to_go: {
     foodCostRatio: { healthy: 30, warning: 35, risk: 40 },
@@ -49,12 +49,19 @@ export const BENCHMARKS = {
     profitMargin: { healthy: 18, warning: 12, risk: 6 },
     displayName: 'Food To Go'
   },
-  hotel_restaurant: {
+  hotels: {
     foodCostRatio: { healthy: 32, warning: 38, risk: 45 },
     staffCostRatio: { healthy: 35, warning: 40, risk: 45 },
     fixedCostRatio: { healthy: 12, warning: 18, risk: 22 },
     profitMargin: { healthy: 12, warning: 8, risk: 4 },
-    displayName: 'Hotel Restaurant'
+    displayName: 'Hotels'
+  },
+  restaurant: {
+    foodCostRatio: { healthy: 32, warning: 38, risk: 45 },
+    staffCostRatio: { healthy: 33, warning: 38, risk: 45 },
+    fixedCostRatio: { healthy: 12, warning: 18, risk: 22 },
+    profitMargin: { healthy: 12, warning: 8, risk: 4 },
+    displayName: 'Restaurant'
   }
 };
 
