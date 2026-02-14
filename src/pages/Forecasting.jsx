@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -9,11 +9,13 @@ import { ArrowLeft, LineChart, RefreshCw, TrendingUp, TrendingDown, DollarSign }
 import { format, addMonths } from 'date-fns';
 import { motion } from 'framer-motion';
 
-import ProjectionChart from '@/components/forecast/ProjectionChart';
-import ForecastInsights from '@/components/forecast/ForecastInsights';
 import ScenarioSelector from '@/components/forecast/ScenarioSelector';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+
+// Lazy load chart components
+const ProjectionChart = lazy(() => import('@/components/forecast/ProjectionChart'));
+const ForecastInsights = lazy(() => import('@/components/forecast/ForecastInsights'));
 
 function ForecastingContent() {
   const navigate = useNavigate();
@@ -23,8 +25,9 @@ function ForecastingContent() {
 
   const { data: snapshots = [] } = useQuery({
     queryKey: ['financialSnapshots', currentBusiness?.id],
-    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start'),
-    enabled: !!currentBusiness
+    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start', 20),
+    enabled: !!currentBusiness,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
   
   const financials = useMemo(() => {
@@ -221,14 +224,25 @@ function ForecastingContent() {
         )}
 
         {/* Charts and Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ProjectionChart projections={projections} scenario={scenario} />
-          <ForecastInsights 
-            projections={projections} 
-            currentFinancials={financials} 
-            historicalSnapshots={snapshots}
-          />
-        </div>
+        <Suspense fallback={
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-96 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            </Card>
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-96 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            </Card>
+          </div>
+        }>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ProjectionChart projections={projections} scenario={scenario} />
+            <ForecastInsights 
+              projections={projections} 
+              currentFinancials={financials} 
+              historicalSnapshots={snapshots}
+            />
+          </div>
+        </Suspense>
 
         {/* Projection Table */}
         <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">

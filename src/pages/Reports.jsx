@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -10,11 +10,13 @@ import { ArrowLeft, BarChart3, RefreshCw, Save, Loader2 } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
 import ReportDatePicker from '@/components/reports/ReportDatePicker';
-import ExpenseBreakdownChart from '@/components/reports/ExpenseBreakdownChart';
-import RevenueTrendChart from '@/components/reports/RevenueTrendChart';
-import FinancialSummaryTable from '@/components/reports/FinancialSummaryTable';
-import ExportButtons from '@/components/reports/ExportButtons';
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
+
+// Lazy load charts and heavy components
+const ExpenseBreakdownChart = lazy(() => import('@/components/reports/ExpenseBreakdownChart'));
+const RevenueTrendChart = lazy(() => import('@/components/reports/RevenueTrendChart'));
+const FinancialSummaryTable = lazy(() => import('@/components/reports/FinancialSummaryTable'));
+const ExportButtons = lazy(() => import('@/components/reports/ExportButtons'));
 
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
@@ -32,8 +34,9 @@ function ReportsContent() {
 
   const { data: snapshots = [], refetch: refetchSnapshots } = useQuery({
     queryKey: ['financialSnapshots', currentBusiness?.id],
-    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start'),
-    enabled: !!currentBusiness
+    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start', 50),
+    enabled: !!currentBusiness,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   const financials = useMemo(() => {
@@ -137,13 +140,30 @@ function ReportsContent() {
         <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ExpenseBreakdownChart data={currentBusiness} />
-          <RevenueTrendChart snapshots={snapshots} />
-        </div>
+        <Suspense fallback={
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            </Card>
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            </Card>
+          </div>
+        }>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ExpenseBreakdownChart data={currentBusiness} />
+            <RevenueTrendChart snapshots={snapshots} />
+          </div>
+        </Suspense>
 
         {/* Financial Summary */}
-        <FinancialSummaryTable data={currentBusiness} calculations={financials} />
+        <Suspense fallback={
+          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-64 flex items-center justify-center">
+            <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+          </Card>
+        }>
+          <FinancialSummaryTable data={currentBusiness} calculations={financials} />
+        </Suspense>
 
         {/* Saved Snapshots */}
         {snapshots.length > 0 && (

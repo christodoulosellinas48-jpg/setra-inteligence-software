@@ -48,14 +48,16 @@ function DashboardContent() {
       user_email: user?.email, 
       invitation_status: 'pending' 
     }),
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
-  // Fetch expenses for current business
+  // Fetch expenses for current business - limit to recent 5
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses', currentBusiness?.id],
-    queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-created_date'),
-    enabled: !!currentBusiness
+    queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-created_date', 5),
+    enabled: !!currentBusiness,
+    staleTime: 2 * 60 * 1000 // 2 minutes
   });
 
   // Local state for immediate UI updates
@@ -358,24 +360,26 @@ function DashboardContent() {
                 <p className="text-sm text-slate-500">Test scenario impacts</p>
               </div>
             </div>
-            
-            <div className="space-y-6 mb-8">
-              <SensitivitySlider
-                label="Revenue Change"
-                value={simulationValues.revenue}
-                onChange={(v) => setSimulationValues({ ...simulationValues, revenue: v })}
-              />
-              <SensitivitySlider
-                label="Food Cost Change"
-                value={simulationValues.foodCost}
-                onChange={(v) => setSimulationValues({ ...simulationValues, foodCost: v })}
-              />
-              <SensitivitySlider
-                label="Staff Cost Change"
-                value={simulationValues.staffCost}
-                onChange={(v) => setSimulationValues({ ...simulationValues, staffCost: v })}
-              />
-            </div>
+
+            <Suspense fallback={<div className="h-48 flex items-center justify-center"><RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" /></div>}>
+              <div className="space-y-6 mb-8">
+                <SensitivitySlider
+                  label="Revenue Change"
+                  value={simulationValues.revenue}
+                  onChange={(v) => setSimulationValues({ ...simulationValues, revenue: v })}
+                />
+                <SensitivitySlider
+                  label="Food Cost Change"
+                  value={simulationValues.foodCost}
+                  onChange={(v) => setSimulationValues({ ...simulationValues, foodCost: v })}
+                />
+                <SensitivitySlider
+                  label="Staff Cost Change"
+                  value={simulationValues.staffCost}
+                  onChange={(v) => setSimulationValues({ ...simulationValues, staffCost: v })}
+                />
+              </div>
+            </Suspense>
 
             {/* Simulated Results */}
             {simulatedFinancials && (
@@ -464,13 +468,15 @@ function DashboardContent() {
       </main>
 
       {canEdit() && (
-        <ExpenseUploadModal 
-          open={showUploadModal} 
-          onOpenChange={setShowUploadModal}
-          onSave={() => queryClient.invalidateQueries(['expenses', currentBusiness?.id])}
-          businessId={currentBusiness?.id}
-          userEmail={user?.email}
-        />
+        <Suspense fallback={null}>
+          <ExpenseUploadModal 
+            open={showUploadModal} 
+            onOpenChange={setShowUploadModal}
+            onSave={() => queryClient.invalidateQueries(['expenses', currentBusiness?.id])}
+            businessId={currentBusiness?.id}
+            userEmail={user?.email}
+          />
+        </Suspense>
       )}
     </div>
   );

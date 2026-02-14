@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -9,10 +9,12 @@ import { ArrowLeft, Wallet, RefreshCw } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, addMonths } from 'date-fns';
 
 import BudgetForm from '@/components/budget/BudgetForm';
-import BudgetVsActualChart from '@/components/budget/BudgetVsActualChart';
-import BudgetInsights from '@/components/budget/BudgetInsights';
 import { BENCHMARKS } from '@/components/dashboard/financialCalculations';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+
+// Lazy load chart components
+const BudgetVsActualChart = lazy(() => import('@/components/budget/BudgetVsActualChart'));
+const BudgetInsights = lazy(() => import('@/components/budget/BudgetInsights'));
 
 function BudgetingContent() {
   const navigate = useNavigate();
@@ -36,14 +38,16 @@ function BudgetingContent() {
 
   const { data: budgets = [], refetch: refetchBudgets } = useQuery({
     queryKey: ['budgets', currentBusiness?.id],
-    queryFn: () => base44.entities.Budget.filter({ business_id: currentBusiness.id }, '-created_date'),
-    enabled: !!currentBusiness
+    queryFn: () => base44.entities.Budget.filter({ business_id: currentBusiness.id }, '-created_date', 20),
+    enabled: !!currentBusiness,
+    staleTime: 3 * 60 * 1000 // 3 minutes
   });
 
   const { data: snapshots = [] } = useQuery({
     queryKey: ['financialSnapshots', currentBusiness?.id],
-    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start'),
-    enabled: !!currentBusiness
+    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start', 20),
+    enabled: !!currentBusiness,
+    staleTime: 3 * 60 * 1000 // 3 minutes
   });
 
   const currentBudget = budgets[0];
@@ -129,10 +133,21 @@ function BudgetingContent() {
           />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <BudgetVsActualChart budget={currentBudget} actual={currentBusiness} />
-          <BudgetInsights budget={currentBudget} actual={currentBusiness} historicalSnapshots={snapshots} />
-        </div>
+        <Suspense fallback={
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            </Card>
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            </Card>
+          </div>
+        }>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <BudgetVsActualChart budget={currentBudget} actual={currentBusiness} />
+            <BudgetInsights budget={currentBudget} actual={currentBusiness} historicalSnapshots={snapshots} />
+          </div>
+        </Suspense>
 
         {budgets.length > 0 && (
           <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
