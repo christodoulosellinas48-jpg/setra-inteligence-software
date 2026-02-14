@@ -59,11 +59,13 @@ function DashboardContent() {
   });
 
   // Local state for immediate UI updates
-  const [localBusinessData, setLocalBusinessData] = useState(currentBusiness);
+  const [localBusinessData, setLocalBusinessData] = useState(currentBusiness || {});
 
   // Update local data when currentBusiness changes
   React.useEffect(() => {
-    setLocalBusinessData(currentBusiness);
+    if (currentBusiness) {
+      setLocalBusinessData(currentBusiness);
+    }
   }, [currentBusiness]);
 
   // Update business mutation
