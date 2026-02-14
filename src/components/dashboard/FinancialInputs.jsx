@@ -11,7 +11,8 @@ const inputs = [
   { key: 'staff_costs', label: 'Staff Costs', icon: Users, color: 'purple' },
   { key: 'purchases_food_bev', label: 'Purchases (F&B)', icon: ShoppingCart, color: 'amber' },
   { key: 'utilities', label: 'Utilities', icon: Zap, color: 'cyan' },
-  { key: 'other_operating', label: 'Other Operating', icon: MoreHorizontal, color: 'slate' }
+  { key: 'other_operating', label: 'Other Operating', icon: MoreHorizontal, color: 'slate' },
+  { key: 'corporate_tax_rate', label: 'Corporate Tax Rate (%)', icon: DollarSign, color: 'red', isPercentage: true }
 ];
 
 const colorClasses = {
@@ -20,7 +21,8 @@ const colorClasses = {
   purple: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  slate: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+  slate: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  red: 'bg-red-500/10 text-red-400 border-red-500/20'
 };
 
 export default function FinancialInputs({ values, onChange, disabled = false, currencySymbol = '€' }) {

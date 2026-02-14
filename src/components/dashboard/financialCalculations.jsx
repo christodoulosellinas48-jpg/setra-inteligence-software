@@ -41,7 +41,10 @@ export function calculateFinancials(data, businessType) {
   const otherOps = data.other_operating || 0;
   
   const totalCosts = foodCost + staffCost + fixedCost + utilities + otherOps;
-  const netProfit = revenue - totalCosts;
+  const netProfitBeforeTax = revenue - totalCosts;
+  const taxRate = data.corporate_tax_rate || 12.5;
+  const taxAmount = netProfitBeforeTax > 0 ? (netProfitBeforeTax * taxRate) / 100 : 0;
+  const netProfit = netProfitBeforeTax - taxAmount;
   
   const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
   const foodCostRatio = revenue > 0 ? (foodCost / revenue) * 100 : 0;
@@ -79,6 +82,11 @@ export function calculateFinancials(data, businessType) {
   const overallStatus = healthScore >= 75 ? 'healthy' : healthScore >= 50 ? 'warning' : 'risk';
   
   return {
+    revenue,
+    totalCosts,
+    netProfitBeforeTax,
+    taxAmount,
+    taxRate,
     netProfit,
     profitMargin,
     foodCostRatio,
