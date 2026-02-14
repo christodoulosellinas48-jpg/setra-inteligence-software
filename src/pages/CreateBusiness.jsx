@@ -29,6 +29,7 @@ const CURRENCIES = [
 export default function CreateBusiness() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     business_type: '',
@@ -41,6 +42,14 @@ export default function CreateBusiness() {
     
     try {
       setLoading(true);
+      setError('');
+
+      // Check authentication first
+      const isAuthenticated = await base44.auth.isAuthenticated();
+      if (!isAuthenticated) {
+        base44.auth.redirectToLogin(window.location.href);
+        return;
+      }
 
       const user = await base44.auth.me();
       
@@ -68,8 +77,9 @@ export default function CreateBusiness() {
 
       localStorage.setItem('currentBusinessId', business.id);
       navigate(createPageUrl('Dashboard'));
-    } catch (error) {
-      console.error('Error creating business:', error);
+    } catch (err) {
+      console.error('Error creating business:', err);
+      setError(err.message || 'Failed to create business. Please try again.');
       setLoading(false);
     }
   };
@@ -168,6 +178,12 @@ export default function CreateBusiness() {
                 />
               </div>
             </div>
+
+            {error && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/50 rounded-lg text-rose-400 text-sm">
+                {error}
+              </div>
+            )}
 
             <Button
               onClick={handleCreate}
