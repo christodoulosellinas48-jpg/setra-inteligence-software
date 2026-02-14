@@ -13,10 +13,10 @@ export default function Home() {
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-center max-w-4xl space-y-6"
-      >
-        <h1 className="text-5xl font-extrabold tracking-tight text-emerald-400 sm:text-6xl md:text-7xl">
-          Welcome to Ellinas THE SETTING
+        className="text-center max-w-4xl space-y-6">
+
+        <h1 className="text-5xl font-extrabold tracking-tight text-emerald-400 sm:text-6xl md:text-7xl">Setting
+
         </h1>
         <p className="text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto">
           Your ultimate financial partner for hospitality businesses. We empower cafés, restaurants, bakeries, and food trucks to gain crystal-clear insights, optimize costs, and maximize profitability.
@@ -26,32 +26,32 @@ export default function Home() {
           <FeatureCard
             icon={TrendingUp}
             title="Boost Profitability"
-            description="Identify key areas for improvement and unlock your business's full earning potential."
-          />
+            description="Identify key areas for improvement and unlock your business's full earning potential." />
+
           <FeatureCard
             icon={BarChart3}
             title="Strategic Insights"
-            description="Leverage AI-driven analytics to make smarter, data-backed business decisions."
-          />
+            description="Leverage AI-driven analytics to make smarter, data-backed business decisions." />
+
           <FeatureCard
             icon={Wallet}
             title="Streamlined Management"
-            description="Effortlessly track finances, manage expenses, and plan budgets with ease."
-          />
+            description="Effortlessly track finances, manage expenses, and plan budgets with ease." />
+
         </div>
 
         <div className="pt-10">
           <Link to={createPageUrl('Dashboard')}>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-6 text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
-            >
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-6 text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+
               Get Started Now <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 }
 
 function FeatureCard({ icon: Icon, title, description }) {
@@ -59,8 +59,8 @@ function FeatureCard({ icon: Icon, title, description }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+      transition={{ duration: 0.5 }}>
+
       <Card className="bg-slate-900/50 border-slate-800 text-center p-6 flex flex-col items-center h-full">
         <CardHeader>
           <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
@@ -70,6 +70,6 @@ function FeatureCard({ icon: Icon, title, description }) {
           <CardDescription className="text-slate-400">{description}</CardDescription>
         </CardHeader>
       </Card>
-    </motion.div>
-  );
+    </motion.div>);
+
 }
