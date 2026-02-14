@@ -8,7 +8,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate(createPageUrl('Dashboard'));
+    navigate(createPageUrl('Home'));
   }, [navigate]);
 
   return null;
