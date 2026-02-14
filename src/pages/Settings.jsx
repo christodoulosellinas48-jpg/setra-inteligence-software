@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut } from 'lucide-react';
-import { useBusiness } from '@/components/business/BusinessContext';
+import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
 import TeamManagement from '@/components/business/TeamManagement';
 
 const CURRENCIES = [
@@ -21,7 +21,7 @@ const CURRENCIES = [
   { value: 'CAD', label: '$ Canadian Dollar (CAD)' }
 ];
 
-export default function Settings() {
+function SettingsContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { currentBusiness, user, refreshBusinesses, isOwner } = useBusiness();
@@ -202,5 +202,13 @@ export default function Settings() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function Settings() {
+  return (
+    <BusinessProvider>
+      <SettingsContent />
+    </BusinessProvider>
   );
 }
