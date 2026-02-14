@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { debounce } from 'lodash';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
@@ -57,6 +58,14 @@ function DashboardContent() {
     enabled: !!currentBusiness
   });
 
+  // Local state for immediate UI updates
+  const [localBusinessData, setLocalBusinessData] = useState(currentBusiness);
+
+  // Update local data when currentBusiness changes
+  React.useEffect(() => {
+    setLocalBusinessData(currentBusiness);
+  }, [currentBusiness]);
+
   // Update business mutation
   const updateBusiness = useMutation({
     mutationFn: (data) => base44.entities.Business.update(currentBusiness.id, {
@@ -67,33 +76,43 @@ function DashboardContent() {
     onSuccess: () => queryClient.invalidateQueries(['businesses'])
   });
 
-  // Calculate financials
+  // Debounced save function
+  const debouncedSave = useRef(
+    debounce((data) => {
+      updateBusiness.mutate(data);
+    }, 500)
+  ).current;
+
+  // Calculate financials using local data for immediate updates
   const financials = useMemo(() => {
-    if (!currentBusiness) return null;
-    return calculateFinancials(currentBusiness, currentBusiness.business_type);
-  }, [currentBusiness]);
+    if (!localBusinessData) return null;
+    return calculateFinancials(localBusinessData, localBusinessData.business_type);
+  }, [localBusinessData]);
 
   // Calculate simulated financials
   const simulatedFinancials = useMemo(() => {
-    if (!currentBusiness) return null;
+    if (!localBusinessData) return null;
     return simulateChanges(
-      currentBusiness,
-      currentBusiness.business_type,
+      localBusinessData,
+      localBusinessData.business_type,
       simulationValues.revenue,
       simulationValues.foodCost,
       simulationValues.staffCost
     );
-  }, [currentBusiness, simulationValues]);
+  }, [localBusinessData, simulationValues]);
 
   // Generate insights
   const insights = useMemo(() => {
-    if (!financials || !currentBusiness) return [];
-    return generateInsights(financials, currentBusiness.business_type);
-  }, [financials, currentBusiness]);
+    if (!financials || !localBusinessData) return [];
+    return generateInsights(financials, localBusinessData.business_type);
+  }, [financials, localBusinessData]);
 
   const handleInputChange = (key, value) => {
     if (!canEdit()) return;
-    updateBusiness.mutate({ [key]: value });
+    // Update local state immediately for responsive UI
+    setLocalBusinessData(prev => ({ ...prev, [key]: value }));
+    // Debounce the actual save to database
+    debouncedSave({ [key]: value });
   };
 
   if (businessLoading) {
@@ -232,7 +251,7 @@ function DashboardContent() {
             </div>
           </div>
           <FinancialInputs 
-            values={currentBusiness} 
+            values={localBusinessData} 
             onChange={handleInputChange} 
             disabled={!canEdit()}
             currencySymbol={currencySymbol}
