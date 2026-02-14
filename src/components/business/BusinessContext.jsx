@@ -23,45 +23,49 @@ export function BusinessProvider({ children }) {
   }, []);
 
   const loadUserAndBusinesses = async () => {
-    setLoading(true);
-    const currentUser = await base44.auth.me();
-    setUser(currentUser);
+    try {
+      setLoading(true);
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
 
-    // Get businesses where user is owner
-    const ownedBusinesses = await base44.entities.Business.filter({ owner_email: currentUser.email });
-    
-    // Get businesses where user is a member
-    const memberships = await base44.entities.BusinessMember.filter({ 
-      user_email: currentUser.email,
-      invitation_status: 'accepted'
-    });
-    
-    const memberBusinessIds = memberships.map(m => m.business_id);
-    let memberBusinesses = [];
-    
-    if (memberBusinessIds.length > 0) {
-      const allBusinesses = await base44.entities.Business.list();
-      memberBusinesses = allBusinesses.filter(b => 
-        memberBusinessIds.includes(b.id) && b.owner_email !== currentUser.email
-      );
+      // Get businesses where user is owner
+      const ownedBusinesses = await base44.entities.Business.filter({ owner_email: currentUser.email });
+      
+      // Get businesses where user is a member
+      const memberships = await base44.entities.BusinessMember.filter({ 
+        user_email: currentUser.email,
+        invitation_status: 'accepted'
+      });
+      
+      const memberBusinessIds = memberships.map(m => m.business_id);
+      let memberBusinesses = [];
+      
+      if (memberBusinessIds.length > 0) {
+        const allBusinesses = await base44.entities.Business.list();
+        memberBusinesses = allBusinesses.filter(b => 
+          memberBusinessIds.includes(b.id) && b.owner_email !== currentUser.email
+        );
+      }
+
+      const allUserBusinesses = [...ownedBusinesses, ...memberBusinesses];
+      setBusinesses(allUserBusinesses);
+
+      // Load saved business selection or default to first
+      const savedBusinessId = localStorage.getItem('currentBusinessId');
+      const savedBusiness = allUserBusinesses.find(b => b.id === savedBusinessId);
+      
+      if (savedBusiness) {
+        setCurrentBusiness(savedBusiness);
+        await loadUserRole(currentUser.email, savedBusiness);
+      } else if (allUserBusinesses.length > 0) {
+        setCurrentBusiness(allUserBusinesses[0]);
+        await loadUserRole(currentUser.email, allUserBusinesses[0]);
+      }
+    } catch (error) {
+      console.error('Error loading businesses:', error);
+    } finally {
+      setLoading(false);
     }
-
-    const allUserBusinesses = [...ownedBusinesses, ...memberBusinesses];
-    setBusinesses(allUserBusinesses);
-
-    // Load saved business selection or default to first
-    const savedBusinessId = localStorage.getItem('currentBusinessId');
-    const savedBusiness = allUserBusinesses.find(b => b.id === savedBusinessId);
-    
-    if (savedBusiness) {
-      setCurrentBusiness(savedBusiness);
-      await loadUserRole(currentUser.email, savedBusiness);
-    } else if (allUserBusinesses.length > 0) {
-      setCurrentBusiness(allUserBusinesses[0]);
-      await loadUserRole(currentUser.email, allUserBusinesses[0]);
-    }
-
-    setLoading(false);
   };
 
   const loadUserRole = async (email, business) => {
