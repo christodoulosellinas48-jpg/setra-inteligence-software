@@ -11,7 +11,7 @@ import {
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
   ChevronRight, RefreshCw, BarChart3, Wallet, LineChart,
-  Settings, Mail, Building2
+  Settings, Mail, Building2, Trash2
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -90,6 +90,12 @@ function DashboardContent() {
       last_edited_at: new Date().toISOString()
     }),
     onSuccess: () => queryClient.invalidateQueries(['businesses'])
+  });
+
+  // Delete expense mutation
+  const deleteExpense = useMutation({
+    mutationFn: (expenseId) => base44.entities.ExpenseDocument.delete(expenseId),
+    onSuccess: () => queryClient.invalidateQueries(['expenses', currentBusiness?.id])
   });
 
   // Debounced save function
@@ -453,7 +459,7 @@ function DashboardContent() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800/50 transition-colors"
+                  className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800/50 transition-colors group"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
@@ -467,10 +473,23 @@ function DashboardContent() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-white">{currencySymbol}{expense.invoice_total?.toLocaleString()}</p>
-                    {expense.vat_included && (
-                      <p className="text-xs text-slate-500">VAT incl.</p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-semibold text-white">{currencySymbol}{expense.invoice_total?.toLocaleString()}</p>
+                      {expense.vat_included && (
+                        <p className="text-xs text-slate-500">VAT incl.</p>
+                      )}
+                    </div>
+                    {canEdit() && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteExpense.mutate(expense.id)}
+                        disabled={deleteExpense.isPending}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     )}
                   </div>
                 </motion.div>
