@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -17,11 +17,13 @@ import {
 import MetricCard from '@/components/dashboard/MetricCard';
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
 import InsightCard from '@/components/dashboard/InsightCard';
-import SensitivitySlider from '@/components/dashboard/SensitivitySlider';
 import FinancialInputs from '@/components/dashboard/FinancialInputs';
-import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcher from '@/components/business/BusinessSwitcher';
+
+// Lazy load heavy components
+const SensitivitySlider = lazy(() => import('@/components/dashboard/SensitivitySlider'));
+const ExpenseUploadModal = lazy(() => import('@/components/dashboard/ExpenseUploadModal'));
 
 import { 
   calculateFinancials, 

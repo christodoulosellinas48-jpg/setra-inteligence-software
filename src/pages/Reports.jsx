@@ -100,13 +100,15 @@ function ReportsContent() {
                 <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
               </div>
             </div>
-            <ExportButtons 
-              data={currentBusiness}
-              calculations={financials}
-              dateRange={dateRange}
-              businessName={currentBusiness.name}
-              businessType={businessDisplayName}
-            />
+            <Suspense fallback={<Button disabled className="bg-slate-800">Export</Button>}>
+              <ExportButtons 
+                data={currentBusiness}
+                calculations={financials}
+                dateRange={dateRange}
+                businessName={currentBusiness.name}
+                businessType={businessDisplayName}
+              />
+            </Suspense>
           </div>
         </div>
       </header>
