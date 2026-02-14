@@ -8,13 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { Coffee, UtensilsCrossed, Croissant, Truck, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import { Wine, Users, Coffee, PartyPopper, Cake, Store, ShoppingBag, Hotel, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
 
 const BUSINESS_TYPES = [
-  { type: 'cafe', icon: Coffee, title: 'Café', description: 'Coffee shops, tea houses' },
-  { type: 'restaurant', icon: UtensilsCrossed, title: 'Restaurant', description: 'Full-service dining' },
-  { type: 'bakery', icon: Croissant, title: 'Bakery', description: 'Bakeries, patisseries' },
-  { type: 'food_truck', icon: Truck, title: 'Food Truck', description: 'Mobile food service' }
+  { type: 'bar', icon: Wine, title: 'Bar', description: 'Pubs, cocktail bars, nightlife' },
+  { type: 'canteen', icon: Users, title: 'Canteen', description: 'Staff cafeterias, institutional dining' },
+  { type: 'coffee_shop', icon: Coffee, title: 'Coffee Shop', description: 'Coffee houses, espresso bars' },
+  { type: 'catering_events', icon: PartyPopper, title: 'Catering/Events', description: 'Event catering, banquets' },
+  { type: 'confectionery', icon: Cake, title: 'Confectionery', description: 'Sweet shops, chocolatiers' },
+  { type: 'deli_cafe', icon: Store, title: 'Deli Cafe', description: 'Delicatessens, casual eateries' },
+  { type: 'food_to_go', icon: ShoppingBag, title: 'Food To Go', description: 'Takeaway, quick service' },
+  { type: 'hotel_restaurant', icon: Hotel, title: 'Hotel Restaurant', description: 'Hotel dining, room service' }
 ];
 
 const CURRENCIES = [
@@ -129,7 +133,7 @@ export default function CreateBusiness() {
 
             <div>
               <Label className="text-slate-400 mb-3 block">Business Type *</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {BUSINESS_TYPES.map((bt) => {
                   const Icon = bt.icon;
                   const isSelected = formData.business_type === bt.type;
@@ -144,7 +148,7 @@ export default function CreateBusiness() {
                       }`}
                     >
                       <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
-                      <p className={`font-medium ${isSelected ? 'text-white' : 'text-slate-300'}`}>{bt.title}</p>
+                      <p className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>{bt.title}</p>
                       <p className="text-xs text-slate-500">{bt.description}</p>
                     </button>
                   );

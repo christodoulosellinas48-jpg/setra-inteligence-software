@@ -1,37 +1,65 @@
 // Industry benchmarks by business type
 export const BENCHMARKS = {
-  cafe: {
+  bar: {
+    foodCostRatio: { healthy: 25, warning: 30, risk: 35 },
+    staffCostRatio: { healthy: 30, warning: 35, risk: 40 },
+    fixedCostRatio: { healthy: 15, warning: 20, risk: 25 },
+    profitMargin: { healthy: 18, warning: 12, risk: 6 },
+    displayName: 'Bar'
+  },
+  canteen: {
+    foodCostRatio: { healthy: 35, warning: 40, risk: 45 },
+    staffCostRatio: { healthy: 25, warning: 30, risk: 35 },
+    fixedCostRatio: { healthy: 18, warning: 22, risk: 28 },
+    profitMargin: { healthy: 12, warning: 8, risk: 4 },
+    displayName: 'Canteen'
+  },
+  coffee_shop: {
     foodCostRatio: { healthy: 30, warning: 35, risk: 40 },
     staffCostRatio: { healthy: 30, warning: 35, risk: 40 },
     fixedCostRatio: { healthy: 15, warning: 20, risk: 25 },
     profitMargin: { healthy: 15, warning: 10, risk: 5 },
-    displayName: 'Café'
+    displayName: 'Coffee Shop'
   },
-  restaurant: {
-    foodCostRatio: { healthy: 32, warning: 38, risk: 45 },
-    staffCostRatio: { healthy: 33, warning: 38, risk: 45 },
-    fixedCostRatio: { healthy: 12, warning: 18, risk: 22 },
-    profitMargin: { healthy: 12, warning: 8, risk: 4 },
-    displayName: 'Restaurant'
-  },
-  bakery: {
-    foodCostRatio: { healthy: 28, warning: 33, risk: 38 },
+  catering_events: {
+    foodCostRatio: { healthy: 30, warning: 35, risk: 42 },
     staffCostRatio: { healthy: 28, warning: 33, risk: 38 },
-    fixedCostRatio: { healthy: 18, warning: 22, risk: 28 },
-    profitMargin: { healthy: 18, warning: 12, risk: 6 },
-    displayName: 'Bakery'
-  },
-  food_truck: {
-    foodCostRatio: { healthy: 28, warning: 33, risk: 40 },
-    staffCostRatio: { healthy: 25, warning: 30, risk: 35 },
     fixedCostRatio: { healthy: 10, warning: 15, risk: 20 },
     profitMargin: { healthy: 20, warning: 15, risk: 8 },
-    displayName: 'Food Truck'
+    displayName: 'Catering/Events'
+  },
+  confectionery: {
+    foodCostRatio: { healthy: 28, warning: 33, risk: 38 },
+    staffCostRatio: { healthy: 25, warning: 30, risk: 35 },
+    fixedCostRatio: { healthy: 18, warning: 22, risk: 28 },
+    profitMargin: { healthy: 20, warning: 15, risk: 8 },
+    displayName: 'Confectionery'
+  },
+  deli_cafe: {
+    foodCostRatio: { healthy: 32, warning: 37, risk: 42 },
+    staffCostRatio: { healthy: 28, warning: 33, risk: 38 },
+    fixedCostRatio: { healthy: 15, warning: 20, risk: 25 },
+    profitMargin: { healthy: 15, warning: 10, risk: 5 },
+    displayName: 'Deli Cafe'
+  },
+  food_to_go: {
+    foodCostRatio: { healthy: 30, warning: 35, risk: 40 },
+    staffCostRatio: { healthy: 25, warning: 30, risk: 35 },
+    fixedCostRatio: { healthy: 12, warning: 18, risk: 22 },
+    profitMargin: { healthy: 18, warning: 12, risk: 6 },
+    displayName: 'Food To Go'
+  },
+  hotel_restaurant: {
+    foodCostRatio: { healthy: 32, warning: 38, risk: 45 },
+    staffCostRatio: { healthy: 35, warning: 40, risk: 45 },
+    fixedCostRatio: { healthy: 12, warning: 18, risk: 22 },
+    profitMargin: { healthy: 12, warning: 8, risk: 4 },
+    displayName: 'Hotel Restaurant'
   }
 };
 
 export function calculateFinancials(data, businessType) {
-  const benchmarks = BENCHMARKS[businessType] || BENCHMARKS.restaurant;
+  const benchmarks = BENCHMARKS[businessType] || BENCHMARKS.coffee_shop;
   
   const revenue = data.monthly_revenue || 0;
   const foodCost = data.purchases_food_bev || 0;
