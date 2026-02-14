@@ -8,13 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { Coffee, UtensilsCrossed, Croissant, Truck, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import { Wine, Users, Coffee, PartyPopper, Cake, Store, ShoppingBag, Hotel, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
 
 const BUSINESS_TYPES = [
-  { type: 'cafe', icon: Coffee, title: 'Café', description: 'Coffee shops, tea houses' },
-  { type: 'restaurant', icon: UtensilsCrossed, title: 'Restaurant', description: 'Full-service dining' },
-  { type: 'bakery', icon: Croissant, title: 'Bakery', description: 'Bakeries, patisseries' },
-  { type: 'food_truck', icon: Truck, title: 'Food Truck', description: 'Mobile food service' }
+  { type: 'bar', icon: Wine, title: 'Bar', description: 'Pubs, cocktail bars, nightlife' },
+  { type: 'canteen', icon: Users, title: 'Canteen', description: 'Staff cafeterias, institutional dining' },
+  { type: 'coffee_shop', icon: Coffee, title: 'Coffee Shop', description: 'Coffee houses, espresso bars' },
+  { type: 'catering_events', icon: PartyPopper, title: 'Catering/Events', description: 'Event catering, banquets' },
+  { type: 'confectionery', icon: Cake, title: 'Confectionery', description: 'Sweet shops, chocolatiers' },
+  { type: 'deli_cafe', icon: Store, title: 'Deli Cafe', description: 'Delicatessens, casual eateries' },
+  { type: 'food_to_go', icon: ShoppingBag, title: 'Food To Go', description: 'Takeaway, quick service' },
+  { type: 'hotel_restaurant', icon: Hotel, title: 'Hotel Restaurant', description: 'Hotel dining, room service' }
 ];
 
 const CURRENCIES = [
@@ -29,6 +33,7 @@ const CURRENCIES = [
 export default function CreateBusiness() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     business_type: '',
@@ -38,34 +43,49 @@ export default function CreateBusiness() {
 
   const handleCreate = async () => {
     if (!formData.name || !formData.business_type) return;
-    setLoading(true);
-
-    const user = await base44.auth.me();
     
-    const business = await base44.entities.Business.create({
-      ...formData,
-      owner_email: user.email,
-      monthly_revenue: 0,
-      rent_fixed_costs: 0,
-      staff_costs: 0,
-      purchases_food_bev: 0,
-      utilities: 0,
-      other_operating: 0
-    });
+    try {
+      setLoading(true);
+      setError('');
 
-    // Create owner membership record
-    await base44.entities.BusinessMember.create({
-      business_id: business.id,
-      user_email: user.email,
-      role: 'owner',
-      invited_by: user.email,
-      invitation_status: 'accepted',
-      invited_at: new Date().toISOString(),
-      accepted_at: new Date().toISOString()
-    });
+      // Check authentication first
+      const isAuthenticated = await base44.auth.isAuthenticated();
+      if (!isAuthenticated) {
+        base44.auth.redirectToLogin(window.location.href);
+        return;
+      }
 
-    localStorage.setItem('currentBusinessId', business.id);
-    navigate(createPageUrl('Dashboard'));
+      const user = await base44.auth.me();
+      
+      const business = await base44.entities.Business.create({
+        ...formData,
+        owner_email: user.email,
+        monthly_revenue: 0,
+        rent_fixed_costs: 0,
+        staff_costs: 0,
+        purchases_food_bev: 0,
+        utilities: 0,
+        other_operating: 0
+      });
+
+      // Create owner membership record
+      await base44.entities.BusinessMember.create({
+        business_id: business.id,
+        user_email: user.email,
+        role: 'owner',
+        invited_by: user.email,
+        invitation_status: 'accepted',
+        invited_at: new Date().toISOString(),
+        accepted_at: new Date().toISOString()
+      });
+
+      localStorage.setItem('currentBusinessId', business.id);
+      navigate(createPageUrl('Dashboard'));
+    } catch (err) {
+      console.error('Error creating business:', err);
+      setError(err.message || 'Failed to create business. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -113,7 +133,7 @@ export default function CreateBusiness() {
 
             <div>
               <Label className="text-slate-400 mb-3 block">Business Type *</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {BUSINESS_TYPES.map((bt) => {
                   const Icon = bt.icon;
                   const isSelected = formData.business_type === bt.type;
@@ -128,7 +148,7 @@ export default function CreateBusiness() {
                       }`}
                     >
                       <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
-                      <p className={`font-medium ${isSelected ? 'text-white' : 'text-slate-300'}`}>{bt.title}</p>
+                      <p className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>{bt.title}</p>
                       <p className="text-xs text-slate-500">{bt.description}</p>
                     </button>
                   );
@@ -162,6 +182,12 @@ export default function CreateBusiness() {
                 />
               </div>
             </div>
+
+            {error && (
+              <div className="p-4 bg-rose-500/10 border border-rose-500/50 rounded-lg text-rose-400 text-sm">
+                {error}
+              </div>
+            )}
 
             <Button
               onClick={handleCreate}
