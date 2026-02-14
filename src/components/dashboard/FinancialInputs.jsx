@@ -1,8 +1,9 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { DollarSign, Home, Users, ShoppingCart, Zap, MoreHorizontal } from 'lucide-react';
+import { DollarSign, Home, Users, ShoppingCart, Zap, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 
 const inputs = [
   { key: 'monthly_revenue', label: 'Monthly Revenue', icon: DollarSign, color: 'emerald' },
@@ -36,19 +37,41 @@ export default function FinancialInputs({ values, onChange, disabled = false, cu
             className="relative"
           >
             <Label className="text-slate-400 text-sm mb-2 block">{input.label}</Label>
-            <div className="relative">
-              <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center ${colorClasses[input.color]}`}>
-                <Icon className="w-4 h-4" />
+            <div className="relative flex items-center gap-2">
+              <div className="relative flex-1">
+                <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center ${colorClasses[input.color]}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <Input
+                  type="number"
+                  value={values[input.key] || ''}
+                  onChange={(e) => onChange(input.key, parseFloat(e.target.value) || 0)}
+                  className="pl-14 pr-10 h-12 bg-slate-800/50 border-slate-700 text-white text-lg font-medium focus:border-emerald-500/50 focus:ring-emerald-500/20 disabled:opacity-50"
+                  placeholder="0"
+                  disabled={disabled}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">{currencySymbol}</span>
               </div>
-              <Input
-                type="number"
-                value={values[input.key] || ''}
-                onChange={(e) => onChange(input.key, parseFloat(e.target.value) || 0)}
-                className="pl-14 h-12 bg-slate-800/50 border-slate-700 text-white text-lg font-medium focus:border-emerald-500/50 focus:ring-emerald-500/20 disabled:opacity-50"
-                placeholder="0"
-                disabled={disabled}
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">{currencySymbol}</span>
+              <div className="flex flex-col gap-1">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => onChange(input.key, (values[input.key] || 0) + 100)}
+                  disabled={disabled}
+                  className="h-5 w-8 bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-emerald-500/50"
+                >
+                  <ChevronUp className="w-3 h-3 text-slate-400" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => onChange(input.key, Math.max(0, (values[input.key] || 0) - 100))}
+                  disabled={disabled}
+                  className="h-5 w-8 bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-emerald-500/50"
+                >
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                </Button>
+              </div>
             </div>
           </motion.div>
         );
