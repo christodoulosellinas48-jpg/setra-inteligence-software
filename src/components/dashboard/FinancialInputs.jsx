@@ -22,7 +22,7 @@ const colorClasses = {
   slate: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
 };
 
-export default function FinancialInputs({ values, onChange }) {
+export default function FinancialInputs({ values, onChange, disabled = false, currencySymbol = '€' }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {inputs.map((input, index) => {

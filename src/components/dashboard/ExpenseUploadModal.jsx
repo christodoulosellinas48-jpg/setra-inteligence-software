@@ -18,7 +18,7 @@ const EXPENSE_CATEGORIES = [
   { value: 'one_off_expenses', label: 'One-Off Expenses' }
 ];
 
-export default function ExpenseUploadModal({ open, onOpenChange, onSave }) {
+export default function ExpenseUploadModal({ open, onOpenChange, onSave, businessId, userEmail }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -105,10 +105,14 @@ Category guidelines:
     setSaving(true);
     
     await base44.entities.ExpenseDocument.create({
-      ...formData,
-      invoice_total: parseFloat(formData.invoice_total) || 0,
-      document_url: documentUrl
-    });
+            ...formData,
+            invoice_total: parseFloat(formData.invoice_total) || 0,
+            document_url: documentUrl,
+            business_id: businessId,
+            uploaded_by: userEmail,
+            last_edited_by: userEmail,
+            last_edited_at: new Date().toISOString()
+          });
     
     onSave?.();
     setSaving(false);

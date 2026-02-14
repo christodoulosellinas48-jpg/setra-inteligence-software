@@ -53,6 +53,9 @@ import Onboarding from './pages/Onboarding';
 import Reports from './pages/Reports';
 import Budgeting from './pages/Budgeting';
 import Forecasting from './pages/Forecasting';
+import CreateBusiness from './pages/CreateBusiness';
+import Settings from './pages/Settings';
+import Invitations from './pages/Invitations';
 
 
 export const PAGES = {
@@ -62,6 +65,9 @@ export const PAGES = {
     "Reports": Reports,
     "Budgeting": Budgeting,
     "Forecasting": Forecasting,
+    "CreateBusiness": CreateBusiness,
+    "Settings": Settings,
+    "Invitations": Invitations,
 }
 
 export const pagesConfig = {

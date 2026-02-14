@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -9,7 +9,8 @@ import { Card } from '@/components/ui/card';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw, BarChart3, Wallet, LineChart
+  ChevronRight, RefreshCw, BarChart3, Wallet, LineChart,
+  Settings, Mail, Building2
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -18,6 +19,8 @@ import InsightCard from '@/components/dashboard/InsightCard';
 import SensitivitySlider from '@/components/dashboard/SensitivitySlider';
 import FinancialInputs from '@/components/dashboard/FinancialInputs';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
+import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 
 import { 
   calculateFinancials, 
@@ -26,9 +29,10 @@ import {
   BENCHMARKS 
 } from '@/components/dashboard/financialCalculations';
 
-export default function Dashboard() {
+function DashboardContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { currentBusiness, user, loading: businessLoading, canEdit, userRole } = useBusiness();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [simulationValues, setSimulationValues] = useState({
     revenue: 0,
@@ -36,62 +40,63 @@ export default function Dashboard() {
     staffCost: 0
   });
 
-  // Fetch business profile
-  const { data: profiles, isLoading: profileLoading } = useQuery({
-    queryKey: ['businessProfile'],
-    queryFn: () => base44.entities.BusinessProfile.list('-created_date', 1)
+  // Fetch pending invitations count
+  const { data: pendingInvitations = [] } = useQuery({
+    queryKey: ['pendingInvitations', user?.email],
+    queryFn: () => base44.entities.BusinessMember.filter({ 
+      user_email: user?.email, 
+      invitation_status: 'pending' 
+    }),
+    enabled: !!user
   });
 
-  const profile = profiles?.[0];
-
-  // Fetch expenses
+  // Fetch expenses for current business
   const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => base44.entities.ExpenseDocument.list('-created_date')
+    queryKey: ['expenses', currentBusiness?.id],
+    queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-created_date'),
+    enabled: !!currentBusiness
   });
 
-  // Update profile mutation
-  const updateProfile = useMutation({
-    mutationFn: (data) => base44.entities.BusinessProfile.update(profile.id, data),
-    onSuccess: () => queryClient.invalidateQueries(['businessProfile'])
+  // Update business mutation
+  const updateBusiness = useMutation({
+    mutationFn: (data) => base44.entities.Business.update(currentBusiness.id, {
+      ...data,
+      last_edited_by: user?.email,
+      last_edited_at: new Date().toISOString()
+    }),
+    onSuccess: () => queryClient.invalidateQueries(['businesses'])
   });
-
-  // Redirect if no profile
-  useEffect(() => {
-    if (!profileLoading && !profile) {
-      navigate(createPageUrl('Onboarding'));
-    }
-  }, [profile, profileLoading, navigate]);
 
   // Calculate financials
   const financials = useMemo(() => {
-    if (!profile) return null;
-    return calculateFinancials(profile, profile.business_type);
-  }, [profile]);
+    if (!currentBusiness) return null;
+    return calculateFinancials(currentBusiness, currentBusiness.business_type);
+  }, [currentBusiness]);
 
   // Calculate simulated financials
   const simulatedFinancials = useMemo(() => {
-    if (!profile) return null;
+    if (!currentBusiness) return null;
     return simulateChanges(
-      profile,
-      profile.business_type,
+      currentBusiness,
+      currentBusiness.business_type,
       simulationValues.revenue,
       simulationValues.foodCost,
       simulationValues.staffCost
     );
-  }, [profile, simulationValues]);
+  }, [currentBusiness, simulationValues]);
 
   // Generate insights
   const insights = useMemo(() => {
-    if (!financials || !profile) return [];
-    return generateInsights(financials, profile.business_type);
-  }, [financials, profile]);
+    if (!financials || !currentBusiness) return [];
+    return generateInsights(financials, currentBusiness.business_type);
+  }, [financials, currentBusiness]);
 
   const handleInputChange = (key, value) => {
-    updateProfile.mutate({ [key]: value });
+    if (!canEdit()) return;
+    updateBusiness.mutate({ [key]: value });
   };
 
-  if (profileLoading || !profile || !financials) {
+  if (businessLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
@@ -99,7 +104,45 @@ export default function Dashboard() {
     );
   }
 
-  const businessDisplayName = BENCHMARKS[profile.business_type]?.displayName || 'Business';
+  // No business - show welcome screen
+  if (!currentBusiness) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md"
+        >
+          <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
+            <Building2 className="w-10 h-10 text-emerald-400" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-4">Welcome to Ellinas THE SETTING</h1>
+          <p className="text-slate-400 mb-8">
+            Create your first business to start tracking finances, managing budgets, and gaining insights.
+          </p>
+          <Button 
+            onClick={() => navigate(createPageUrl('CreateBusiness'))}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg"
+          >
+            Create Your First Business
+          </Button>
+          {pendingInvitations.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(createPageUrl('Invitations'))}
+              className="mt-4 border-slate-700 text-slate-300"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              {pendingInvitations.length} Pending Invitation{pendingInvitations.length > 1 ? 's' : ''}
+            </Button>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
+  const businessDisplayName = BENCHMARKS[currentBusiness.business_type]?.displayName || 'Business';
+  const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness.currency] || '€';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -107,18 +150,23 @@ export default function Dashboard() {
       <header className="border-b border-slate-800/50 backdrop-blur-sm sticky top-0 z-40 bg-slate-950/80">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">{profile.business_name || 'Ellinas THE SETTING'}</h1>
-              <p className="text-slate-500 text-sm">{businessDisplayName} • Financial Intelligence</p>
+            <div className="flex items-center gap-4">
+              <BusinessSwitcher />
+              <div>
+                <p className="text-slate-500 text-sm">{businessDisplayName} • {userRole}</p>
+              </div>
             </div>
-            <Button 
-              variant="ghost"
-              onClick={() => navigate(createPageUrl('Onboarding'))}
-              className="text-slate-400 hover:text-white"
-            >
-              ← Back to Setup
-            </Button>
             <div className="flex items-center gap-3">
+              {pendingInvitations.length > 0 && (
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate(createPageUrl('Invitations'))}
+                  className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  {pendingInvitations.length}
+                </Button>
+              )}
               <Button 
                 variant="outline"
                 onClick={() => navigate(createPageUrl('Budgeting'))}
@@ -143,12 +191,21 @@ export default function Dashboard() {
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Reports
               </Button>
+              {canEdit() && (
+                <Button 
+                  onClick={() => setShowUploadModal(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Expense
+                </Button>
+              )}
               <Button 
-                onClick={() => setShowUploadModal(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                variant="ghost"
+                onClick={() => navigate(createPageUrl('Settings'))}
+                className="text-slate-400 hover:text-white"
               >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Expense
+                <Settings className="w-5 h-5" />
               </Button>
             </div>
           </div>
@@ -157,7 +214,7 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Health Indicator */}
-        <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />
+        {financials && <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />}
 
         {/* Financial Inputs Section */}
         <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
@@ -168,68 +225,77 @@ export default function Dashboard() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">Financial Inputs</h2>
-                <p className="text-sm text-slate-500">Enter your monthly figures</p>
+                <p className="text-sm text-slate-500">
+                  {canEdit() ? 'Enter your monthly figures' : 'View-only mode'}
+                </p>
               </div>
             </div>
           </div>
-          <FinancialInputs values={profile} onChange={handleInputChange} />
+          <FinancialInputs 
+            values={currentBusiness} 
+            onChange={handleInputChange} 
+            disabled={!canEdit()}
+            currencySymbol={currencySymbol}
+          />
         </Card>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MetricCard
-            title="Net Profit"
-            value={financials.netProfit}
-            prefix="€"
-            status={financials.netProfit >= 0 ? 'healthy' : 'risk'}
-            icon={DollarSign}
-            delay={0}
-          />
-          <MetricCard
-            title="Profit Margin"
-            value={financials.profitMargin}
-            suffix="%"
-            status={financials.profitMarginStatus}
-            benchmark={`Target: ${financials.benchmarks.profitMargin.healthy}%+`}
-            icon={Percent}
-            delay={0.1}
-          />
-          <MetricCard
-            title="Break-even Revenue"
-            value={financials.breakEvenRevenue}
-            prefix="€"
-            status="neutral"
-            icon={Target}
-            delay={0.2}
-          />
-          <MetricCard
-            title="Food Cost Ratio"
-            value={financials.foodCostRatio}
-            suffix="%"
-            status={financials.foodCostStatus}
-            benchmark={`Healthy: <${financials.benchmarks.foodCostRatio.healthy}%`}
-            icon={TrendingUp}
-            delay={0.3}
-          />
-          <MetricCard
-            title="Staff Cost Ratio"
-            value={financials.staffCostRatio}
-            suffix="%"
-            status={financials.staffCostStatus}
-            benchmark={`Healthy: <${financials.benchmarks.staffCostRatio.healthy}%`}
-            icon={TrendingUp}
-            delay={0.4}
-          />
-          <MetricCard
-            title="Fixed Cost Load"
-            value={financials.fixedCostRatio}
-            suffix="%"
-            status={financials.fixedCostStatus}
-            benchmark={`Healthy: <${financials.benchmarks.fixedCostRatio.healthy}%`}
-            icon={TrendingUp}
-            delay={0.5}
-          />
-        </div>
+        {financials && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <MetricCard
+              title="Net Profit"
+              value={financials.netProfit}
+              prefix={currencySymbol}
+              status={financials.netProfit >= 0 ? 'healthy' : 'risk'}
+              icon={DollarSign}
+              delay={0}
+            />
+            <MetricCard
+              title="Profit Margin"
+              value={financials.profitMargin}
+              suffix="%"
+              status={financials.profitMarginStatus}
+              benchmark={`Target: ${financials.benchmarks.profitMargin.healthy}%+`}
+              icon={Percent}
+              delay={0.1}
+            />
+            <MetricCard
+              title="Break-even Revenue"
+              value={financials.breakEvenRevenue}
+              prefix={currencySymbol}
+              status="neutral"
+              icon={Target}
+              delay={0.2}
+            />
+            <MetricCard
+              title="Food Cost Ratio"
+              value={financials.foodCostRatio}
+              suffix="%"
+              status={financials.foodCostStatus}
+              benchmark={`Healthy: <${financials.benchmarks.foodCostRatio.healthy}%`}
+              icon={TrendingUp}
+              delay={0.3}
+            />
+            <MetricCard
+              title="Staff Cost Ratio"
+              value={financials.staffCostRatio}
+              suffix="%"
+              status={financials.staffCostStatus}
+              benchmark={`Healthy: <${financials.benchmarks.staffCostRatio.healthy}%`}
+              icon={TrendingUp}
+              delay={0.4}
+            />
+            <MetricCard
+              title="Fixed Cost Load"
+              value={financials.fixedCostRatio}
+              suffix="%"
+              status={financials.fixedCostStatus}
+              benchmark={`Healthy: <${financials.benchmarks.fixedCostRatio.healthy}%`}
+              icon={TrendingUp}
+              delay={0.5}
+            />
+          </div>
+        )}
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -282,37 +348,39 @@ export default function Dashboard() {
             </div>
 
             {/* Simulated Results */}
-            <div className="bg-slate-800/50 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Projected Impact</h3>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Net Profit</span>
-                <span className={`font-bold ${simulatedFinancials.netProfit >= financials.netProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  €{simulatedFinancials.netProfit.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                  <span className="text-xs ml-1 opacity-70">
-                    ({simulatedFinancials.netProfit >= financials.netProfit ? '+' : ''}
-                    {(simulatedFinancials.netProfit - financials.netProfit).toLocaleString('en-US', { maximumFractionDigits: 0 })})
+            {simulatedFinancials && (
+              <div className="bg-slate-800/50 rounded-xl p-4 space-y-3">
+                <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Projected Impact</h3>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Net Profit</span>
+                  <span className={`font-bold ${simulatedFinancials.netProfit >= financials.netProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {currencySymbol}{simulatedFinancials.netProfit.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                    <span className="text-xs ml-1 opacity-70">
+                      ({simulatedFinancials.netProfit >= financials.netProfit ? '+' : ''}
+                      {(simulatedFinancials.netProfit - financials.netProfit).toLocaleString('en-US', { maximumFractionDigits: 0 })})
+                    </span>
                   </span>
-                </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Profit Margin</span>
+                  <span className={`font-bold ${simulatedFinancials.profitMargin >= financials.profitMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {simulatedFinancials.profitMargin.toFixed(1)}%
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between pt-2 border-t border-slate-700">
+                  <span className="text-slate-400">Health Status</span>
+                  <span className={`font-bold capitalize ${
+                    simulatedFinancials.overallStatus === 'healthy' ? 'text-emerald-400' :
+                    simulatedFinancials.overallStatus === 'warning' ? 'text-amber-400' : 'text-rose-400'
+                  }`}>
+                    {simulatedFinancials.overallStatus}
+                  </span>
+                </div>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Profit Margin</span>
-                <span className={`font-bold ${simulatedFinancials.profitMargin >= financials.profitMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {simulatedFinancials.profitMargin.toFixed(1)}%
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between pt-2 border-t border-slate-700">
-                <span className="text-slate-400">Health Status</span>
-                <span className={`font-bold capitalize ${
-                  simulatedFinancials.overallStatus === 'healthy' ? 'text-emerald-400' :
-                  simulatedFinancials.overallStatus === 'warning' ? 'text-amber-400' : 'text-rose-400'
-                }`}>
-                  {simulatedFinancials.overallStatus}
-                </span>
-              </div>
-            </div>
+            )}
           </Card>
         </div>
 
@@ -348,11 +416,12 @@ export default function Dashboard() {
                       <p className="font-medium text-white">{expense.supplier_name}</p>
                       <p className="text-sm text-slate-500 capitalize">
                         {expense.expense_category?.replace(/_/g, ' ')}
+                        {expense.uploaded_by && <span className="ml-2">• by {expense.uploaded_by}</span>}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-white">€{expense.invoice_total?.toLocaleString()}</p>
+                    <p className="font-semibold text-white">{currencySymbol}{expense.invoice_total?.toLocaleString()}</p>
                     {expense.vat_included && (
                       <p className="text-xs text-slate-500">VAT incl.</p>
                     )}
@@ -364,11 +433,23 @@ export default function Dashboard() {
         )}
       </main>
 
-      <ExpenseUploadModal 
-        open={showUploadModal} 
-        onOpenChange={setShowUploadModal}
-        onSave={() => queryClient.invalidateQueries(['expenses'])}
-      />
+      {canEdit() && (
+        <ExpenseUploadModal 
+          open={showUploadModal} 
+          onOpenChange={setShowUploadModal}
+          onSave={() => queryClient.invalidateQueries(['expenses', currentBusiness?.id])}
+          businessId={currentBusiness?.id}
+          userEmail={user?.email}
+        />
+      )}
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <BusinessProvider>
+      <DashboardContent />
+    </BusinessProvider>
   );
 }
