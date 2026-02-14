@@ -44,10 +44,11 @@ export default function FinancialInputs({ values, onChange, disabled = false, cu
                 type="number"
                 value={values[input.key] || ''}
                 onChange={(e) => onChange(input.key, parseFloat(e.target.value) || 0)}
-                className="pl-14 h-12 bg-slate-800/50 border-slate-700 text-white text-lg font-medium focus:border-emerald-500/50 focus:ring-emerald-500/20"
+                className="pl-14 h-12 bg-slate-800/50 border-slate-700 text-white text-lg font-medium focus:border-emerald-500/50 focus:ring-emerald-500/20 disabled:opacity-50"
                 placeholder="0"
+                disabled={disabled}
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">€</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">{currencySymbol}</span>
             </div>
           </motion.div>
         );

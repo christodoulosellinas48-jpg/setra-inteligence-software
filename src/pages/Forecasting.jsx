@@ -13,30 +13,27 @@ import ProjectionChart from '@/components/forecast/ProjectionChart';
 import ForecastInsights from '@/components/forecast/ForecastInsights';
 import ScenarioSelector from '@/components/forecast/ScenarioSelector';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
+import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
 
-export default function Forecasting() {
+function ForecastingContent() {
   const navigate = useNavigate();
   const [scenario, setScenario] = useState('baseline');
 
-  const { data: profiles, isLoading: profileLoading } = useQuery({
-    queryKey: ['businessProfile'],
-    queryFn: () => base44.entities.BusinessProfile.list('-created_date', 1)
-  });
+  const { currentBusiness, loading: businessLoading } = useBusiness();
 
   const { data: snapshots = [] } = useQuery({
-    queryKey: ['financialSnapshots'],
-    queryFn: () => base44.entities.FinancialSnapshot.list('-period_start')
+    queryKey: ['financialSnapshots', currentBusiness?.id],
+    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start'),
+    enabled: !!currentBusiness
   });
-
-  const profile = profiles?.[0];
   
   const financials = useMemo(() => {
-    if (!profile) return null;
-    return calculateFinancials(profile, profile.business_type);
-  }, [profile]);
+    if (!currentBusiness) return null;
+    return calculateFinancials(currentBusiness, currentBusiness.business_type);
+  }, [currentBusiness]);
 
   const projections = useMemo(() => {
-    if (!profile) return [];
+    if (!currentBusiness) return [];
     
     // Calculate growth rates from historical data or use defaults
     let revenueGrowthRate = 0;
@@ -47,8 +44,8 @@ export default function Forecasting() {
       const recent = sorted.slice(-3);
       
       if (recent.length >= 2) {
-        const firstRev = recent[0].monthly_revenue || profile.monthly_revenue;
-        const lastRev = recent[recent.length - 1].monthly_revenue || profile.monthly_revenue;
+        const firstRev = recent[0].monthly_revenue || currentBusiness.monthly_revenue;
+        const lastRev = recent[recent.length - 1].monthly_revenue || currentBusiness.monthly_revenue;
         revenueGrowthRate = firstRev > 0 ? (lastRev - firstRev) / firstRev / recent.length : 0;
         
         const firstExp = (recent[0].purchases_food_bev || 0) + (recent[0].staff_costs || 0) + 
@@ -69,9 +66,9 @@ export default function Forecasting() {
     
     const multiplier = scenarioMultipliers[scenario];
     
-    const baseRevenue = profile.monthly_revenue || 0;
-    const baseExpenses = (profile.purchases_food_bev || 0) + (profile.staff_costs || 0) + 
-                        (profile.rent_fixed_costs || 0) + (profile.utilities || 0) + (profile.other_operating || 0);
+    const baseRevenue = currentBusiness.monthly_revenue || 0;
+    const baseExpenses = (currentBusiness.purchases_food_bev || 0) + (currentBusiness.staff_costs || 0) + 
+                        (currentBusiness.rent_fixed_costs || 0) + (currentBusiness.utilities || 0) + (currentBusiness.other_operating || 0);
     
     const projectionData = [];
     const now = new Date();
@@ -97,7 +94,7 @@ export default function Forecasting() {
     }
     
     return projectionData;
-  }, [profile, snapshots, scenario]);
+  }, [currentBusiness, snapshots, scenario]);
 
   const summaryMetrics = useMemo(() => {
     if (projections.length < 2) return null;
@@ -114,7 +111,7 @@ export default function Forecasting() {
     };
   }, [projections]);
 
-  if (profileLoading || !profile) {
+  if (businessLoading || !currentBusiness) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
@@ -122,7 +119,7 @@ export default function Forecasting() {
     );
   }
 
-  const businessDisplayName = BENCHMARKS[profile.business_type]?.displayName || 'Business';
+  const businessDisplayName = BENCHMARKS[currentBusiness.business_type]?.displayName || 'Business';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -143,7 +140,7 @@ export default function Forecasting() {
                   <LineChart className="w-6 h-6 text-emerald-500" />
                   Financial Forecasting
                 </h1>
-                <p className="text-slate-500 text-sm">{profile.business_name} • {businessDisplayName}</p>
+                <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
               </div>
             </div>
           </div>
@@ -271,5 +268,13 @@ export default function Forecasting() {
         </Card>
       </main>
     </div>
+  );
+}
+
+export default function Forecasting() {
+  return (
+    <BusinessProvider>
+      <ForecastingContent />
+    </BusinessProvider>
   );
 }

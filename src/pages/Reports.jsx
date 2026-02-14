@@ -17,8 +17,9 @@ import ExportButtons from '@/components/reports/ExportButtons';
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
 
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
+import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
 
-export default function Reports() {
+function ReportsContent() {
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState({
     from: startOfMonth(new Date()),
@@ -27,46 +28,44 @@ export default function Reports() {
   const [periodType, setPeriodType] = useState('monthly');
   const [saving, setSaving] = useState(false);
 
-  const { data: profiles, isLoading: profileLoading } = useQuery({
-    queryKey: ['businessProfile'],
-    queryFn: () => base44.entities.BusinessProfile.list('-created_date', 1)
-  });
+  const { currentBusiness, user, loading: businessLoading } = useBusiness();
 
   const { data: snapshots = [], refetch: refetchSnapshots } = useQuery({
-    queryKey: ['financialSnapshots'],
-    queryFn: () => base44.entities.FinancialSnapshot.list('-period_start')
+    queryKey: ['financialSnapshots', currentBusiness?.id],
+    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start'),
+    enabled: !!currentBusiness
   });
 
-  const profile = profiles?.[0];
-
   const financials = useMemo(() => {
-    if (!profile) return null;
-    return calculateFinancials(profile, profile.business_type);
-  }, [profile]);
+    if (!currentBusiness) return null;
+    return calculateFinancials(currentBusiness, currentBusiness.business_type);
+  }, [currentBusiness]);
 
   const saveSnapshot = async () => {
-    if (!profile || !financials) return;
+    if (!currentBusiness || !financials) return;
     setSaving(true);
     
     await base44.entities.FinancialSnapshot.create({
+      business_id: currentBusiness.id,
       period_start: dateRange.from.toISOString().split('T')[0],
       period_end: dateRange.to.toISOString().split('T')[0],
       period_type: periodType,
-      monthly_revenue: profile.monthly_revenue,
-      rent_fixed_costs: profile.rent_fixed_costs,
-      staff_costs: profile.staff_costs,
-      purchases_food_bev: profile.purchases_food_bev,
-      utilities: profile.utilities,
-      other_operating: profile.other_operating,
+      monthly_revenue: currentBusiness.monthly_revenue,
+      rent_fixed_costs: currentBusiness.rent_fixed_costs,
+      staff_costs: currentBusiness.staff_costs,
+      purchases_food_bev: currentBusiness.purchases_food_bev,
+      utilities: currentBusiness.utilities,
+      other_operating: currentBusiness.other_operating,
       net_profit: financials.netProfit,
-      profit_margin: financials.profitMargin
+      profit_margin: financials.profitMargin,
+      created_by_email: user?.email
     });
     
     await refetchSnapshots();
     setSaving(false);
   };
 
-  if (profileLoading || !profile || !financials) {
+  if (businessLoading || !currentBusiness || !financials) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
@@ -74,7 +73,7 @@ export default function Reports() {
     );
   }
 
-  const businessDisplayName = BENCHMARKS[profile.business_type]?.displayName || 'Business';
+  const businessDisplayName = BENCHMARKS[currentBusiness.business_type]?.displayName || 'Business';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -95,14 +94,14 @@ export default function Reports() {
                   <BarChart3 className="w-6 h-6 text-emerald-500" />
                   Financial Reports
                 </h1>
-                <p className="text-slate-500 text-sm">{profile.business_name} • {businessDisplayName}</p>
+                <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
               </div>
             </div>
             <ExportButtons 
-              data={profile}
+              data={currentBusiness}
               calculations={financials}
               dateRange={dateRange}
-              businessName={profile.business_name}
+              businessName={currentBusiness.name}
               businessType={businessDisplayName}
             />
           </div>
@@ -139,12 +138,12 @@ export default function Reports() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ExpenseBreakdownChart data={profile} />
+          <ExpenseBreakdownChart data={currentBusiness} />
           <RevenueTrendChart snapshots={snapshots} />
         </div>
 
         {/* Financial Summary */}
-        <FinancialSummaryTable data={profile} calculations={financials} />
+        <FinancialSummaryTable data={currentBusiness} calculations={financials} />
 
         {/* Saved Snapshots */}
         {snapshots.length > 0 && (
@@ -188,5 +187,13 @@ export default function Reports() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function Reports() {
+  return (
+    <BusinessProvider>
+      <ReportsContent />
+    </BusinessProvider>
   );
 }
