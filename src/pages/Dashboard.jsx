@@ -11,7 +11,7 @@ import {
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
   ChevronRight, RefreshCw, BarChart3, Wallet, LineChart,
-  Settings, Mail, Building2, Trash2
+  Settings, Mail, Building2, Trash2, ClipboardCheck
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -232,6 +232,14 @@ function DashboardContent() {
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Reports
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('Audit'))}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <ClipboardCheck className="w-4 h-4 mr-2" />
+                Audit
               </Button>
               {canEdit() && (
                 <Button 
