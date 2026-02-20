@@ -7,8 +7,17 @@ export default function Layout({ children, currentPageName }) {
   
   return (
     <div className="min-h-screen">
-      {/* Page content */}
-      {children}
+      {/* Top-left logo */}
+      {showLogo && (
+        <div className="absolute top-4 left-4 z-10">
+          <LogoLink className="h-8" />
+        </div>
+      )}
+      
+      {/* Page content with padding to avoid logo overlap */}
+      <div className={showLogo ? "pt-16" : ""}>
+        {children}
+      </div>
     </div>
   );
 }
