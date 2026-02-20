@@ -54,7 +54,7 @@ export default function Home() {
             Structured control over costs, performance, and profitability by connecting operational data with financial outcomes.
           </p>
 
-          <Link to={createPageUrl('Dashboard')}>
+          <Link to={createPageUrl('Onboarding')}>
             <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-8 py-6 text-lg shadow-lg shadow-cyan-500/25 transition-all duration-300 hover:scale-105">
               Enter Platform
               <ArrowRight className="ml-2 h-5 w-5" />
