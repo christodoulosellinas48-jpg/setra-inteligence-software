@@ -11,7 +11,7 @@ export default function Layout({ children, currentPageName }) {
       {showHeader && <AppHeader />}
       
       {/* Page content with padding to avoid header overlap */}
-      <div className={showHeader ? "pt-16" : ""}>
+      <div className={showHeader ? "pt-14" : ""}>
         {children}
       </div>
     </div>
