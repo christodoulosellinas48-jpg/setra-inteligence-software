@@ -57,6 +57,7 @@ import Onboarding from './pages/Onboarding';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Audit from './pages/Audit';
+import Bookkeeping from './pages/Bookkeeping';
 
 
 export const PAGES = {
@@ -70,6 +71,7 @@ export const PAGES = {
     "Reports": Reports,
     "Settings": Settings,
     "Audit": Audit,
+    "Bookkeeping": Bookkeeping,
 }
 
 export const pagesConfig = {
