@@ -157,7 +157,7 @@ function DashboardContent() {
         >
           <div className="mb-6">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/a667c0b9f_ChatGPTImage20202610_05_09.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/1b5f5ef6f_ChatGPTImage20202610_12_34.png"
               alt="SETRA"
               className="h-16 mx-auto"
             />

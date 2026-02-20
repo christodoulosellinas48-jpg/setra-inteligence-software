@@ -74,21 +74,12 @@ export default function Onboarding() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-8"
-          >
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/a667c0b9f_ChatGPTImage20202610_05_09.png"
-              alt="SETRA"
-              className="h-20 md:h-24 mx-auto"
-            />
-          </motion.div>
+          <div className="mb-8 flex justify-center">
+            <AnimatedLogo className="h-16 md:h-20" />
+          </div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Welcome to SETRA
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Welcome</span>
           </h1>
           
           <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-2">

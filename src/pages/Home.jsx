@@ -40,12 +40,8 @@ export default function Home() {
             <span className="text-sm text-cyan-300 font-medium">Operational & Financial Intelligence Platform</span>
           </motion.div>
 
-          <div className="mb-8">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/a667c0b9f_ChatGPTImage20202610_05_09.png"
-              alt="SETRA"
-              className="h-24 md:h-32 mx-auto"
-            />
+          <div className="mb-8 flex justify-center">
+            <AnimatedLogo className="h-20 md:h-24" />
           </div>
           
           <p className="text-2xl md:text-3xl text-cyan-400 font-medium mb-4">
