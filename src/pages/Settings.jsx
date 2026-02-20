@@ -84,7 +84,7 @@ function SettingsContent() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                <SettingsIcon className="w-6 h-6 text-emerald-500" />
+                <SettingsIcon className="w-6 h-6 text-rose-400" />
                 Settings
               </h1>
             </div>
@@ -120,8 +120,8 @@ function SettingsContent() {
         {currentBusiness && (
           <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-emerald-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-rose-400" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">Business Settings</h3>
@@ -171,7 +171,7 @@ function SettingsContent() {
               </div>
 
               {isOwner() && (
-                <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+                <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-lg shadow-rose-500/25">
                   {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Save Changes
                 </Button>

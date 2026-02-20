@@ -94,7 +94,7 @@ function ReportsContent() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <BarChart3 className="w-6 h-6 text-emerald-500" />
+                  <BarChart3 className="w-6 h-6 text-rose-400" />
                   Financial Reports
                 </h1>
                 <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
@@ -126,7 +126,7 @@ function ReportsContent() {
             <Button 
               onClick={saveSnapshot}
               disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white shadow-lg shadow-rose-500/25"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -195,7 +195,7 @@ function ReportsContent() {
                         {new Date(snapshot.period_start).toLocaleDateString()} - {new Date(snapshot.period_end).toLocaleDateString()}
                       </td>
                       <td className="py-3 px-4 text-slate-400 capitalize">{snapshot.period_type}</td>
-                      <td className="py-3 px-4 text-right text-emerald-400">€{(snapshot.monthly_revenue || 0).toLocaleString()}</td>
+                      <td className="py-3 px-4 text-right text-rose-400">€{(snapshot.monthly_revenue || 0).toLocaleString()}</td>
                       <td className={`py-3 px-4 text-right ${(snapshot.net_profit || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                         €{(snapshot.net_profit || 0).toLocaleString()}
                       </td>
