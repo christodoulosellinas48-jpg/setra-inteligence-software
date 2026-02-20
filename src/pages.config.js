@@ -59,6 +59,7 @@ import Invitations from './pages/Invitations';
 import Onboarding from './pages/Onboarding';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -79,4 +80,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Onboarding",
     Pages: PAGES,
+    Layout: __Layout,
 };
