@@ -18,6 +18,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [hasBusinesses, setHasBusinesses] = useState(false);
 
   useEffect(() => {
     checkUserStatus();
@@ -38,13 +39,9 @@ export default function Onboarding() {
         invitation_status: 'accepted'
       });
 
-      // If user has businesses, go directly to dashboard
-      if (ownedBusinesses.length > 0 || memberships.length > 0) {
-        navigate(createPageUrl('Dashboard'));
-      } else {
-        // New user - show onboarding
-        setLoading(false);
-      }
+      // Set hasBusinesses flag for conditional rendering
+      setHasBusinesses(ownedBusinesses.length > 0 || memberships.length > 0);
+      setLoading(false);
     } catch (error) {
       console.error('Error checking user status:', error);
       setLoading(false);
@@ -55,6 +52,85 @@ export default function Onboarding() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-cyan-500 animate-spin" />
+      </div>
+    );
+  }
+
+  // Show client area if user has businesses
+  if (hasBusinesses) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+
+        <div className="relative max-w-4xl mx-auto px-6 py-16 md:py-24">
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12 flex justify-center"
+          >
+            <AnimatedLogo className="h-16 md:h-20" />
+          </motion.div>
+
+          {/* Welcome Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Welcome to Your <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Personal Automation Hub</span>
+            </h1>
+            <p className="text-xl text-slate-400">
+              Your business intelligence at your fingertips
+            </p>
+          </motion.div>
+
+          {/* Navigation Menu */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto"
+          >
+            <Button
+              onClick={() => navigate(createPageUrl('Dashboard'))}
+              className="h-24 text-lg bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25"
+            >
+              <BarChart3 className="w-6 h-6 mr-3" />
+              Dashboard
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Budgeting'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <Target className="w-6 h-6 mr-3" />
+              Budget Planning
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Audit'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <Shield className="w-6 h-6 mr-3" />
+              Business Audit
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Reports'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <FileText className="w-6 h-6 mr-3" />
+              Reports
+            </Button>
+          </motion.div>
+        </div>
       </div>
     );
   }
