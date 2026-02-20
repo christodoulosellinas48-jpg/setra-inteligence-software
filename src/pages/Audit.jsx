@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-import AuditOverview from '../components/audit/AuditOverview';
-import PricingAudit from '../components/audit/PricingAudit';
-import FoodCostAudit from '../components/audit/FoodCostAudit';
-import MenuEngineeringAudit from '../components/audit/MenuEngineeringAudit';
-import LaborAudit from '../components/audit/LaborAudit';
-import ActionPlan from '../components/audit/ActionPlan';
+import AuditOverview from '../components/audit/AuditOverview.jsx';
+import PricingAudit from '../components/audit/PricingAudit.jsx';
+import FoodCostAudit from '../components/audit/FoodCostAudit.jsx';
+import MenuEngineeringAudit from '../components/audit/MenuEngineeringAudit.jsx';
+import LaborAudit from '../components/audit/LaborAudit.jsx';
+import ActionPlan from '../components/audit/ActionPlan.jsx';
 
 function AuditContent() {
   const navigate = useNavigate();
