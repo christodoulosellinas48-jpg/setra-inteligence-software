@@ -78,13 +78,17 @@ export default function Onboarding() {
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-6"
+            className="mb-8"
           >
-            <Building2 className="w-10 h-10 text-cyan-400" />
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/a667c0b9f_ChatGPTImage20202610_05_09.png"
+              alt="SETRA"
+              className="h-20 md:h-24 mx-auto"
+            />
           </motion.div>
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Welcome to <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">SETRA</span>
+            Welcome to SETRA
           </h1>
           
           <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-2">

@@ -155,8 +155,12 @@ function DashboardContent() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-10 h-10 text-cyan-400" />
+          <div className="mb-6">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/a667c0b9f_ChatGPTImage20202610_05_09.png"
+              alt="SETRA"
+              className="h-16 mx-auto"
+            />
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">Welcome to SETRA</h1>
           <p className="text-slate-400 mb-8">
