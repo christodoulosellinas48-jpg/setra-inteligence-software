@@ -58,6 +58,7 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Audit from './pages/Audit';
 import Bookkeeping from './pages/Bookkeeping';
+import Integrations from './pages/Integrations';
 
 
 export const PAGES = {
@@ -72,6 +73,7 @@ export const PAGES = {
     "Settings": Settings,
     "Audit": Audit,
     "Bookkeeping": Bookkeeping,
+    "Integrations": Integrations,
 }
 
 export const pagesConfig = {

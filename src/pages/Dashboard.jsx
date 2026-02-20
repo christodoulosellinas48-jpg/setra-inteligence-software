@@ -11,7 +11,7 @@ import {
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
   ChevronRight, RefreshCw, BarChart3, Wallet, LineChart,
-  Settings, Mail, Building2, Trash2, ClipboardCheck, Receipt
+  Settings, Mail, Building2, Trash2, ClipboardCheck, Receipt, Plug
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -248,6 +248,14 @@ function DashboardContent() {
               >
                 <Receipt className="w-4 h-4 mr-2" />
                 Bookkeeping
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate(createPageUrl('Integrations'))}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <Plug className="w-4 h-4 mr-2" />
+                Integrations
               </Button>
               {canEdit() && (
                 <Button 
