@@ -60,7 +60,7 @@ export default function ExportsTab({ businessId, business }) {
               <p className="text-sm text-slate-500">Full ledger + trial balance</p>
             </div>
           </div>
-          <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+          <Button className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-lg shadow-rose-500/25">
             <Download className="w-4 h-4 mr-2" />
             Generate Audit Pack
           </Button>

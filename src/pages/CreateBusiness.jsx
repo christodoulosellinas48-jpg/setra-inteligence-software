@@ -112,8 +112,8 @@ export default function CreateBusiness() {
 
         <Card className="bg-slate-900/50 border-slate-800 p-8 rounded-2xl">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-emerald-400" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-rose-400" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Create New Business</h1>
@@ -144,11 +144,11 @@ export default function CreateBusiness() {
                       onClick={() => setFormData({ ...formData, industry_group: bt.type })}
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSelected
-                          ? 'bg-emerald-500/10 border-emerald-500/50'
+                          ? 'bg-gradient-to-br from-rose-500/10 to-red-500/10 border-rose-500/50'
                           : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                       }`}
                     >
-                      <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
+                      <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-rose-400' : 'text-slate-400'}`} />
                       <p className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>{bt.title}</p>
                       <p className="text-xs text-slate-500">{bt.description}</p>
                     </button>
@@ -193,7 +193,7 @@ export default function CreateBusiness() {
             <Button
               onClick={handleCreate}
               disabled={!formData.name || !formData.industry_group || loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6"
+              className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white py-6 shadow-lg shadow-rose-500/25"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

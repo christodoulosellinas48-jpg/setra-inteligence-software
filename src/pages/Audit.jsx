@@ -43,8 +43,8 @@ function AuditContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl" />
       </div>
 
       <div className="relative max-w-7xl mx-auto p-6">
@@ -58,8 +58,8 @@ function AuditContent() {
         </Button>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
-            <ClipboardCheck className="w-6 h-6 text-purple-400" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center">
+            <ClipboardCheck className="w-6 h-6 text-rose-400" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">Profit Audit</h1>

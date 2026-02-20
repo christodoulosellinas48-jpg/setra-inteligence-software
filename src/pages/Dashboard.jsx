@@ -155,8 +155,8 @@ function DashboardContent() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-10 h-10 text-emerald-400" />
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center mx-auto mb-6">
+            <Building2 className="w-10 h-10 text-rose-400" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">Welcome to Ellinas THE SETTING</h1>
           <p className="text-slate-400 mb-8">
@@ -164,7 +164,7 @@ function DashboardContent() {
           </p>
           <Button 
             onClick={() => navigate(createPageUrl('CreateBusiness'))}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg"
+            className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white px-8 py-6 text-lg shadow-lg shadow-rose-500/25"
           >
             Create Your First Business
           </Button>
@@ -252,7 +252,7 @@ function DashboardContent() {
               {canEdit() && (
                 <Button 
                   onClick={() => setShowUploadModal(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white shadow-lg shadow-rose-500/25"
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Upload Expense

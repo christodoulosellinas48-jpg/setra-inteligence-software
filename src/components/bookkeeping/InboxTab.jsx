@@ -112,8 +112,8 @@ export default function InboxTab({ businessId }) {
       {/* Upload Card */}
       <Card className="bg-slate-900/50 border-slate-800 p-8">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-            <Upload className="w-8 h-8 text-emerald-400" />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center mx-auto mb-4">
+            <Upload className="w-8 h-8 text-rose-400" />
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">Upload Invoices & Receipts</h2>
           <p className="text-slate-400 mb-6">
@@ -121,7 +121,7 @@ export default function InboxTab({ businessId }) {
           </p>
           
           <label htmlFor="file-upload" className="cursor-pointer">
-            <Button disabled={uploading} className="bg-emerald-600 hover:bg-emerald-700" asChild>
+            <Button disabled={uploading} className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-lg shadow-rose-500/25" asChild>
               <span>
                 {uploading ? (
                   <>
