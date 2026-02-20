@@ -13,7 +13,13 @@ import {
   Shield,
   Zap,
   Target,
-  FileText
+  FileText,
+  LineChart,
+  Settings,
+  Receipt,
+  Plug,
+  ClipboardCheck,
+  Wallet
 } from 'lucide-react';
 
 export default function Onboarding() {
@@ -98,7 +104,7 @@ export default function Onboarding() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto"
           >
             <Button
               onClick={() => navigate(createPageUrl('Dashboard'))}
@@ -112,16 +118,16 @@ export default function Onboarding() {
               onClick={() => navigate(createPageUrl('Budgeting'))}
               className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
             >
-              <Target className="w-6 h-6 mr-3" />
-              Budget Planning
+              <Wallet className="w-6 h-6 mr-3" />
+              Budgeting
             </Button>
 
             <Button
-              onClick={() => navigate(createPageUrl('Audit'))}
+              onClick={() => navigate(createPageUrl('Forecasting'))}
               className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
             >
-              <Shield className="w-6 h-6 mr-3" />
-              Business Audit
+              <LineChart className="w-6 h-6 mr-3" />
+              Forecasting
             </Button>
 
             <Button
@@ -130,6 +136,38 @@ export default function Onboarding() {
             >
               <FileText className="w-6 h-6 mr-3" />
               Reports
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Audit'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <ClipboardCheck className="w-6 h-6 mr-3" />
+              Audit
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Bookkeeping'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <Receipt className="w-6 h-6 mr-3" />
+              Bookkeeping
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Integrations'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <Plug className="w-6 h-6 mr-3" />
+              Integrations
+            </Button>
+
+            <Button
+              onClick={() => navigate(createPageUrl('Settings'))}
+              className="h-24 text-lg bg-slate-800 hover:bg-slate-700 border border-slate-700"
+            >
+              <Settings className="w-6 h-6 mr-3" />
+              Settings
             </Button>
           </motion.div>
         </div>
