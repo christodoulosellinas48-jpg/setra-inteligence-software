@@ -51,7 +51,7 @@ export default function VATCenterTab({ businessId, business }) {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-white">VAT Periods</h3>
-          <Button className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-lg shadow-rose-500/25">
+          <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg shadow-cyan-500/25">
             <Calendar className="w-4 h-4 mr-2" />
             Create New Period
           </Button>

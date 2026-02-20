@@ -110,8 +110,8 @@ function BudgetingContent() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Wallet className="w-6 h-6 text-rose-400" />
-                  Budget Management
+                  <Wallet className="w-6 h-6 text-cyan-400" />
+                  Cost Control
                 </h1>
                 <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
               </div>
@@ -173,7 +173,7 @@ function BudgetingContent() {
                           {new Date(b.period_start).toLocaleDateString()} - {new Date(b.period_end).toLocaleDateString()}
                         </td>
                         <td className="py-3 px-4 text-slate-400 capitalize">{b.period_type}</td>
-                        <td className="py-3 px-4 text-right text-rose-400">€{(b.revenue_target || 0).toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right text-cyan-400">€{(b.revenue_target || 0).toLocaleString()}</td>
                         <td className="py-3 px-4 text-right text-slate-300">€{total.toLocaleString()}</td>
                       </tr>
                     );

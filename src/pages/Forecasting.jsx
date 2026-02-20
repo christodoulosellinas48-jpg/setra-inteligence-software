@@ -140,8 +140,8 @@ function ForecastingContent() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <LineChart className="w-6 h-6 text-rose-400" />
-                  Financial Forecasting
+                  <LineChart className="w-6 h-6 text-cyan-400" />
+                  Financial Intelligence
                 </h1>
                 <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
               </div>
@@ -265,7 +265,7 @@ function ForecastingContent() {
                       {p.period}
                       {!p.isProjection && <span className="ml-2 text-xs text-emerald-400">(Current)</span>}
                     </td>
-                    <td className="py-3 px-4 text-right text-rose-400">€{p.revenue.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-right text-cyan-400">€{p.revenue.toLocaleString()}</td>
                     <td className="py-3 px-4 text-right text-rose-400">€{p.expenses.toLocaleString()}</td>
                     <td className={`py-3 px-4 text-right ${p.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       €{p.profit.toLocaleString()}

@@ -82,8 +82,8 @@ function BookkeepingContent() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-rose-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+                <Receipt className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">Bookkeeping</h1>
@@ -108,31 +108,31 @@ function BookkeepingContent() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-7 gap-2 bg-slate-900/50 p-2 rounded-xl">
-            <TabsTrigger value="inbox" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="inbox" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <Inbox className="w-4 h-4 mr-2" />
               Inbox
             </TabsTrigger>
-            <TabsTrigger value="bank" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="bank" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <CreditCard className="w-4 h-4 mr-2" />
               Bank
             </TabsTrigger>
-            <TabsTrigger value="vat" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="vat" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <Percent className="w-4 h-4 mr-2" />
               VAT
             </TabsTrigger>
-            <TabsTrigger value="pl" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="pl" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <TrendingUp className="w-4 h-4 mr-2" />
               P&L
             </TabsTrigger>
-            <TabsTrigger value="payroll" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="payroll" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <Users className="w-4 h-4 mr-2" />
               Payroll
             </TabsTrigger>
-            <TabsTrigger value="accountant" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="accountant" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <UserCircle className="w-4 h-4 mr-2" />
               Accountant
             </TabsTrigger>
-            <TabsTrigger value="exports" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-600 data-[state=active]:to-red-600">
+            <TabsTrigger value="exports" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-blue-600">
               <FileText className="w-4 h-4 mr-2" />
               Exports
             </TabsTrigger>
