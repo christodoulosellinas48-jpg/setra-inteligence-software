@@ -11,7 +11,9 @@ import {
   RefreshCw,
   BarChart3,
   Shield,
-  Zap
+  Zap,
+  Target,
+  FileText
 } from 'lucide-react';
 
 export default function Onboarding() {
