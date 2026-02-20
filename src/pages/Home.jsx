@@ -12,6 +12,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AnimatedLogo from '@/components/ui/AnimatedLogo';
 
 export default function Home() {
   return (
