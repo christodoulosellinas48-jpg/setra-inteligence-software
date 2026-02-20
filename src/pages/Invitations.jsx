@@ -69,7 +69,7 @@ export default function Invitations() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                <Mail className="w-6 h-6 text-emerald-500" />
+                <Mail className="w-6 h-6 text-rose-400" />
                 Invitations
               </h1>
             </div>
@@ -96,8 +96,8 @@ export default function Invitations() {
                 <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-emerald-400" />
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-rose-400" />
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-white">
@@ -114,7 +114,7 @@ export default function Invitations() {
                     <div className="flex items-center gap-2">
                       <Button
                         onClick={() => respondToInvitation.mutate({ invitationId: invitation.id, accept: true })}
-                        className="bg-emerald-600 hover:bg-emerald-700"
+                        className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-lg shadow-rose-500/25"
                       >
                         <Check className="w-4 h-4 mr-2" />
                         Accept
