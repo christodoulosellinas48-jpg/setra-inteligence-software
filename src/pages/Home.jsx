@@ -193,12 +193,27 @@ export default function Home() {
                   <div className="w-56 h-56 mx-auto bg-[#8B4BFF] rounded-full" />
                 </div>
                 {/* Logo */}
-                <img 
+                <motion.img 
                   src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                   alt="SETRA 3D"
                   className="relative h-64 mx-auto opacity-90"
-                  style={{ 
-                    filter: "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
+                  animate={{
+                    filter: breathCount < 5 
+                      ? [
+                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))",
+                          "drop-shadow(0 0 60px rgba(123,59,255,1)) drop-shadow(0 0 30px rgba(168,85,247,0.8)) drop-shadow(0 0 15px rgba(192,132,252,0.6))",
+                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
+                        ]
+                      : [
+                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))",
+                          "drop-shadow(0 0 50px rgba(123,59,255,0.85)) drop-shadow(0 0 25px rgba(168,85,247,0.65)) drop-shadow(0 0 12px rgba(192,132,252,0.5))",
+                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
+                        ]
+                  }}
+                  transition={{
+                    duration: breathCount < 5 ? 0.8 : 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
                   }}
                 />
               </div>
