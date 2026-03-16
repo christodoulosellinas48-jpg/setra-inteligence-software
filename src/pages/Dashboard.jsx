@@ -156,8 +156,8 @@ function DashboardContent() {
 
   if (businessLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+      <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
       </div>
     );
   }
@@ -165,7 +165,7 @@ function DashboardContent() {
   // No business - show welcome screen
   if (!currentBusiness) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -184,7 +184,7 @@ function DashboardContent() {
           </p>
           <Button 
             onClick={() => navigate(createPageUrl('CreateBusiness'))}
-            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-8 py-6 text-lg shadow-lg shadow-cyan-500/25"
+            className="px-8 py-6 text-lg"
           >
             Create Your First Business
           </Button>
@@ -192,7 +192,8 @@ function DashboardContent() {
             <Button
               variant="outline"
               onClick={() => navigate(createPageUrl('Invitations'))}
-              className="mt-4 border-slate-700 text-slate-300"
+              variant="outline"
+              className="mt-4"
             >
               <Mail className="w-4 h-4 mr-2" />
               {pendingInvitations.length} Pending Invitation{pendingInvitations.length > 1 ? 's' : ''}
@@ -207,9 +208,9 @@ function DashboardContent() {
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness.currency] || '€';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-[#0B0B12]">
       {/* Header */}
-      <header className="border-b border-slate-800/50 backdrop-blur-sm sticky top-0 z-40 bg-slate-950/80">
+      <header className="border-b border-[#2A2A3A]/50 backdrop-blur-xl sticky top-0 z-40 bg-[#0B0B12]/80">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -223,6 +224,7 @@ function DashboardContent() {
                 <Button 
                   variant="outline"
                   onClick={() => navigate(createPageUrl('Invitations'))}
+                  variant="outline"
                   className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
                 >
                   <Mail className="w-4 h-4 mr-2" />
@@ -232,7 +234,7 @@ function DashboardContent() {
               {canEdit() && (
                 <Button 
                   onClick={() => setShowUploadModal(true)}
-                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25"
+
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Upload Expense
@@ -251,8 +253,8 @@ function DashboardContent() {
         <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                <Calculator className="w-5 h-5 text-blue-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center shadow-lg shadow-[#7B3BFF]/10">
+                <Calculator className="w-5 h-5 text-[#C084FC]" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">Financial Inputs</h2>

@@ -46,14 +46,20 @@ export default function SidebarLayout({ children }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen bg-slate-900/50 border-r border-slate-800/50 backdrop-blur-sm transition-all duration-300 z-50 flex flex-col',
+          'fixed left-0 top-0 h-screen bg-[#0B0B12]/95 border-r border-[#2A2A3A]/50 backdrop-blur-xl transition-all duration-300 z-50 flex flex-col shadow-2xl',
           collapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Logo */}
-        <div className="p-4 border-b border-slate-800/50">
+        <div className="p-4 border-b border-[#2A2A3A]/50">
           {collapsed ? (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 mx-auto" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7B3BFF] to-[#A855F7] mx-auto flex items-center justify-center shadow-lg shadow-[#7B3BFF]/30">
+              <img 
+                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/affa36d49_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
+                alt="S"
+                className="w-6 h-6"
+              />
+            </div>
           ) : (
             <LogoLink className="h-8" />
           )}
@@ -79,15 +85,15 @@ export default function SidebarLayout({ children }) {
         </nav>
 
         {/* Bottom Items */}
-        <div className="p-3 border-t border-slate-800/50 space-y-1">
+        <div className="p-3 border-t border-[#2A2A3A]/50 space-y-1">
           {bottomItems.map((item) => (
             <Button
               key={item.path}
               variant="ghost"
               onClick={() => navigate(item.path)}
               className={cn(
-                'w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50 transition-colors',
-                isActive(item.path) && 'bg-slate-800/70 text-white',
+                'w-full justify-start text-slate-400 hover:text-white hover:bg-[#2A2A3A]/50 transition-all duration-200',
+                isActive(item.path) && 'bg-gradient-to-r from-[#7B3BFF]/20 to-[#A855F7]/20 text-[#C084FC] border-l-2 border-[#7B3BFF]',
                 collapsed && 'justify-center px-0'
               )}
             >
@@ -98,12 +104,12 @@ export default function SidebarLayout({ children }) {
         </div>
 
         {/* Toggle Button */}
-        <div className="p-3 border-t border-slate-800/50">
+        <div className="p-3 border-t border-[#2A2A3A]/50">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full text-slate-400 hover:text-white hover:bg-slate-800/50"
+            className="w-full text-slate-400 hover:text-[#A855F7] hover:bg-[#2A2A3A]/50 transition-all duration-200"
           >
             {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </Button>

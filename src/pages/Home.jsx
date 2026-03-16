@@ -16,11 +16,12 @@ import AnimatedLogo from '@/components/ui/AnimatedLogo';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
+    <div className="min-h-screen bg-[#0B0B12] text-white overflow-hidden relative">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#7B3BFF]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-[#A855F7]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-[#C084FC]/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
@@ -35,26 +36,26 @@ export default function Home() {
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#7B3BFF]/10 border border-[#7B3BFF]/20 rounded-full mb-8 backdrop-blur-sm"
           >
-            <Zap className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm text-cyan-300 font-medium">Operational & Financial Intelligence Platform</span>
+            <Zap className="w-4 h-4 text-[#C084FC]" />
+            <span className="text-sm text-[#C084FC] font-medium">AI-Powered • Secure • Fast • Scalable</span>
           </motion.div>
 
           <div className="mb-8 flex justify-center">
             <AnimatedLogo className="h-20 md:h-24" />
           </div>
           
-          <p className="text-2xl md:text-3xl text-cyan-400 font-medium mb-4">
-            Where Operations Meet Profit.
+          <p className="text-2xl md:text-3xl text-[#C084FC] font-medium mb-4">
+            Next-Level Business Intelligence
           </p>
           
           <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Structured control over costs, performance, and profitability by connecting operational data with financial outcomes.
+            Transform your business with AI-powered financial control, automated bookkeeping, and real-time operational insights.
           </p>
 
           <Link to={createPageUrl('Onboarding')}>
-            <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-8 py-6 text-lg shadow-lg shadow-cyan-500/25 transition-all duration-300 hover:scale-105">
+            <Button className="px-8 py-6 text-lg">
               Enter Platform
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -136,14 +137,14 @@ function FeatureCard({ icon: Icon, title, description, delay }) {
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       className="group relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-cyan-500/30 rounded-2xl p-6 h-full transition-all duration-300">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-          <Icon className="w-6 h-6 text-cyan-400" />
+      <div className="relative bg-[#0B0B12]/80 backdrop-blur-sm border border-[#2A2A3A] hover:border-[#7B3BFF]/50 rounded-2xl p-6 h-full transition-all duration-300">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[#7B3BFF]/10">
+          <Icon className="w-6 h-6 text-[#C084FC]" />
         </div>
         
-        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
+        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-[#C084FC] transition-colors">
           {title}
         </h3>
         
