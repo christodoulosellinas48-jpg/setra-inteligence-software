@@ -24,6 +24,8 @@ import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 // Lazy load heavy components
 const SensitivitySlider = lazy(() => import('@/components/dashboard/SensitivitySlider'));
 const ExpenseUploadModal = lazy(() => import('@/components/dashboard/ExpenseUploadModal'));
+const BudgetVsActualMini = lazy(() => import('@/components/dashboard/BudgetVsActualMini'));
+const CashFlowMiniChart = lazy(() => import('@/components/dashboard/CashFlowMiniChart'));
 
 import { 
   calculateFinancials, 
@@ -62,6 +64,21 @@ function DashboardContent() {
     queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-created_date', 5),
     enabled: !!currentBusiness && shouldLoadExpenses,
     staleTime: 2 * 60 * 1000 // 2 minutes
+  });
+
+  // Fetch budget and snapshots for charts
+  const { data: budgets = [] } = useQuery({
+    queryKey: ['budgets', currentBusiness?.id],
+    queryFn: () => base44.entities.Budget.filter({ business_id: currentBusiness.id }, '-created_date', 1),
+    enabled: !!currentBusiness,
+    staleTime: 5 * 60 * 1000
+  });
+
+  const { data: snapshots = [] } = useQuery({
+    queryKey: ['financialSnapshots', currentBusiness?.id],
+    queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start', 10),
+    enabled: !!currentBusiness,
+    staleTime: 5 * 60 * 1000
   });
 
   // Load expenses after a short delay or when user scrolls
@@ -375,6 +392,23 @@ function DashboardContent() {
             />
           </div>
         )}
+
+        {/* Budget & Cash Flow Charts */}
+        <Suspense fallback={
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" />
+            </Card>
+            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" />
+            </Card>
+          </div>
+        }>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <BudgetVsActualMini budget={budgets[0]} actual={currentBusiness} />
+            <CashFlowMiniChart currentBusiness={currentBusiness} snapshots={snapshots} />
+          </div>
+        </Suspense>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
