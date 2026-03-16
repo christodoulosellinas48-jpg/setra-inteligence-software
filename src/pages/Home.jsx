@@ -14,6 +14,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [typedText1, setTypedText1] = useState('');
   const [typedText2, setTypedText2] = useState('');
+  const [breathCount, setBreathCount] = useState(0);
   const text1 = 'Transforming Financial Chaos';
   const text2 = 'into Strategic Control';
 
@@ -45,6 +46,15 @@ export default function Home() {
     }, text1.length * 50 + 200);
     return () => clearTimeout(delay);
   }, []);
+
+  useEffect(() => {
+    if (breathCount < 5) {
+      const timer = setTimeout(() => {
+        setBreathCount(prev => prev + 1);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [breathCount]);
 
   return (
     <div className="min-h-screen bg-[#0A0A14] relative overflow-hidden">
@@ -79,12 +89,29 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-3">
-              <img 
-                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
-                alt="SETRA"
-                className="h-8"
-                style={{ filter: "drop-shadow(0 0 10px rgba(123,59,255,0.5))" }}
-              />
+            <motion.img 
+              src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
+              alt="SETRA"
+              className="h-8"
+              animate={{
+                filter: breathCount < 5 
+                  ? [
+                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))",
+                      "drop-shadow(0 0 25px rgba(123,59,255,0.9))",
+                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))"
+                    ]
+                  : [
+                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))",
+                      "drop-shadow(0 0 20px rgba(123,59,255,0.7))",
+                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))"
+                    ]
+              }}
+              transition={{
+                duration: breathCount < 5 ? 0.8 : 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
               <span className="text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
                 SETRA
               </span>
