@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -10,8 +10,7 @@ import { debounce } from 'lodash';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw, BarChart3, Wallet, LineChart,
-  Settings, Mail, Building2, Trash2, ClipboardCheck, Receipt, Plug
+  ChevronRight, RefreshCw, Mail, Building2, Trash2
 } from 'lucide-react';
 
 import MetricCard from '@/components/dashboard/MetricCard';
