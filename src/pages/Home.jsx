@@ -43,11 +43,17 @@ export default function Home() {
           </motion.div>
 
           <div className="mb-8 flex justify-center">
-            <AnimatedLogo className="h-20 md:h-24" />
+            <div className="flex flex-col items-center gap-3">
+              <AnimatedLogo className="h-20 md:h-24" />
+              <div className="flex flex-col items-center">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">SETRA</h1>
+                <p className="text-sm text-slate-400 uppercase tracking-wider mt-1">Infrastructure Platform</p>
+              </div>
+            </div>
           </div>
           
           <p className="text-2xl md:text-3xl text-[#C084FC] font-medium mb-4">
-            Next-Level Business Intelligence
+            AI Command Center
           </p>
           
           <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">

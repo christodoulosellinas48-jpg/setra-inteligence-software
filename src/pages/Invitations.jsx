@@ -48,15 +48,15 @@ export default function Invitations() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+      <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <header className="border-b border-slate-800/50 backdrop-blur-sm sticky top-0 z-40 bg-slate-950/80">
+    <div className="min-h-screen bg-[#0B0B12]">
+      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4">
             <Button 

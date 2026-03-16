@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import LogoLink from '@/components/ui/LogoLink';
+import BottomLogoLink from '@/components/ui/BottomLogoLink';
+import UserMenu from '@/components/ui/UserMenu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -87,6 +89,7 @@ export default function SidebarLayout({ children }) {
 
         {/* Bottom Items */}
         <div className="p-3 border-t border-white/5 space-y-1">
+          <BottomLogoLink collapsed={collapsed} />
           {bottomItems.map((item) => (
             <Button
               key={item.path}
@@ -124,6 +127,10 @@ export default function SidebarLayout({ children }) {
           collapsed ? 'ml-16' : 'ml-64'
         )}
       >
+        {/* Top Header with User Menu */}
+        <header className="sticky top-0 z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-end px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
+          <UserMenu />
+        </header>
         {children}
       </main>
     </div>

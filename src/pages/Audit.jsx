@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BusinessProvider, useBusiness } from '../components/business/BusinessContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { ClipboardCheck, ArrowLeft } from 'lucide-react';
+import { ClipboardCheck, ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -21,15 +21,15 @@ function AuditContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
       </div>
     );
   }
 
   if (!currentBusiness) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center p-6">
         <Card className="bg-slate-900/50 border-slate-800 p-8 text-center">
           <p className="text-slate-400 mb-4">No business selected</p>
           <Button onClick={() => navigate(createPageUrl('Dashboard'))}>
@@ -41,11 +41,7 @@ function AuditContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-[#0B0B12]">
 
       <div className="relative max-w-7xl mx-auto p-6">
         <Button

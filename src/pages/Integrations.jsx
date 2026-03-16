@@ -201,15 +201,9 @@ function IntegrationsContent() {
   const popularIntegrations = INTEGRATIONS.filter(i => i.popular);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen bg-[#0B0B12]">
       {/* Header */}
-      <header className="border-b border-slate-800/50 backdrop-blur-sm sticky top-0 z-40 bg-slate-950/80">
+      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
