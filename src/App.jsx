@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ConsolidatedView from './pages/ConsolidatedView';
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import Home from './pages/Home';
+import Features from './pages/Features';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/Home" element={<Home />} />
+      <Route path="/Features" element={<Features />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}

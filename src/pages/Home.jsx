@@ -57,7 +57,12 @@ export default function Home() {
               </span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm">
-              <a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a>
+              <button 
+                onClick={() => navigate(createPageUrl('Features'))}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                Features
+              </button>
               <a href="#pricing" className="text-slate-400 hover:text-white transition-colors">Pricing</a>
               <a href="#resources" className="text-slate-400 hover:text-white transition-colors">Resources</a>
             </div>
