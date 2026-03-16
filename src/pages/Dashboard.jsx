@@ -230,54 +230,6 @@ function DashboardContent() {
                   {pendingInvitations.length}
                 </Button>
               )}
-              <Button 
-                variant="outline"
-                onClick={() => navigate(createPageUrl('Budgeting'))}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Budget
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate(createPageUrl('Forecasting'))}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                <LineChart className="w-4 h-4 mr-2" />
-                Forecast
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate(createPageUrl('Reports'))}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Reports
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate(createPageUrl('Audit'))}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                <ClipboardCheck className="w-4 h-4 mr-2" />
-                Audit
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate(createPageUrl('Bookkeeping'))}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                <Receipt className="w-4 h-4 mr-2" />
-                Bookkeeping
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate(createPageUrl('Integrations'))}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                <Plug className="w-4 h-4 mr-2" />
-                Integrations
-              </Button>
               {canEdit() && (
                 <Button 
                   onClick={() => setShowUploadModal(true)}
@@ -287,13 +239,6 @@ function DashboardContent() {
                   Upload Expense
                 </Button>
               )}
-              <Button 
-                variant="ghost"
-                onClick={() => navigate(createPageUrl('Settings'))}
-                className="text-slate-400 hover:text-white"
-              >
-                <Settings className="w-5 h-5" />
-              </Button>
             </div>
           </div>
         </div>

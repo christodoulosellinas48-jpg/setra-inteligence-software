@@ -1,19 +1,17 @@
 import React from 'react';
-import AppHeader from '@/components/ui/AppHeader';
+import SidebarLayout from '@/components/layout/SidebarLayout';
 
 export default function Layout({ children, currentPageName }) {
-  // Don't show header on Home and Onboarding pages
-  const showHeader = !['Home', 'Onboarding'].includes(currentPageName);
+  // Don't show sidebar on Home and Onboarding pages
+  const showSidebar = !['Home', 'Onboarding'].includes(currentPageName);
   
-  return (
+  return showSidebar ? (
+    <SidebarLayout>
+      {children}
+    </SidebarLayout>
+  ) : (
     <div className="min-h-screen">
-      {/* Premium header with logo and navigation */}
-      {showHeader && <AppHeader />}
-      
-      {/* Page content with padding to avoid header overlap */}
-      <div className={showHeader ? "pt-14" : ""}>
-        {children}
-      </div>
+      {children}
     </div>
   );
 }
