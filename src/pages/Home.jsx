@@ -111,17 +111,23 @@ export default function Home() {
               className="relative flex items-center justify-center"
             >
               <div className="relative">
-                {/* Hexagon glow */}
-                <div className="absolute inset-0 blur-3xl opacity-50">
-                  <div className="w-80 h-80 mx-auto bg-gradient-to-br from-[#7B3BFF] to-[#A855F7] rounded-full" />
+                {/* Hexagon glow layers */}
+                <div className="absolute inset-0 blur-3xl opacity-40">
+                  <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#7B3BFF] to-[#A855F7] rounded-full" />
+                </div>
+                <div className="absolute inset-0 blur-2xl opacity-30">
+                  <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#A855F7] to-[#C084FC] rounded-full" />
+                </div>
+                <div className="absolute inset-0 blur-xl opacity-20">
+                  <div className="w-64 h-64 mx-auto bg-[#7B3BFF] rounded-full" />
                 </div>
                 {/* Logo */}
                 <img 
                   src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                   alt="SETRA 3D"
-                  className="relative h-80 mx-auto"
+                  className="relative h-64 mx-auto opacity-90"
                   style={{ 
-                    filter: "drop-shadow(0 0 60px rgba(123,59,255,0.8)) drop-shadow(0 0 30px rgba(168,85,247,0.6))"
+                    filter: "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
                   }}
                 />
               </div>
