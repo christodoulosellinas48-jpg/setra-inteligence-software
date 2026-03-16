@@ -152,9 +152,25 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-center mt-16"
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-              AI Platform for Business Operations
-            </h1>
+            <motion.h1 
+              className="text-5xl md:text-6xl font-bold mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.6 }}
+            >
+              <span className="bg-gradient-to-r from-white via-[#E9D5FF] to-white bg-clip-text text-transparent tracking-tight">
+                Transforming Financial Chaos
+              </span>
+              <br />
+              <motion.span 
+                className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.9 }}
+              >
+                into Strategic Control
+              </motion.span>
+            </motion.h1>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
               Fine-tuned AI engine to optimize and automate your business processes
             </p>
