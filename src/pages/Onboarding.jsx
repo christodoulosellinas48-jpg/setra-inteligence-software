@@ -74,14 +74,14 @@ export default function Onboarding() {
           <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-[#A855F7]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
-        <div className="relative max-w-4xl mx-auto px-6 py-16 md:py-24">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12 flex justify-center"
+            className="mb-8 sm:mb-12 flex justify-center"
           >
-            <AnimatedLogo className="h-16 md:h-20" />
+            <AnimatedLogo className="h-12 sm:h-16 md:h-20" />
           </motion.div>
 
           {/* Welcome Section */}
@@ -91,10 +91,10 @@ export default function Onboarding() {
             transition={{ delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
               Welcome to Your <span className="bg-gradient-to-r from-[#7B3BFF] to-[#C084FC] bg-clip-text text-transparent">Command Center</span>
             </h1>
-            <p className="text-xl text-slate-400">
+            <p className="text-base sm:text-xl text-slate-400">
               AI-powered business intelligence at your fingertips
             </p>
           </motion.div>
@@ -108,9 +108,9 @@ export default function Onboarding() {
           >
             <Button
               onClick={() => navigate(createPageUrl('Dashboard'))}
-              className="h-24 text-lg"
+              className="h-20 sm:h-24 text-base sm:text-lg"
             >
-              <BarChart3 className="w-6 h-6 mr-3" />
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
               Dashboard
             </Button>
 
@@ -190,7 +190,7 @@ export default function Onboarding() {
         <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-[#A855F7]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -198,19 +198,19 @@ export default function Onboarding() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <div className="mb-8 flex justify-center">
-            <AnimatedLogo className="h-16 md:h-20" />
+          <div className="mb-6 sm:mb-8 flex justify-center">
+            <AnimatedLogo className="h-12 sm:h-16 md:h-20" />
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
             <span className="bg-gradient-to-r from-[#7B3BFF] to-[#C084FC] bg-clip-text text-transparent">Welcome to SETRA</span>
           </h1>
           
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-2">
+          <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-2 px-4">
             Where Operations Meet Profit
           </p>
           
-          <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-500 max-w-2xl mx-auto px-4">
             Let's set up your business and unlock operational & financial intelligence
           </p>
         </motion.div>
@@ -222,12 +222,12 @@ export default function Onboarding() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
         >
-          <div className="bg-[#0B0B12]/80 backdrop-blur-sm border border-[#2A2A3A] rounded-2xl p-6 hover:border-[#7B3BFF]/50 transition-all duration-300">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center mb-4 shadow-lg shadow-[#7B3BFF]/10">
-              <BarChart3 className="w-6 h-6 text-[#C084FC]" />
+          <div className="bg-[#0B0B12]/80 backdrop-blur-sm border border-[#2A2A3A] rounded-2xl p-4 sm:p-6 hover:border-[#7B3BFF]/50 transition-all duration-300">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center mb-3 sm:mb-4 shadow-lg shadow-[#7B3BFF]/10">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-[#C084FC]" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Real-Time Intelligence</h3>
-            <p className="text-slate-400 text-sm">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-2">Real-Time Intelligence</h3>
+            <p className="text-slate-400 text-xs sm:text-sm">
               Monitor costs, margins, and performance with enterprise-grade analytics
             </p>
           </div>
@@ -260,17 +260,17 @@ export default function Onboarding() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="text-center"
         >
-          <div className="bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 border border-[#7B3BFF]/20 rounded-2xl p-8 max-w-2xl mx-auto backdrop-blur-sm">
-            <h2 className="text-2xl font-bold text-white mb-4">Ready to get started?</h2>
-            <p className="text-slate-400 mb-6">
+          <div className="bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 border border-[#7B3BFF]/20 rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto backdrop-blur-sm">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Ready to get started?</h2>
+            <p className="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6">
               Create your first business profile to unlock SETRA's AI-powered intelligence platform
             </p>
             <Button
               onClick={() => navigate(createPageUrl('CreateBusiness'))}
-              className="px-8 py-6 text-lg"
+              className="w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
             >
               Create Your Business
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </motion.div>

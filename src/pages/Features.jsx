@@ -192,29 +192,30 @@ export default function Features() {
 
       {/* Navigation */}
       <nav className="relative z-50 border-b border-white/5 backdrop-blur-xl bg-[#0A0A14]/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div 
             onClick={() => navigate(createPageUrl('Home'))}
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer"
           >
             <img 
               src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
               alt="SETRA"
-              className="h-8"
+              className="h-6 sm:h-8"
               style={{ filter: "drop-shadow(0 0 10px rgba(123,59,255,0.5))" }}
             />
-            <span className="text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
+            <span className="text-lg sm:text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
               SETRA
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button 
               variant="outline"
               onClick={() => navigate(createPageUrl('Home'))}
+              className="hidden sm:flex"
             >
               Back to Home
             </Button>
-            <Button onClick={() => navigate(createPageUrl('Dashboard'))}>
+            <Button onClick={() => navigate(createPageUrl('Dashboard'))} size="sm" className="sm:size-default">
               Client Area
             </Button>
           </div>
@@ -222,20 +223,20 @@ export default function Features() {
       </nav>
 
       {/* Hero */}
-      <section className="relative py-20 px-6">
+      <section className="relative py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6">
               Everything You Need to{' '}
               <span className="bg-gradient-to-r from-[#7B3BFF] to-[#C084FC] bg-clip-text text-transparent">
                 Run Your Business
               </span>
             </h1>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+            <p className="text-base sm:text-xl text-slate-400 max-w-3xl mx-auto px-4">
               SETRA combines powerful financial tools, AI-driven insights, and automation 
               to give you complete control over your hospitality business operations
             </p>
@@ -244,9 +245,9 @@ export default function Features() {
       </section>
 
       {/* Features Grid */}
-      <section className="relative py-12 px-6 pb-32">
+      <section className="relative py-8 sm:py-12 px-4 sm:px-6 pb-20 sm:pb-32">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -255,26 +256,26 @@ export default function Features() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group">
+                <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group">
                   {/* Icon */}
-                  <div className="relative mb-6">
-                    <div className="w-16 h-16 relative">
+                  <div className="relative mb-4 sm:mb-6">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 relative">
                       <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-opacity`} />
                       <div className={`relative w-full h-full bg-gradient-to-br ${feature.gradient} opacity-10 rounded-2xl flex items-center justify-center border border-[#7B3BFF]/30 group-hover:scale-110 transition-transform`}>
-                        <feature.icon className="w-8 h-8 text-[#E9D5FF]" />
+                        <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#E9D5FF]" />
                       </div>
                     </div>
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
-                  <p className="text-slate-400 mb-6">{feature.description}</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6">{feature.description}</p>
 
                   {/* Details List */}
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5 sm:space-y-2">
                     {feature.details.map((detail, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-500">
-                        <CheckCircle2 className="w-4 h-4 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
+                      <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-500">
+                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
                         <span>{detail}</span>
                       </li>
                     ))}
@@ -287,7 +288,7 @@ export default function Features() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-20 px-6 border-t border-white/5">
+      <section className="relative py-12 sm:py-20 px-4 sm:px-6 border-t border-white/5">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -295,24 +296,24 @@ export default function Features() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
               Ready to Transform Your Business?
             </h2>
-            <p className="text-lg text-slate-400 mb-8">
+            <p className="text-base sm:text-lg text-slate-400 mb-6 sm:mb-8 px-4">
               Join hundreds of hospitality businesses already using SETRA
             </p>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
               <Button 
                 onClick={() => navigate(createPageUrl('Onboarding'))}
-                className="px-8 py-6 text-lg"
+                className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg"
               >
                 Start Free Trial
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button 
                 variant="outline"
                 onClick={() => navigate(createPageUrl('Dashboard'))}
-                className="px-8 py-6 text-lg"
+                className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg"
               >
                 Client Login
               </Button>
