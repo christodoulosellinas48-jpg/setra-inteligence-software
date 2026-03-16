@@ -12,10 +12,10 @@ export default function LogoLink({ className = "h-10" }) {
         style={{ filter: "drop-shadow(0 0 8px rgba(123,59,255,0.3))" }}
       />
       <div className="flex flex-col">
-        <span className="text-xl font-bold text-white group-hover:text-[#C084FC] transition-colors tracking-wider" style={{ fontFamily: 'monospace, sans-serif', letterSpacing: '0.15em' }}>
+        <span className="text-lg font-bold text-white group-hover:text-[#C084FC] transition-colors tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
           SETRA
         </span>
-        <span className="text-xs text-slate-400 uppercase tracking-wider -mt-0.5">
+        <span className="text-xs text-slate-400 uppercase tracking-wider -mt-1">
           Infrastructure Platform
         </span>
       </div>
