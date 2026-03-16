@@ -71,6 +71,12 @@ export default function Home() {
               Start Free
             </Button>
             <Button variant="outline">Book Demo</Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate(createPageUrl('Dashboard'))}
+            >
+              Client Area
+            </Button>
           </div>
         </div>
       </nav>
@@ -112,13 +118,13 @@ export default function Home() {
             >
               <div className="relative">
                 {/* Hexagon glow layers */}
-                <div className="absolute inset-0 blur-3xl opacity-40">
+                <div className="absolute inset-0 blur-3xl opacity-25">
                   <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#7B3BFF] to-[#A855F7] rounded-full" />
                 </div>
-                <div className="absolute inset-0 blur-2xl opacity-30">
+                <div className="absolute inset-0 blur-2xl opacity-20">
                   <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#A855F7] to-[#C084FC] rounded-full" />
                 </div>
-                <div className="absolute inset-0 blur-xl opacity-20">
+                <div className="absolute inset-0 blur-xl opacity-15">
                   <div className="w-64 h-64 mx-auto bg-[#7B3BFF] rounded-full" />
                 </div>
                 {/* Logo */}
