@@ -110,10 +110,9 @@ export default function Pricing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Discover Your{' '}
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               <span className="bg-gradient-to-r from-[#7B3BFF] to-[#C084FC] bg-clip-text text-transparent">
-                Needs
+                Pricing
               </span>
             </h1>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
