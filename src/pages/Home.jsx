@@ -114,7 +114,12 @@ export default function Home() {
               >
                 Features
               </button>
-              <a href="#pricing" className="text-slate-400 hover:text-white transition-colors">Pricing</a>
+              <button 
+                onClick={() => navigate(createPageUrl('Pricing'))}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                Pricing
+              </button>
               <a href="#resources" className="text-slate-400 hover:text-white transition-colors">Resources</a>
             </div>
           </div>
