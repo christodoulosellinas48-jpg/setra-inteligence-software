@@ -73,29 +73,30 @@ export default function Pricing() {
 
       {/* Navigation */}
       <nav className="relative z-50 border-b border-white/5 backdrop-blur-xl bg-[#0A0A14]/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div 
             onClick={() => navigate(createPageUrl('Home'))}
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer"
           >
             <img 
               src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
               alt="SETRA"
-              className="h-8"
+              className="h-6 sm:h-8"
               style={{ filter: "drop-shadow(0 0 10px rgba(123,59,255,0.5))" }}
             />
-            <span className="text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
+            <span className="text-lg sm:text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
               SETRA
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button 
               variant="outline"
               onClick={() => navigate(createPageUrl('Home'))}
+              className="hidden sm:flex"
             >
               Back to Home
             </Button>
-            <Button onClick={() => navigate(createPageUrl('Dashboard'))}>
+            <Button onClick={() => navigate(createPageUrl('Dashboard'))} size="sm" className="sm:size-default">
               Client Area
             </Button>
           </div>
@@ -103,19 +104,19 @@ export default function Pricing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative py-20 px-6">
+      <section className="relative py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6">
               <span className="bg-gradient-to-r from-[#7B3BFF] to-[#C084FC] bg-clip-text text-transparent">
                 Pricing
               </span>
             </h1>
-            <p className="text-xl text-slate-400 max-w-3xl mx-auto mb-12">
+            <p className="text-base sm:text-xl text-slate-400 max-w-3xl mx-auto mb-8 sm:mb-12 px-4">
               Choose the perfect plan to transform your hospitality business operations
             </p>
           </motion.div>
@@ -123,9 +124,9 @@ export default function Pricing() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="relative py-12 px-6 pb-32">
+      <section className="relative py-8 sm:py-12 px-4 sm:px-6 pb-20 sm:pb-32">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {plans.map((plan, index) => {
               const Icon = plan.icon;
               return (
@@ -135,7 +136,7 @@ export default function Pricing() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.15 }}
                 >
-                  <Card className={`bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group relative ${plan.popular ? 'ring-2 ring-[#7B3BFF]/50' : ''}`}>
+                  <Card className={`bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group relative ${plan.popular ? 'ring-2 ring-[#7B3BFF]/50' : ''}`}>
                     {plan.popular && (
                       <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                         <div className="bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white text-xs font-bold px-4 py-1 rounded-full">
@@ -155,19 +156,19 @@ export default function Pricing() {
                     </div>
 
                     {/* Plan Name & Price */}
-                    <div className="text-center mb-8">
-                      <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                    <div className="text-center mb-6 sm:mb-8">
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">{plan.name}</h3>
                       <div className="flex items-baseline justify-center gap-2">
-                        <span className="text-5xl font-bold text-white">${plan.price}</span>
-                        <span className="text-slate-400">/month</span>
+                        <span className="text-4xl sm:text-5xl font-bold text-white">${plan.price}</span>
+                        <span className="text-slate-400 text-sm sm:text-base">/month</span>
                       </div>
                     </div>
 
                     {/* Features */}
-                    <ul className="space-y-4 mb-8">
+                    <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
-                          <Check className="w-5 h-5 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
+                        <li key={i} className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm text-slate-300">
+                          <Check className="w-4 h-4 sm:w-5 sm:h-5 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
                           <span>{feature}</span>
                         </li>
                       ))}
@@ -190,7 +191,7 @@ export default function Pricing() {
       </section>
 
       {/* FAQ or Additional Info Section */}
-      <section className="relative py-20 px-6 border-t border-white/5">
+      <section className="relative py-12 sm:py-20 px-4 sm:px-6 border-t border-white/5">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -198,17 +199,17 @@ export default function Pricing() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">
               Still have questions?
             </h2>
-            <p className="text-lg text-slate-400 mb-8">
+            <p className="text-base sm:text-lg text-slate-400 mb-6 sm:mb-8 px-4">
               Our team is here to help you choose the right plan for your business
             </p>
-            <div className="flex items-center justify-center gap-4">
-              <Button variant="outline">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
+              <Button variant="outline" className="w-full sm:w-auto">
                 Contact Sales
               </Button>
-              <Button onClick={() => navigate(createPageUrl('Features'))}>
+              <Button onClick={() => navigate(createPageUrl('Features'))} className="w-full sm:w-auto">
                 View All Features
               </Button>
             </div>
