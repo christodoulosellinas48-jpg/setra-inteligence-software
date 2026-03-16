@@ -63,22 +63,13 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#1a0f2e] via-[#0A0A14] to-[#0A0A14]" />
         {/* Particle stars */}
         {[...Array(50)].map((_, i) => (
-          <motion.div
+          <div
             key={i}
             className="absolute w-1 h-1 bg-purple-400 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               opacity: Math.random() * 0.5 + 0.2
-            }}
-            animate={{
-              opacity: [0.2, 0.8, 0.2],
-              scale: [1, 1.5, 1]
-            }}
-            transition={{
-              duration: Math.random() * 3 + 2,
-              repeat: Infinity,
-              delay: Math.random() * 2
             }}
           />
         ))}
