@@ -270,7 +270,7 @@ export default function Features() {
                     <div className="w-16 h-16 relative">
                       <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-opacity`} />
                       <div className={`relative w-full h-full bg-gradient-to-br ${feature.gradient} opacity-10 rounded-2xl flex items-center justify-center border border-[#7B3BFF]/30 group-hover:scale-110 transition-transform`}>
-                        <feature.icon className="w-8 h-8 text-[#C084FC]" />
+                        <feature.icon className="w-8 h-8 text-[#E9D5FF]" />
                       </div>
                     </div>
                   </div>
