@@ -211,7 +211,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-[#0B0B12]">
       {/* Header */}
-      <header className="border-b border-[#2A2A3A]/50 backdrop-blur-xl sticky top-0 z-40 bg-[#0B0B12]/80">
+      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -251,7 +251,7 @@ function DashboardContent() {
         {financials && <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />}
 
         {/* Financial Inputs Section */}
-        <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+        <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center shadow-lg shadow-[#7B3BFF]/10">

@@ -90,10 +90,10 @@ export default function CreateBusiness() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center p-6">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#7B3BFF]/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-[#A855F7]/8 rounded-full blur-[120px]" />
       </div>
 
       <motion.div
@@ -110,7 +110,7 @@ export default function CreateBusiness() {
           Back to Dashboard
         </Button>
 
-        <Card className="bg-slate-900/50 border-slate-800 p-8 rounded-2xl">
+        <Card className="bg-[#151528]/80 border-white/5 p-8 rounded-2xl backdrop-blur-xl">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
               <Building2 className="w-6 h-6 text-cyan-400" />

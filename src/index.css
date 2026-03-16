@@ -4,38 +4,38 @@
 
 @layer base {
   :root {
-    --background: 264 85% 3.5%;
+    --background: 240 20% 4%;
     --foreground: 0 0% 100%;
-    --card: 264 45% 8%;
+    --card: 240 15% 8.5%;
     --card-foreground: 0 0% 100%;
-    --popover: 264 45% 8%;
+    --popover: 240 15% 8.5%;
     --popover-foreground: 0 0% 100%;
     --primary: 264 93% 62%;
     --primary-foreground: 0 0% 100%;
     --secondary: 264 70% 75%;
     --secondary-foreground: 264 85% 5%;
-    --muted: 264 30% 15%;
+    --muted: 240 15% 12%;
     --muted-foreground: 264 10% 60%;
     --accent: 264 93% 62%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 264 40% 18%;
-    --input: 264 40% 18%;
+    --border: 240 20% 15%;
+    --input: 240 20% 15%;
     --ring: 264 93% 62%;
     --chart-1: 264 93% 62%;
     --chart-2: 264 70% 75%;
     --chart-3: 280 65% 82%;
     --chart-4: 250 80% 70%;
     --chart-5: 270 75% 65%;
-    --radius: 1rem;
-    --sidebar-background: 264 60% 6%;
+    --radius: 0.875rem;
+    --sidebar-background: 240 20% 4%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 264 93% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 264 50% 12%;
+    --sidebar-accent: 240 15% 10%;
     --sidebar-accent-foreground: 264 93% 62%;
-    --sidebar-border: 264 40% 18%;
+    --sidebar-border: 240 20% 15%;
     --sidebar-ring: 264 93% 62%;
   }
 
@@ -83,6 +83,10 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#0B0B12] text-foreground;
+    background-image: 
+      radial-gradient(at 20% 30%, rgba(123, 59, 255, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 70%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+      radial-gradient(at 40% 80%, rgba(192, 132, 252, 0.05) 0px, transparent 50%);
   }
 }

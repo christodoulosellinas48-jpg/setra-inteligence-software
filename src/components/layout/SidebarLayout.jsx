@@ -46,12 +46,12 @@ export default function SidebarLayout({ children }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen bg-[#0B0B12]/95 border-r border-[#2A2A3A]/50 backdrop-blur-xl transition-all duration-300 z-50 flex flex-col shadow-2xl',
+          'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-300 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
           collapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Logo */}
-        <div className="p-4 border-b border-[#2A2A3A]/50">
+        <div className="p-4 border-b border-white/5">
           {collapsed ? (
             <div className="w-10 h-10 mx-auto flex items-center justify-center group cursor-pointer">
               <img 
@@ -86,7 +86,7 @@ export default function SidebarLayout({ children }) {
         </nav>
 
         {/* Bottom Items */}
-        <div className="p-3 border-t border-[#2A2A3A]/50 space-y-1">
+        <div className="p-3 border-t border-white/5 space-y-1">
           {bottomItems.map((item) => (
             <Button
               key={item.path}
@@ -105,12 +105,12 @@ export default function SidebarLayout({ children }) {
         </div>
 
         {/* Toggle Button */}
-        <div className="p-3 border-t border-[#2A2A3A]/50">
+        <div className="p-3 border-t border-white/5">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full text-slate-400 hover:text-[#A855F7] hover:bg-[#2A2A3A]/50 transition-all duration-200"
+            className="w-full text-slate-400 hover:text-[#A855F7] hover:bg-white/5 transition-all duration-200"
           >
             {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </Button>
