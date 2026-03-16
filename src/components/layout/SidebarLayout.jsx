@@ -53,15 +53,16 @@ export default function SidebarLayout({ children }) {
         {/* Logo */}
         <div className="p-4 border-b border-[#2A2A3A]/50">
           {collapsed ? (
-            <div className="w-8 h-8 rounded-lg bg-transparent mx-auto flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto flex items-center justify-center group cursor-pointer">
               <img 
-                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/affa36d49_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
+                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                 alt="S"
-                className="w-8 h-8 object-contain"
+                className="w-10 h-10 object-contain transition-all duration-300 group-hover:scale-110"
+                style={{ filter: "drop-shadow(0 0 8px rgba(123,59,255,0.4))" }}
               />
             </div>
           ) : (
-            <LogoLink className="h-8" />
+            <LogoLink className="h-10" />
           )}
         </div>
 

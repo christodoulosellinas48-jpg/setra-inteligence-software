@@ -173,9 +173,10 @@ function DashboardContent() {
         >
           <div className="mb-6">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/698f4ecdefcf4d820e54e33f/1b5f5ef6f_ChatGPTImage20202610_12_34.png"
+              src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
               alt="SETRA"
               className="h-16 mx-auto"
+              style={{ filter: "drop-shadow(0 0 15px rgba(123,59,255,0.5))" }}
             />
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">Welcome to SETRA</h1>
