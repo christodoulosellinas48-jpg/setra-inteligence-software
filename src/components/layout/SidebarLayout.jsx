@@ -53,11 +53,11 @@ export default function SidebarLayout({ children }) {
         {/* Logo */}
         <div className="p-4 border-b border-[#2A2A3A]/50">
           {collapsed ? (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7B3BFF] to-[#A855F7] mx-auto flex items-center justify-center shadow-lg shadow-[#7B3BFF]/30">
+            <div className="w-8 h-8 rounded-lg bg-transparent mx-auto flex items-center justify-center">
               <img 
                 src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/affa36d49_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                 alt="S"
-                className="w-6 h-6"
+                className="w-8 h-8 object-contain"
               />
             </div>
           ) : (
