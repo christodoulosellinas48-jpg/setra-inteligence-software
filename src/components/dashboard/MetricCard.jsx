@@ -14,10 +14,10 @@ export default function MetricCard({
   delay = 0 
 }) {
   const statusColors = {
-    healthy: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    healthy: 'text-[#C084FC] bg-[#7B3BFF]/10 border-[#7B3BFF]/30 shadow-lg shadow-[#7B3BFF]/10',
     warning: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
     risk: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
-    neutral: 'text-slate-300 bg-slate-700/30 border-slate-600/30'
+    neutral: 'text-slate-300 bg-[#2A2A3A]/30 border-[#2A2A3A]/50'
   };
 
   const statusIndicators = {
@@ -35,15 +35,15 @@ export default function MetricCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
       className={cn(
-        "relative p-6 rounded-2xl border backdrop-blur-sm",
+        "relative p-6 rounded-2xl border backdrop-blur-xl bg-[#0B0B12]/80 hover:border-[#7B3BFF]/50 transition-all duration-300",
         statusColors[status]
       )}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {Icon && (
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-              <Icon className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center shadow-md shadow-[#7B3BFF]/10">
+              <Icon className="w-5 h-5 text-[#C084FC]" />
             </div>
           )}
           <span className="text-sm font-medium text-slate-400 uppercase tracking-wide">{title}</span>
@@ -51,7 +51,7 @@ export default function MetricCard({
         {status !== 'neutral' && (
           <div className={cn(
             "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
-            status === 'healthy' && "bg-emerald-500/20 text-emerald-400",
+            status === 'healthy' && "bg-[#7B3BFF]/20 text-[#C084FC]",
             status === 'warning' && "bg-amber-500/20 text-amber-400",
             status === 'risk' && "bg-rose-500/20 text-rose-400"
           )}>

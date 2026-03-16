@@ -42,7 +42,7 @@ export default function SidebarLayout({ children }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex">
+    <div className="min-h-screen bg-[#0B0B12] flex">
       {/* Sidebar */}
       <aside
         className={cn(
@@ -73,8 +73,8 @@ export default function SidebarLayout({ children }) {
               variant="ghost"
               onClick={() => navigate(item.path)}
               className={cn(
-                'w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50 transition-colors',
-                isActive(item.path) && 'bg-slate-800/70 text-white',
+                'w-full justify-start text-slate-400 hover:text-white hover:bg-[#2A2A3A]/50 transition-all duration-200',
+                isActive(item.path) && 'bg-gradient-to-r from-[#7B3BFF]/20 to-[#A855F7]/20 text-[#C084FC] border-l-2 border-[#7B3BFF]',
                 collapsed && 'justify-center px-0'
               )}
             >
