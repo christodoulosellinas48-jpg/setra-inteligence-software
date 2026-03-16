@@ -19,9 +19,9 @@ export default function Home() {
     <div className="min-h-screen bg-[#0B0B12] text-white overflow-hidden relative">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#7B3BFF]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-[#A855F7]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-[#C084FC]/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#7B3BFF]/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/4 w-[600px] h-[600px] bg-[#A855F7]/8 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 right-1/3 w-[500px] h-[500px] bg-[#C084FC]/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
@@ -139,7 +139,7 @@ function FeatureCard({ icon: Icon, title, description, delay }) {
     >
       <div className="absolute inset-0 bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      <div className="relative bg-[#0B0B12]/80 backdrop-blur-sm border border-[#2A2A3A] hover:border-[#7B3BFF]/50 rounded-2xl p-6 h-full transition-all duration-300">
+      <div className="relative bg-[#151528]/80 backdrop-blur-xl border border-white/5 hover:border-[#7B3BFF]/50 rounded-2xl p-6 h-full transition-all duration-300 hover:shadow-[0_0_40px_rgba(123,59,255,0.2)]">
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[#7B3BFF]/10">
           <Icon className="w-6 h-6 text-[#C084FC]" />
         </div>

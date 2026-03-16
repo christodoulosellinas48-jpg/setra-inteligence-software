@@ -74,8 +74,8 @@ export default function SidebarLayout({ children }) {
               variant="ghost"
               onClick={() => navigate(item.path)}
               className={cn(
-                'w-full justify-start text-slate-400 hover:text-white hover:bg-[#2A2A3A]/50 transition-all duration-200',
-                isActive(item.path) && 'bg-gradient-to-r from-[#7B3BFF]/20 to-[#A855F7]/20 text-[#C084FC] border-l-2 border-[#7B3BFF]',
+                'w-full justify-start text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200',
+                isActive(item.path) && 'bg-[#7B3BFF]/15 text-[#C084FC] border-l-3 border-[#7B3BFF] shadow-[0_0_15px_rgba(123,59,255,0.3)]',
                 collapsed && 'justify-center px-0'
               )}
             >
