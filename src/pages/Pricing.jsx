@@ -26,7 +26,6 @@ export default function Pricing() {
       price: 109,
       icon: Sparkles,
       gradient: 'from-[#A855F7] to-[#C084FC]',
-      popular: true,
       features: [
         'All Basic Plan features',
         'Budgeting: Create, track, and optimize budgets',
@@ -40,6 +39,7 @@ export default function Pricing() {
       price: 219,
       icon: Crown,
       gradient: 'from-[#C084FC] to-[#E9D5FF]',
+      popular: true,
       features: [
         'All Pro Plan features',
         'Early Access to New Features: Get Menu Costing first',
