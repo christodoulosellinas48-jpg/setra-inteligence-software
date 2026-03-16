@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -12,6 +12,39 @@ import {
 
 export default function Home() {
   const navigate = useNavigate();
+  const [typedText1, setTypedText1] = useState('');
+  const [typedText2, setTypedText2] = useState('');
+  const text1 = 'Transforming Financial Chaos';
+  const text2 = 'into Strategic Control';
+
+  useEffect(() => {
+    let index = 0;
+    const timer = setInterval(() => {
+      if (index <= text1.length) {
+        setTypedText1(text1.slice(0, index));
+        index++;
+      } else {
+        clearInterval(timer);
+      }
+    }, 50);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      let index = 0;
+      const timer = setInterval(() => {
+        if (index <= text2.length) {
+          setTypedText2(text2.slice(0, index));
+          index++;
+        } else {
+          clearInterval(timer);
+        }
+      }, 50);
+      return () => clearInterval(timer);
+    }, text1.length * 50 + 200);
+    return () => clearTimeout(delay);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0A0A14] relative overflow-hidden">
@@ -157,20 +190,17 @@ export default function Home() {
               style={{ fontFamily: 'system-ui, -apple-system, sans-serif', letterSpacing: '0.15em' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
             >
               <span className="bg-gradient-to-r from-[#E9D5FF] via-white to-[#E9D5FF] bg-clip-text text-transparent">
-                Transforming Financial Chaos
+                {typedText1}
+                {typedText1.length < text1.length && <span className="animate-pulse">|</span>}
               </span>
               <br />
-              <motion.span 
-                className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.9 }}
-              >
-                into Strategic Control
-              </motion.span>
+              <span className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent">
+                {typedText2}
+                {typedText2.length > 0 && typedText2.length < text2.length && <span className="animate-pulse">|</span>}
+              </span>
             </motion.h1>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
               Fine-tuned AI engine to optimize and automate your business processes
