@@ -112,8 +112,8 @@ export default function CreateBusiness() {
 
         <Card className="bg-[#151528]/80 border-white/5 p-8 rounded-2xl backdrop-blur-xl">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-cyan-400" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-[#C084FC]" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Create New Business</h1>
@@ -144,11 +144,11 @@ export default function CreateBusiness() {
                       onClick={() => setFormData({ ...formData, industry_group: bt.type })}
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSelected
-                          ? 'bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/50'
+                          ? 'bg-gradient-to-br from-[#7B3BFF]/10 to-[#A855F7]/10 border-[#7B3BFF]/50'
                           : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                       }`}
                       >
-                      <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-cyan-400' : 'text-slate-400'}`} />
+                      <Icon className={`w-5 h-5 mb-2 ${isSelected ? 'text-[#C084FC]' : 'text-slate-400'}`} />
                       <p className={`font-medium text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>{bt.title}</p>
                       <p className="text-xs text-slate-500">{bt.description}</p>
                     </button>
@@ -193,7 +193,7 @@ export default function CreateBusiness() {
             <Button
               onClick={handleCreate}
               disabled={!formData.name || !formData.industry_group || loading}
-              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white py-6 shadow-lg shadow-cyan-500/25"
+              className="w-full py-6"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

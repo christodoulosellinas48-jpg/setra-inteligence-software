@@ -215,8 +215,8 @@ function IntegrationsContent() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Dashboard
               </Button>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-                <Plug className="w-5 h-5 text-cyan-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center">
+                <Plug className="w-5 h-5 text-[#C084FC]" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Integration Hub</h1>
@@ -229,7 +229,7 @@ function IntegrationsContent() {
 
       <main className="relative max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Hero Section */}
-        <Card className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-cyan-500/20 p-8">
+        <Card className="bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 border-[#7B3BFF]/20 p-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-white mb-2">Enterprise Integration Infrastructure</h2>
@@ -292,7 +292,7 @@ function IntegrationsContent() {
                 onClick={() => setSelectedCategory(category.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
                   isActive
-                    ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400'
+                    ? 'bg-[#7B3BFF]/10 border-[#7B3BFF]/50 text-[#C084FC]'
                     : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'
                 }`}
               >
@@ -347,11 +347,11 @@ function IntegrationCard({ integration, compact = false }) {
 
   if (compact) {
     return (
-      <Card className="bg-slate-900/50 border-slate-800 p-4 hover:border-cyan-500/30 transition-all cursor-pointer group">
+      <Card className="bg-slate-900/50 border-slate-800 p-4 hover:border-[#7B3BFF]/30 transition-all cursor-pointer group">
         <div className="flex items-center gap-3 mb-2">
           <div className="text-2xl">{integration.logo}</div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-white group-hover:text-cyan-400 transition-colors truncate">
+            <h4 className="font-semibold text-white group-hover:text-[#C084FC] transition-colors truncate">
               {integration.name}
             </h4>
           </div>
@@ -362,12 +362,12 @@ function IntegrationCard({ integration, compact = false }) {
   }
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800 p-6 hover:border-cyan-500/30 transition-all group h-full flex flex-col">
+    <Card className="bg-slate-900/50 border-slate-800 p-6 hover:border-[#7B3BFF]/30 transition-all group h-full flex flex-col">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="text-3xl">{integration.logo}</div>
           <div>
-            <h3 className="font-semibold text-white group-hover:text-cyan-400 transition-colors">
+            <h3 className="font-semibold text-white group-hover:text-[#C084FC] transition-colors">
               {integration.name}
             </h3>
             <p className="text-xs text-slate-500 capitalize">{integration.category}</p>
@@ -382,7 +382,7 @@ function IntegrationCard({ integration, compact = false }) {
         disabled={integration.status !== 'available'}
         className={`w-full ${
           integration.status === 'available'
-            ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
+            ? ''
             : 'bg-slate-800 text-slate-500 cursor-not-allowed'
         }`}
       >

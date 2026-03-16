@@ -54,8 +54,8 @@ function AuditContent() {
         </Button>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-            <ClipboardCheck className="w-6 h-6 text-cyan-400" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center">
+            <ClipboardCheck className="w-6 h-6 text-[#C084FC]" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">Profit Audit</h1>

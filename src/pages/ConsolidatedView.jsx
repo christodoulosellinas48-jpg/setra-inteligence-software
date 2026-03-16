@@ -126,7 +126,6 @@ export default function ConsolidatedView() {
           </p>
           <Button 
             onClick={() => navigate(createPageUrl('CreateBusiness'))}
-            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
           >
             Create Business
           </Button>
@@ -169,7 +168,7 @@ export default function ConsolidatedView() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Building2 className="w-6 h-6 text-cyan-400" />
+                  <Building2 className="w-6 h-6 text-[#C084FC]" />
                   Consolidated View
                 </h1>
                 <p className="text-slate-500 text-sm">Portfolio analytics across {consolidatedMetrics.businessCount} businesses</p>

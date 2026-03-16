@@ -110,7 +110,7 @@ function BudgetingContent() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Wallet className="w-6 h-6 text-cyan-400" />
+                  <Wallet className="w-6 h-6 text-[#C084FC]" />
                   Cost Control
                 </h1>
                 <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>

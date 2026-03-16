@@ -94,7 +94,7 @@ function ReportsContent() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <BarChart3 className="w-6 h-6 text-cyan-400" />
+                  <BarChart3 className="w-6 h-6 text-[#C084FC]" />
                   Performance Analytics
                 </h1>
                 <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
@@ -126,7 +126,6 @@ function ReportsContent() {
             <Button 
               onClick={saveSnapshot}
               disabled={saving}
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
