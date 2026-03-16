@@ -118,14 +118,14 @@ export default function Home() {
             >
               <div className="relative">
                 {/* Hexagon glow layers */}
-                <div className="absolute inset-0 blur-3xl opacity-25">
-                  <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#7B3BFF] to-[#A855F7] rounded-full" />
+                <div className="absolute inset-0 blur-[100px] opacity-20">
+                  <div className="w-72 h-72 mx-auto bg-gradient-to-br from-[#5B1FBF] via-[#7B3BFF] to-transparent rounded-full" />
                 </div>
-                <div className="absolute inset-0 blur-2xl opacity-20">
-                  <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#A855F7] to-[#C084FC] rounded-full" />
+                <div className="absolute inset-0 blur-[60px] opacity-15">
+                  <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#7B3BFF] to-transparent rounded-full" />
                 </div>
-                <div className="absolute inset-0 blur-xl opacity-15">
-                  <div className="w-64 h-64 mx-auto bg-[#7B3BFF] rounded-full" />
+                <div className="absolute inset-0 blur-[40px] opacity-10">
+                  <div className="w-56 h-56 mx-auto bg-[#8B4BFF] rounded-full" />
                 </div>
                 {/* Logo */}
                 <img 
