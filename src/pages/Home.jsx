@@ -153,12 +153,13 @@ export default function Home() {
             className="text-center mt-16"
           >
             <motion.h1 
-              className="text-5xl md:text-6xl font-bold mb-4"
+              className="text-3xl md:text-4xl font-semibold mb-4 tracking-wide uppercase"
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif', letterSpacing: '0.15em' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 0.6 }}
             >
-              <span className="bg-gradient-to-r from-white via-[#E9D5FF] to-white bg-clip-text text-transparent tracking-tight">
+              <span className="bg-gradient-to-r from-[#E9D5FF] via-white to-[#E9D5FF] bg-clip-text text-transparent">
                 Transforming Financial Chaos
               </span>
               <br />
