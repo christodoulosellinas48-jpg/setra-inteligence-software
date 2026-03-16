@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { LayoutDashboard, FileText, Settings, Menu, UserRound, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, Menu, UserRound, LogOut, Building2 } from 'lucide-react';
 
 export default function AppHeader() {
   const navigate = useNavigate();
@@ -35,6 +35,7 @@ export default function AppHeader() {
 
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: 'Dashboard' },
+    { label: 'Consolidated', icon: Building2, path: 'ConsolidatedView' },
     { label: 'Reports', icon: FileText, path: 'Reports' },
     { label: 'Settings', icon: Settings, path: 'Settings' }
   ];
