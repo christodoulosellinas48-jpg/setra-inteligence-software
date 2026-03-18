@@ -14,6 +14,12 @@ import {
 export default function Features() {
   const navigate = useNavigate();
 
+  const tierConfig = {
+    basic: { label: 'BASIC', color: 'from-[#7B3BFF] to-[#A855F7]' },
+    pro: { label: 'PRO', color: 'from-[#A855F7] to-[#C084FC]' },
+    premium: { label: 'PREMIUM', color: 'from-[#C084FC] to-[#E9D5FF]' }
+  };
+
   const features = [
     {
       icon: BarChart3,
@@ -26,46 +32,8 @@ export default function Features() {
         "Profit simulators and scenario planning",
         "Customizable widgets and insights"
       ],
-      gradient: "from-[#7B3BFF] to-[#A855F7]"
-    },
-    {
-      icon: Receipt,
-      title: "Bookkeeping",
-      description: "Automated financial record-keeping and compliance infrastructure",
-      details: [
-        "AI-powered document processing and categorization",
-        "Automated invoice and receipt parsing",
-        "Bank reconciliation with smart matching",
-        "VAT tracking and compliance reporting",
-        "Export-ready accounting packages"
-      ],
-      gradient: "from-[#A855F7] to-[#C084FC]"
-    },
-    {
-      icon: Wallet,
-      title: "Budgeting",
-      description: "Create, track, and optimize budgets against actual performance",
-      details: [
-        "Smart budget creation from historical data",
-        "Real-time budget vs actual tracking",
-        "Automated variance alerts",
-        "Visual performance dashboards",
-        "Monthly and quarterly planning tools"
-      ],
-      gradient: "from-[#7B3BFF] to-[#8B5CF6]"
-    },
-    {
-      icon: LineChart,
-      title: "Forecasting",
-      description: "AI-powered financial projections and scenario modeling",
-      details: [
-        "6-month revenue and expense projections",
-        "Multi-scenario analysis (optimistic, baseline, conservative)",
-        "Growth rate calculations from historical data",
-        "Cash flow forecasting",
-        "Data-driven decision support"
-      ],
-      gradient: "from-[#8B5CF6] to-[#A855F7]"
+      gradient: "from-[#7B3BFF] to-[#A855F7]",
+      tier: "basic"
     },
     {
       icon: FileText,
@@ -78,20 +46,8 @@ export default function Features() {
         "Financial snapshots and history",
         "Export to PDF and Excel"
       ],
-      gradient: "from-[#C084FC] to-[#E9D5FF]"
-    },
-    {
-      icon: ClipboardCheck,
-      title: "Audit",
-      description: "AI-powered operational audits to identify profit leaks and optimization opportunities",
-      details: [
-        "Pricing strategy analysis",
-        "Food cost and waste tracking",
-        "Menu engineering insights",
-        "Labor cost optimization",
-        "Actionable recommendations with impact estimates"
-      ],
-      gradient: "from-[#7B3BFF] to-[#9333EA]"
+      gradient: "from-[#C084FC] to-[#E9D5FF]",
+      tier: "basic"
     },
     {
       icon: Target,
@@ -104,46 +60,22 @@ export default function Features() {
         "Supplier management",
         "Break-even analysis"
       ],
-      gradient: "from-[#A855F7] to-[#C084FC]"
+      gradient: "from-[#A855F7] to-[#C084FC]",
+      tier: "basic"
     },
     {
-      icon: Plug,
-      title: "Integrations",
-      description: "Connect your POS, accounting, and business tools seamlessly",
+      icon: Wallet,
+      title: "Budgeting",
+      description: "Create, track, and optimize budgets against actual performance",
       details: [
-        "POS system integrations",
-        "Accounting software sync",
-        "Bank feed connections",
-        "Payroll system links",
-        "API access for custom integrations"
+        "Smart budget creation from historical data",
+        "Real-time budget vs actual tracking",
+        "Automated variance alerts",
+        "Visual performance dashboards",
+        "Monthly and quarterly planning tools"
       ],
-      gradient: "from-[#8B5CF6] to-[#A855F7]"
-    },
-    {
-      icon: Shield,
-      title: "Compliance",
-      description: "Stay compliant with automated regulatory tracking",
-      details: [
-        "VAT period management",
-        "Corporate tax calculations",
-        "Audit-ready documentation",
-        "Regulatory deadline tracking",
-        "Cyprus tax authority compliance"
-      ],
-      gradient: "from-[#7B3BFF] to-[#C084FC]"
-    },
-    {
-      icon: Zap,
-      title: "Automation",
-      description: "Reduce manual work with intelligent process automation",
-      details: [
-        "Automated invoice processing",
-        "Smart expense categorization",
-        "Scheduled reports and alerts",
-        "Bulk operations and imports",
-        "Workflow optimization"
-      ],
-      gradient: "from-[#A855F7] to-[#E9D5FF]"
+      gradient: "from-[#7B3BFF] to-[#8B5CF6]",
+      tier: "pro"
     },
     {
       icon: TrendingUp,
@@ -156,7 +88,92 @@ export default function Features() {
         "Comparative period analysis",
         "Custom metric dashboards"
       ],
-      gradient: "from-[#7B3BFF] to-[#A855F7]"
+      gradient: "from-[#7B3BFF] to-[#A855F7]",
+      tier: "pro"
+    },
+    {
+      icon: LineChart,
+      title: "Forecasting",
+      description: "AI-powered financial projections and scenario modeling",
+      details: [
+        "6-month revenue and expense projections",
+        "Multi-scenario analysis (optimistic, baseline, conservative)",
+        "Growth rate calculations from historical data",
+        "Cash flow forecasting",
+        "Data-driven decision support"
+      ],
+      gradient: "from-[#8B5CF6] to-[#A855F7]",
+      tier: "pro"
+    },
+    {
+      icon: Plug,
+      title: "Integrations",
+      description: "Connect your POS, accounting, and business tools seamlessly",
+      details: [
+        "POS system integrations",
+        "Accounting software sync",
+        "Bank feed connections",
+        "Payroll system links",
+        "API access for custom integrations"
+      ],
+      gradient: "from-[#8B5CF6] to-[#A855F7]",
+      tier: "pro"
+    },
+    {
+      icon: Receipt,
+      title: "Bookkeeping",
+      description: "Automated financial record-keeping and compliance infrastructure",
+      details: [
+        "AI-powered document processing and categorization",
+        "Automated invoice and receipt parsing",
+        "Bank reconciliation with smart matching",
+        "VAT tracking and compliance reporting",
+        "Export-ready accounting packages"
+      ],
+      gradient: "from-[#A855F7] to-[#C084FC]",
+      tier: "premium"
+    },
+    {
+      icon: ClipboardCheck,
+      title: "Audit",
+      description: "AI-powered operational audits to identify profit leaks and optimization opportunities",
+      details: [
+        "Pricing strategy analysis",
+        "Food cost and waste tracking",
+        "Menu engineering insights",
+        "Labor cost optimization",
+        "Actionable recommendations with impact estimates"
+      ],
+      gradient: "from-[#7B3BFF] to-[#9333EA]",
+      tier: "premium"
+    },
+    {
+      icon: Shield,
+      title: "Compliance",
+      description: "Stay compliant with automated regulatory tracking",
+      details: [
+        "VAT period management",
+        "Corporate tax calculations",
+        "Audit-ready documentation",
+        "Regulatory deadline tracking",
+        "Cyprus tax authority compliance"
+      ],
+      gradient: "from-[#7B3BFF] to-[#C084FC]",
+      tier: "premium"
+    },
+    {
+      icon: Zap,
+      title: "Automation",
+      description: "Reduce manual work with intelligent process automation",
+      details: [
+        "Automated invoice processing",
+        "Smart expense categorization",
+        "Scheduled reports and alerts",
+        "Bulk operations and imports",
+        "Workflow optimization"
+      ],
+      gradient: "from-[#A855F7] to-[#E9D5FF]",
+      tier: "premium"
     },
     {
       icon: Settings,
@@ -169,7 +186,8 @@ export default function Features() {
         "Chart of accounts customization",
         "Industry-specific templates"
       ],
-      gradient: "from-[#C084FC] to-[#E9D5FF]"
+      gradient: "from-[#C084FC] to-[#E9D5FF]",
+      tier: "premium"
     },
     {
       icon: Sparkles,
@@ -183,7 +201,7 @@ export default function Features() {
         "Actionable profit optimization suggestions"
       ],
       gradient: "from-[#7B3BFF] to-[#A855F7]",
-      premium: true
+      tier: "premium"
     },
     {
       icon: ScanLine,
@@ -197,7 +215,7 @@ export default function Features() {
         "Instant data population to bookkeeping"
       ],
       gradient: "from-[#A855F7] to-[#C084FC]",
-      premium: true
+      tier: "premium"
     }
   ];
 
@@ -257,10 +275,10 @@ export default function Features() {
                 viewport={{ once: true }}
               >
                 <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group relative overflow-hidden">
-                  {/* Premium Badge */}
-                  {feature.premium && (
-                    <div className="absolute top-4 right-4 bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white text-xs font-bold px-3 py-1 rounded-full">
-                      PREMIUM
+                  {/* Tier Badge */}
+                  {feature.tier && (
+                    <div className={`absolute top-4 right-4 bg-gradient-to-r ${tierConfig[feature.tier].color} text-white text-xs font-bold px-3 py-1 rounded-full`}>
+                      {tierConfig[feature.tier].label}
                     </div>
                   )}
                   
