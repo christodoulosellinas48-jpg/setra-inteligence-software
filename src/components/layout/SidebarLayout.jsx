@@ -118,10 +118,7 @@ export default function SidebarLayout({ children }) {
             )}
           >
             {collapsed ? (
-              <>
-                <ChevronRight className="w-5 h-5 mr-2" />
-                <span className="text-sm">Open</span>
-              </>
+              <ChevronRight className="w-5 h-5" />
             ) : (
               <>
                 <ChevronLeft className="w-5 h-5 mr-2" />
