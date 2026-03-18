@@ -8,7 +8,7 @@ import MarketingHeader from '@/components/layout/MarketingHeader';
 import { 
   BarChart3, Receipt, TrendingUp, FileText, Target, 
   Wallet, Plug, Settings, ClipboardCheck, LineChart,
-  Shield, Zap, ArrowRight, CheckCircle2
+  Shield, Zap, ArrowRight, CheckCircle2, Sparkles, ScanLine
 } from 'lucide-react';
 
 export default function Features() {
@@ -170,6 +170,34 @@ export default function Features() {
         "Industry-specific templates"
       ],
       gradient: "from-[#C084FC] to-[#E9D5FF]"
+    },
+    {
+      icon: Sparkles,
+      title: "AI Counselor Chat",
+      description: "24/7 AI assistant for business guidance and platform navigation",
+      details: [
+        "Real-time business insights and recommendations",
+        "Personalized guidance based on your data",
+        "Quick answers to financial questions",
+        "Help navigating platform features",
+        "Actionable profit optimization suggestions"
+      ],
+      gradient: "from-[#7B3BFF] to-[#A855F7]",
+      premium: true
+    },
+    {
+      icon: ScanLine,
+      title: "Smart Invoice Extraction",
+      description: "AI-powered automatic data extraction from invoices and receipts",
+      details: [
+        "Automatic supplier and date detection",
+        "Line item extraction with VAT details",
+        "Invoice number and reference capture",
+        "Smart expense categorization",
+        "Instant data population to bookkeeping"
+      ],
+      gradient: "from-[#A855F7] to-[#C084FC]",
+      premium: true
     }
   ];
 
@@ -228,7 +256,14 @@ export default function Features() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group">
+                <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group relative overflow-hidden">
+                  {/* Premium Badge */}
+                  {feature.premium && (
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white text-xs font-bold px-3 py-1 rounded-full">
+                      PREMIUM
+                    </div>
+                  )}
+                  
                   {/* Icon */}
                   <div className="relative mb-4 sm:mb-6">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 relative">
