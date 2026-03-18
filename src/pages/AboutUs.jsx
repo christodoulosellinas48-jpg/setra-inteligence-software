@@ -132,7 +132,7 @@ export default function AboutUs() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Who We Are</h3>
                 <p className="text-slate-400">
-                  A team of AI experts, data scientists, and software engineers dedicated to building powerful AI solutions.
+                  A local Cyprus-based team of hospitality industry experts, led by professionals specialising in economics, operations management, and AI automation — built to solve real problems for real businesses.
                 </p>
               </Card>
             </motion.div>
@@ -172,7 +172,7 @@ export default function AboutUs() {
             className="text-center mb-12"
           >
             <h2 className="text-4xl font-bold text-white mb-4">Our Offices</h2>
-            <p className="text-xl text-slate-400">Global Presence, Local Impact</p>
+            <p className="text-xl text-slate-400">Rooted in Cyprus, Built for the World</p>
           </motion.div>
 
           {/* World Map */}
@@ -229,14 +229,15 @@ export default function AboutUs() {
             viewport={{ once: true }}
             className="grid grid-cols-2 md:grid-cols-4 gap-8"
           >
-            {['San Francisco', 'New York', 'London', 'Singapore'].map((city, index) => (
-              <div key={city} className="text-center">
+            <div className="col-span-2 md:col-span-4 flex justify-center">
+              <div className="text-center">
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center border border-[#7B3BFF]/30">
                   <MapPin className="w-6 h-6 text-[#C084FC]" />
                 </div>
-                <p className="text-white font-medium">{city}</p>
+                <p className="text-white font-medium">Limassol, Cyprus</p>
+                <p className="text-slate-500 text-sm mt-1">Headquarters</p>
               </div>
-            ))}
+            </div>
           </motion.div>
         </div>
       </section>
