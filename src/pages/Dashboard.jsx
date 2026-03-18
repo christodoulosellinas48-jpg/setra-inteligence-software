@@ -6,12 +6,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { debounce } from 'lodash';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw, Mail, Building2, Trash2
+  ChevronRight, RefreshCw, Mail, Building2, Trash2, Sparkles
 } from 'lucide-react';
+import AICounselorChat from '@/components/AICounselorChat';
 
 import MetricCard from '@/components/dashboard/MetricCard';
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
@@ -38,6 +40,7 @@ function DashboardContent() {
   const queryClient = useQueryClient();
   const { currentBusiness, user, loading: businessLoading, canEdit, userRole } = useBusiness();
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showCounselorChat, setShowCounselorChat] = useState(false);
   const [simulationValues, setSimulationValues] = useState({
     revenue: 0,
     foodCost: 0,
@@ -232,6 +235,13 @@ function DashboardContent() {
                   {pendingInvitations.length}
                 </Button>
               )}
+              <Button 
+                onClick={() => setShowCounselorChat(true)}
+                variant="outline"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Open AI Counselor Chat
+              </Button>
               {canEdit() && (
                 <Button 
                   onClick={() => setShowUploadModal(true)}
@@ -519,6 +529,15 @@ function DashboardContent() {
           />
         </Suspense>
       )}
+
+      <Sheet open={showCounselorChat} onOpenChange={setShowCounselorChat}>
+        <SheetContent side="right" className="w-full sm:w-[500px] p-0 bg-[#0B0B12] border-[#7B3BFF]/20">
+          <AICounselorChat 
+            onClose={() => setShowCounselorChat(false)}
+            businessId={currentBusiness?.id}
+          />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
