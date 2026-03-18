@@ -47,14 +47,73 @@ export default function AboutUs() {
             </p>
 
             {/* 3D Logo */}
-            <div className="relative mb-20">
+            <motion.div 
+              className="relative mb-20"
+              initial="idle"
+              whileHover="hover"
+            >
               <div className="absolute inset-0 blur-[120px] opacity-30">
                 <div className="w-96 h-96 mx-auto bg-gradient-to-br from-[#7B3BFF] via-[#A855F7] to-transparent rounded-full" />
               </div>
+              
+              {/* Orbital Rings */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {/* Ring 1 */}
+                <motion.div
+                  className="absolute w-96 h-96 rounded-full border border-[#7B3BFF]/30"
+                  variants={{
+                    idle: { rotate: 0 },
+                    hover: { rotate: 360 }
+                  }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  style={{
+                    background: 'radial-gradient(circle at 50% 0%, rgba(123,59,255,0.4) 0%, transparent 5%)'
+                  }}
+                />
+                
+                {/* Ring 2 */}
+                <motion.div
+                  className="absolute w-[420px] h-[420px] rounded-full border border-[#A855F7]/20"
+                  variants={{
+                    idle: { rotate: 0 },
+                    hover: { rotate: -360 }
+                  }}
+                  transition={{
+                    duration: 15,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  style={{
+                    background: 'radial-gradient(circle at 80% 20%, rgba(168,85,247,0.3) 0%, transparent 5%)'
+                  }}
+                />
+                
+                {/* Ring 3 */}
+                <motion.div
+                  className="absolute w-[360px] h-[360px] rounded-full border border-[#C084FC]/25"
+                  variants={{
+                    idle: { rotate: 0 },
+                    hover: { rotate: 360 }
+                  }}
+                  transition={{
+                    duration: 25,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  style={{
+                    background: 'radial-gradient(circle at 30% 70%, rgba(192,132,252,0.35) 0%, transparent 5%)'
+                  }}
+                />
+              </div>
+              
               <motion.img 
                 src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                 alt="SETRA 3D"
-                className="relative h-80 mx-auto"
+                className="relative h-80 mx-auto cursor-pointer"
                 animate={{
                   filter: [
                     "drop-shadow(0 0 60px rgba(123,59,255,0.8)) drop-shadow(0 0 100px rgba(168,85,247,0.6))",
@@ -68,7 +127,7 @@ export default function AboutUs() {
                   ease: "easeInOut"
                 }}
               />
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
