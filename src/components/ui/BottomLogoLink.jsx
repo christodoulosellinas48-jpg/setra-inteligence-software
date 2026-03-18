@@ -13,14 +13,14 @@ export default function BottomLogoLink({ collapsed = false }) {
       <DropdownMenuTrigger asChild>
         <button 
           className={cn(
-            "w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all duration-200 group border border-transparent hover:border-[#7B3BFF]/30",
-            collapsed && "justify-center"
+            "w-full flex items-center gap-3 rounded-xl hover:bg-white/5 transition-all duration-200 group border border-transparent hover:border-[#7B3BFF]/30",
+            collapsed ? "justify-center p-2" : "p-3"
           )}
         >
           <img 
             src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
             alt="SETRA"
-            className={cn("transition-all duration-300 group-hover:scale-110", collapsed ? "w-10 h-10" : "w-8 h-8 flex-shrink-0")}
+            className={cn("flex-shrink-0 transition-all duration-300 group-hover:scale-110", collapsed ? "w-10 h-10" : "w-8 h-8")}
             style={{ filter: "drop-shadow(0 0 8px rgba(123,59,255,0.4))" }}
           />
           {!collapsed && (
