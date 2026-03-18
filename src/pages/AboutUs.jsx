@@ -183,77 +183,12 @@ export default function AboutUs() {
             viewport={{ once: true }}
             className="relative mb-12"
           >
-            <div className="relative h-[380px] flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-b from-[#7B3BFF]/10 to-transparent rounded-2xl" />
-              {/* Ambient glow behind island */}
-              <div className="absolute w-[500px] h-[200px] bg-[#7B3BFF]/20 rounded-full blur-[80px]" />
-              <svg viewBox="0 0 600 300" className="w-full max-w-2xl h-full">
-                <defs>
-                  <filter id="cyprusGlow">
-                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <filter id="pinGlow">
-                    <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  <radialGradient id="islandFill" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#7B3BFF" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#A855F7" stopOpacity="0.08" />
-                  </radialGradient>
-                </defs>
-
-                {/* Cyprus island - complete outline with all peninsulas */}
-                <path
-                  d="M 50,155
-                     L 65,148 L 85,145 L 105,144 L 125,143
-                     L 145,142 L 165,141 L 185,140 L 205,139
-                     L 225,138 L 245,137 L 265,136 L 285,135
-                     L 305,134 L 325,133 L 345,132 L 365,131
-                     L 385,130 L 405,129 L 425,128
-                     Q 435,127 440,122
-                     L 445,117 L 455,112 L 470,108 L 490,105
-                     L 510,104 L 530,106 L 545,110
-                     Q 552,114 553,120
-                     L 552,127 L 548,133 L 540,138
-                     L 528,142 L 515,145 L 500,148
-                     L 485,151 L 470,154
-                     Q 460,156 455,162
-                     L 450,168 L 440,173 L 425,177
-                     L 405,180 L 385,182 L 365,183
-                     L 345,184 L 325,184 L 305,183
-                     L 285,182 L 265,181 L 245,179
-                     L 225,177 L 205,174 L 185,171
-                     L 165,168 L 145,165 L 125,162
-                     L 105,160 L 85,159 L 65,159
-                     Q 55,158 50,155 Z"
-                  fill="url(#islandFill)"
-                  stroke="#7B3BFF"
-                  strokeWidth="2.5"
-                  filter="url(#cyprusGlow)"
-                />
-
-                {/* Nicosia pin — center-north of the island */}
-                {/* Pin body */}
-                <circle cx="270" cy="148" r="10" fill="#7B3BFF" filter="url(#pinGlow)" opacity="0.9" />
-                <circle cx="270" cy="148" r="6" fill="#C084FC" filter="url(#pinGlow)" />
-                <circle cx="270" cy="148" r="3" fill="white" />
-                {/* Pin tail */}
-                <line x1="270" y1="158" x2="270" y2="171" stroke="#A855F7" strokeWidth="2.5" filter="url(#pinGlow)" />
-                <circle cx="270" cy="173" r="2" fill="#A855F7" />
-
-                {/* Pulse ring around pin */}
-                <circle cx="270" cy="148" r="18" fill="none" stroke="#7B3BFF" strokeWidth="1.5" opacity="0.4" filter="url(#pinGlow)" />
-
-                {/* Label */}
-                <text x="283" y="153" fill="#E9D5FF" fontSize="13" fontFamily="system-ui" fontWeight="600">Nicosia</text>
-              </svg>
+            <div className="relative overflow-hidden rounded-2xl border border-[#7B3BFF]/30">
+              <img 
+                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/d194ec60e_ChatGPTImage18202606_04_03.png"
+                alt="Cyprus - Global Impact, Local Presence"
+                className="w-full h-auto"
+              />
             </div>
           </motion.div>
 
