@@ -183,25 +183,25 @@ export default function AboutUs() {
             viewport={{ once: true }}
             className="relative mb-12 flex justify-center"
           >
-            <div className="relative w-full max-w-4xl">
+            <div className="relative w-full max-w-3xl">
               {/* Gradient fade overlay to blend with background */}
               <div className="absolute inset-0 pointer-events-none z-10">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A14] via-transparent to-transparent opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A14] via-transparent to-transparent opacity-60" />
-                <div className="absolute inset-0 bg-gradient-to-l from-[#0A0A14] via-transparent to-transparent opacity-70" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A14] via-transparent to-transparent opacity-70" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A14] via-transparent to-transparent opacity-90" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A14] via-[#0A0A14]/30 to-transparent opacity-95" />
+                <div className="absolute inset-0 bg-gradient-to-l from-[#0A0A14] via-transparent to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A14] via-transparent to-transparent opacity-80" />
               </div>
               
               {/* Ambient glow */}
               <div className="absolute inset-0 -z-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#7B3BFF]/15 rounded-full blur-[100px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-[#7B3BFF]/15 rounded-full blur-[100px]" />
               </div>
               
               <img 
                 src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/d194ec60e_ChatGPTImage18202606_04_03.png"
                 alt="Cyprus - Global Impact, Local Presence"
-                className="w-full h-auto rounded-xl"
-                style={{ maskImage: 'radial-gradient(ellipse 90% 85% at 50% 50%, black 40%, transparent 100%)' }}
+                className="w-full h-auto"
+                style={{ maskImage: 'radial-gradient(ellipse 90% 85% at 50% 50%, black 35%, transparent 95%)' }}
               />
             </div>
           </motion.div>
