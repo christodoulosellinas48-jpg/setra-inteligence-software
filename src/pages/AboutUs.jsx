@@ -175,7 +175,7 @@ export default function AboutUs() {
             <p className="text-xl text-slate-400">Rooted in Cyprus, Built for the World</p>
           </motion.div>
 
-          {/* World Map */}
+          {/* Cyprus Map */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -183,40 +183,82 @@ export default function AboutUs() {
             viewport={{ once: true }}
             className="relative mb-12"
           >
-            <div className="relative h-[400px] flex items-center justify-center">
+            <div className="relative h-[380px] flex items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-b from-[#7B3BFF]/10 to-transparent rounded-2xl" />
-              <svg viewBox="0 0 1000 500" className="w-full h-full opacity-60">
+              {/* Ambient glow behind island */}
+              <div className="absolute w-[500px] h-[200px] bg-[#7B3BFF]/20 rounded-full blur-[80px]" />
+              <svg viewBox="0 0 600 300" className="w-full max-w-2xl h-full">
                 <defs>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <filter id="cyprusGlow">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                     <feMerge>
                       <feMergeNode in="coloredBlur"/>
                       <feMergeNode in="SourceGraphic"/>
                     </feMerge>
                   </filter>
+                  <filter id="pinGlow">
+                    <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                  <radialGradient id="islandFill" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#7B3BFF" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#A855F7" stopOpacity="0.08" />
+                  </radialGradient>
                 </defs>
-                {/* Simplified world map outline with purple glow */}
+
+                {/* Cyprus island shape — accurate outline */}
                 <path
-                  d="M 150,200 L 200,180 L 250,190 L 300,170 L 350,180 L 400,160 L 450,170 L 500,150 L 550,160 L 600,140 L 650,150 L 700,130 L 750,140 L 800,120 L 850,130"
+                  d="M 80,155 
+                     L 90,148 L 105,145 L 120,148 L 130,143 L 145,140 
+                     L 160,138 L 175,135 L 190,133 L 205,130 L 220,128 
+                     L 235,126 L 250,124 L 265,123 L 280,122 L 295,121 
+                     L 310,120 L 325,119 L 340,118 L 355,117 L 370,116 
+                     L 385,115 L 395,114 L 405,113 
+                     L 415,112 L 425,111 
+                     L 435,113 L 445,118 L 450,122
+                     L 455,117 L 462,113 L 470,112 L 478,113 L 485,118 
+                     L 490,124 L 488,130 L 482,134 L 475,135
+                     L 470,140 L 468,148 L 465,155 L 460,162 
+                     L 452,168 L 445,172 L 435,175 
+                     L 420,178 L 405,180 L 390,181 
+                     L 375,182 L 360,183 L 345,183 
+                     L 330,182 L 315,180 L 300,178 
+                     L 280,175 L 260,172 L 240,170 
+                     L 220,168 L 200,166 L 180,163 
+                     L 160,160 L 140,158 L 120,157 
+                     L 100,157 L 85,157 Z"
+                  fill="url(#islandFill)"
                   stroke="#7B3BFF"
                   strokeWidth="2"
-                  fill="none"
-                  filter="url(#glow)"
-                  opacity="0.7"
+                  filter="url(#cyprusGlow)"
                 />
+
+                {/* Karpaz Peninsula (north-east pointy bit) */}
                 <path
-                  d="M 100,250 L 150,230 L 200,240 L 250,220 L 300,230 L 350,210 L 400,220 L 450,200 L 500,210 L 550,190 L 600,200 L 650,180 L 700,190 L 750,170 L 800,180 L 850,160 L 900,170"
-                  stroke="#A855F7"
+                  d="M 435,113 L 445,108 L 458,104 L 472,102 L 486,101 L 500,102 L 510,105 L 515,110 L 510,114 L 500,116 L 490,116 L 480,114 L 475,113 L 470,112"
+                  fill="url(#islandFill)"
+                  stroke="#7B3BFF"
                   strokeWidth="2"
-                  fill="none"
-                  filter="url(#glow)"
-                  opacity="0.6"
+                  filter="url(#cyprusGlow)"
                 />
-                {/* Office location dots */}
-                <circle cx="150" cy="200" r="8" fill="#7B3BFF" filter="url(#glow)" />
-                <circle cx="350" cy="180" r="8" fill="#7B3BFF" filter="url(#glow)" />
-                <circle cx="550" cy="160" r="8" fill="#7B3BFF" filter="url(#glow)" />
-                <circle cx="750" cy="240" r="8" fill="#7B3BFF" filter="url(#glow)" />
+
+                {/* Nicosia pin — roughly center-north of island */}
+                {/* Pin body */}
+                <circle cx="285" cy="145" r="10" fill="#7B3BFF" filter="url(#pinGlow)" opacity="0.9" />
+                <circle cx="285" cy="145" r="6" fill="#C084FC" filter="url(#pinGlow)" />
+                <circle cx="285" cy="145" r="3" fill="white" />
+                {/* Pin tail */}
+                <line x1="285" y1="155" x2="285" y2="168" stroke="#A855F7" strokeWidth="2.5" filter="url(#pinGlow)" />
+                <circle cx="285" cy="170" r="2" fill="#A855F7" />
+
+                {/* Pulse ring around pin */}
+                <circle cx="285" cy="145" r="18" fill="none" stroke="#7B3BFF" strokeWidth="1.5" opacity="0.4" filter="url(#pinGlow)" />
+
+                {/* Label */}
+                <text x="298" y="150" fill="#E9D5FF" fontSize="13" fontFamily="system-ui" fontWeight="600">Nicosia</text>
               </svg>
             </div>
           </motion.div>
@@ -234,7 +276,7 @@ export default function AboutUs() {
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center border border-[#7B3BFF]/30">
                   <MapPin className="w-6 h-6 text-[#C084FC]" />
                 </div>
-                <p className="text-white font-medium">Limassol, Cyprus</p>
+                <p className="text-white font-medium">Nicosia, Cyprus</p>
                 <p className="text-slate-500 text-sm mt-1">Headquarters</p>
               </div>
             </div>
