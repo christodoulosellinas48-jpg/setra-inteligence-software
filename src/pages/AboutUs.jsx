@@ -134,7 +134,7 @@ export default function AboutUs() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Our Vision</h3>
                 <p className="text-slate-400">
-                  To be the leading AI platform driving business profitability through automation and operational intelligence — helping businesses grow more profitable year over year.
+                  To be the leading AI platform driving business profitability through automation and operational intelligence — helping businesses grow more profitable day after day, year over year.
                 </p>
               </Card>
             </motion.div>
