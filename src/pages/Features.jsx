@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import MarketingHeader from '@/components/layout/MarketingHeader';
 import { 
   BarChart3, Receipt, TrendingUp, FileText, Target, 
   Wallet, Plug, Settings, ClipboardCheck, LineChart,
@@ -191,36 +192,7 @@ export default function Features() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-50 border-b border-white/5 backdrop-blur-xl bg-[#0A0A14]/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div 
-            onClick={() => navigate(createPageUrl('Home'))}
-            className="flex items-center gap-2 sm:gap-3 cursor-pointer"
-          >
-            <img 
-              src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
-              alt="SETRA"
-              className="h-6 sm:h-8"
-              style={{ filter: "drop-shadow(0 0 10px rgba(123,59,255,0.5))" }}
-            />
-            <span className="text-lg sm:text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
-              SETRA
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline"
-              onClick={() => navigate(createPageUrl('Home'))}
-              className="hidden sm:flex"
-            >
-              Back to Home
-            </Button>
-            <Button onClick={() => navigate(createPageUrl('Dashboard'))} size="sm" className="sm:size-default">
-              Client Area
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <MarketingHeader />
 
       {/* Hero */}
       <section className="relative py-12 sm:py-20 px-4 sm:px-6">
