@@ -1,22 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import MarketingHeader from '@/components/layout/MarketingHeader';
-import OrbitalRings from '@/components/ui/OrbitalRings';
 import { Target, Users, Shield, MapPin } from 'lucide-react';
 
 export default function AboutUs() {
   const navigate = useNavigate();
-  const [isLogoHovered, setIsLogoHovered] = useState(false);
-  const logoRef = useRef(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: logoRef,
-    offset: ["start end", "end start"]
-  });
 
   return (
     <div className="min-h-screen bg-[#0A0A14] relative overflow-hidden">
@@ -55,40 +47,17 @@ export default function AboutUs() {
             </p>
 
             {/* 3D Logo */}
-            <div 
-              ref={logoRef}
-              className="relative mb-20"
-              onMouseEnter={() => setIsLogoHovered(true)}
-              onMouseLeave={() => setIsLogoHovered(false)}
-            >
-              <div className="absolute inset-0 blur-[120px] opacity-30">
-                <div className="w-96 h-96 mx-auto bg-gradient-to-br from-[#7B3BFF] via-[#A855F7] to-transparent rounded-full" />
+            <div className="relative mb-20">
+              <div className="absolute inset-0 blur-[80px] opacity-20">
+                <div className="w-64 h-64 mx-auto bg-gradient-to-br from-[#7B3BFF] via-[#A855F7] to-transparent rounded-full" />
               </div>
               
-              {/* Orbital Rings */}
-              <OrbitalRings isHovered={isLogoHovered} scrollProgress={scrollYProgress} />
-              
-              <motion.img 
+              <img 
                 src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                 alt="SETRA 3D"
-                className="relative h-80 mx-auto cursor-pointer"
-                animate={{
-                  filter: [
-                    "drop-shadow(0 0 60px rgba(123,59,255,0.8)) drop-shadow(0 0 100px rgba(168,85,247,0.6))",
-                    "drop-shadow(0 0 80px rgba(123,59,255,1)) drop-shadow(0 0 120px rgba(168,85,247,0.8))",
-                    "drop-shadow(0 0 60px rgba(123,59,255,0.8)) drop-shadow(0 0 100px rgba(168,85,247,0.6))"
-                  ],
-                  scale: isLogoHovered ? 1.05 : 1
-                }}
-                transition={{
-                  filter: {
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  },
-                  scale: {
-                    duration: 0.3
-                  }
+                className="relative h-48 mx-auto"
+                style={{
+                  filter: "drop-shadow(0 0 40px rgba(123,59,255,0.6))"
                 }}
               />
             </div>

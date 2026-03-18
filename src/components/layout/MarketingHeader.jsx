@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
 
-export default function MarketingHeader({ breathCount = 10 }) {
+
+export default function MarketingHeader() {
   const navigate = useNavigate();
 
   return (
@@ -16,28 +16,10 @@ export default function MarketingHeader({ breathCount = 10 }) {
             onClick={() => navigate(createPageUrl('Home'))}
             className="flex items-center gap-2 sm:gap-3 cursor-pointer"
           >
-            <motion.img 
+            <img 
               src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
               alt="SETRA"
               className="h-6 sm:h-8"
-              animate={{
-                filter: breathCount < 5 
-                  ? [
-                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))",
-                      "drop-shadow(0 0 25px rgba(123,59,255,0.9))",
-                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))"
-                    ]
-                  : [
-                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))",
-                      "drop-shadow(0 0 20px rgba(123,59,255,0.7))",
-                      "drop-shadow(0 0 10px rgba(123,59,255,0.5))"
-                    ]
-              }}
-              transition={{
-                duration: breathCount < 5 ? 0.8 : 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
             />
             <span className="text-lg sm:text-xl font-bold text-[#E9D5FF] tracking-widest" style={{ fontFamily: 'monospace, system-ui' }}>
               SETRA
@@ -64,24 +46,13 @@ export default function MarketingHeader({ breathCount = 10 }) {
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button 
-            onClick={() => navigate(createPageUrl('Onboarding'))}
-            className="gap-2"
-            size="sm"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">Start Free</span>
-            <span className="sm:hidden">Start</span>
-          </Button>
-          <Button variant="outline" size="sm" className="hidden sm:flex">Book Demo</Button>
+        <div className="flex items-center gap-2">
           <Button 
             variant="outline"
             onClick={() => navigate(createPageUrl('Dashboard'))}
             size="sm"
           >
-            <span className="hidden sm:inline">Client Area</span>
-            <span className="sm:hidden">Login</span>
+            Login
           </Button>
         </div>
       </div>
