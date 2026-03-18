@@ -175,12 +175,9 @@ export default function AboutUs() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Core Values</h3>
-                <div className="text-slate-400 text-left space-y-3">
-                  <p><span className="text-[#C084FC] font-semibold">Innovation:</span> Pioneering cutting-edge solutions for a dynamic market.</p>
-                  <p><span className="text-[#C084FC] font-semibold">Reliability:</span> Building trust through consistent performance and unwavering commitment.</p>
-                  <p><span className="text-[#C084FC] font-semibold">Transparency:</span> Fostering open communication and ensuring integrity in all our operations.</p>
-                  <p><span className="text-[#C084FC] font-semibold">Customer Success:</span> Empowering clients with insights for their highest potential and sustainable growth.</p>
-                </div>
+                <p className="text-slate-400">
+                  Innovation, Reliability, Transparency, and Customer Success — pioneering solutions that build trust, foster integrity, and empower clients to achieve sustainable growth.
+                </p>
               </Card>
             </motion.div>
           </div>
