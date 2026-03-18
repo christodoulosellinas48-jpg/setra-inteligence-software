@@ -43,6 +43,8 @@ export default function Pricing() {
       popular: true,
       features: [
         'All Pro Plan features',
+        'AI Counselor Chat: 24/7 business assistant with personalized insights',
+        'Smart Invoice Extraction: AI-powered automatic data extraction',
         'Early Access to New Features: Get Menu Costing first',
         'Bookkeeping: Automated invoice/receipt parsing, bank reconciliation',
         'Advanced Forecasting: Multi-scenario analysis, cash flow',
