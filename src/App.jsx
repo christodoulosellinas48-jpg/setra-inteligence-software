@@ -12,6 +12,7 @@ import SidebarLayout from '@/components/layout/SidebarLayout';
 import Home from './pages/Home';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
+import AboutUs from './pages/AboutUs';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
       <Route path="/Home" element={<Home />} />
       <Route path="/Features" element={<Features />} />
       <Route path="/Pricing" element={<Pricing />} />
+      <Route path="/AboutUs" element={<AboutUs />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}

@@ -56,7 +56,12 @@ export default function MarketingHeader({ breathCount = 10 }) {
             >
               Pricing
             </button>
-            <a href="#resources" className="text-slate-400 hover:text-white transition-colors">Resources</a>
+            <button 
+              onClick={() => navigate(createPageUrl('AboutUs'))}
+              className="text-slate-400 hover:text-white transition-colors"
+            >
+              About Us
+            </button>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
