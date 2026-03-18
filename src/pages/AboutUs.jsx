@@ -209,47 +209,50 @@ export default function AboutUs() {
                   </radialGradient>
                 </defs>
 
-                {/* Cyprus island shape — elongated east-west with Karpaz peninsula */}
+                {/* Cyprus island - complete outline with all peninsulas */}
                 <path
-                  d="M 70,160 
-                     Q 80,150 100,148
-                     L 130,145 L 160,143 L 190,142 
-                     L 220,141 L 250,140 L 280,139 
-                     L 310,138 L 340,137 L 370,136
-                     L 400,135 L 420,134
-                     Q 430,133 435,128
-                     L 450,120 L 470,115 L 495,113 L 520,115
-                     Q 530,117 533,122
-                     Q 532,128 525,132
-                     L 505,137 L 485,140
-                     Q 470,143 460,148
-                     L 450,155 L 435,165
-                     Q 425,170 415,172
-                     L 390,175 L 360,177 L 330,178
-                     L 300,178 L 270,177 L 240,175
-                     L 210,172 L 180,169 L 150,166
-                     L 120,163 L 95,161
-                     Q 80,160 70,160 Z"
+                  d="M 50,155
+                     L 65,148 L 85,145 L 105,144 L 125,143
+                     L 145,142 L 165,141 L 185,140 L 205,139
+                     L 225,138 L 245,137 L 265,136 L 285,135
+                     L 305,134 L 325,133 L 345,132 L 365,131
+                     L 385,130 L 405,129 L 425,128
+                     Q 435,127 440,122
+                     L 445,117 L 455,112 L 470,108 L 490,105
+                     L 510,104 L 530,106 L 545,110
+                     Q 552,114 553,120
+                     L 552,127 L 548,133 L 540,138
+                     L 528,142 L 515,145 L 500,148
+                     L 485,151 L 470,154
+                     Q 460,156 455,162
+                     L 450,168 L 440,173 L 425,177
+                     L 405,180 L 385,182 L 365,183
+                     L 345,184 L 325,184 L 305,183
+                     L 285,182 L 265,181 L 245,179
+                     L 225,177 L 205,174 L 185,171
+                     L 165,168 L 145,165 L 125,162
+                     L 105,160 L 85,159 L 65,159
+                     Q 55,158 50,155 Z"
                   fill="url(#islandFill)"
                   stroke="#7B3BFF"
                   strokeWidth="2.5"
                   filter="url(#cyprusGlow)"
                 />
 
-                {/* Nicosia pin — center of the island */}
+                {/* Nicosia pin — center-north of the island */}
                 {/* Pin body */}
-                <circle cx="280" cy="150" r="10" fill="#7B3BFF" filter="url(#pinGlow)" opacity="0.9" />
-                <circle cx="280" cy="150" r="6" fill="#C084FC" filter="url(#pinGlow)" />
-                <circle cx="280" cy="150" r="3" fill="white" />
+                <circle cx="270" cy="148" r="10" fill="#7B3BFF" filter="url(#pinGlow)" opacity="0.9" />
+                <circle cx="270" cy="148" r="6" fill="#C084FC" filter="url(#pinGlow)" />
+                <circle cx="270" cy="148" r="3" fill="white" />
                 {/* Pin tail */}
-                <line x1="280" y1="160" x2="280" y2="173" stroke="#A855F7" strokeWidth="2.5" filter="url(#pinGlow)" />
-                <circle cx="280" cy="175" r="2" fill="#A855F7" />
+                <line x1="270" y1="158" x2="270" y2="171" stroke="#A855F7" strokeWidth="2.5" filter="url(#pinGlow)" />
+                <circle cx="270" cy="173" r="2" fill="#A855F7" />
 
                 {/* Pulse ring around pin */}
-                <circle cx="280" cy="150" r="18" fill="none" stroke="#7B3BFF" strokeWidth="1.5" opacity="0.4" filter="url(#pinGlow)" />
+                <circle cx="270" cy="148" r="18" fill="none" stroke="#7B3BFF" strokeWidth="1.5" opacity="0.4" filter="url(#pinGlow)" />
 
                 {/* Label */}
-                <text x="293" y="155" fill="#E9D5FF" fontSize="13" fontFamily="system-ui" fontWeight="600">Nicosia</text>
+                <text x="283" y="153" fill="#E9D5FF" fontSize="13" fontFamily="system-ui" fontWeight="600">Nicosia</text>
               </svg>
             </div>
           </motion.div>
