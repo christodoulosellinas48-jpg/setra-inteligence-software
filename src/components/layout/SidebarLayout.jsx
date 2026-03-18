@@ -48,7 +48,7 @@ export default function SidebarLayout({ children }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-300 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
+          'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-200 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
           collapsed ? 'w-16' : 'w-64'
         )}
       >
@@ -111,11 +111,20 @@ export default function SidebarLayout({ children }) {
         <div className="p-3 border-t border-white/5">
           <Button
             variant="ghost"
-            size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full text-slate-400 hover:text-[#A855F7] hover:bg-white/5 transition-all duration-200"
+            className={cn(
+              "w-full text-slate-400 hover:text-[#A855F7] hover:bg-white/5 transition-all duration-200",
+              collapsed ? 'justify-center px-0' : 'justify-start'
+            )}
           >
-            {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            {collapsed ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <>
+                <ChevronLeft className="w-5 h-5 mr-2" />
+                <span className="text-sm">Back</span>
+              </>
+            )}
           </Button>
         </div>
       </aside>
@@ -123,7 +132,7 @@ export default function SidebarLayout({ children }) {
       {/* Main Content */}
       <main
         className={cn(
-          'flex-1 transition-all duration-300',
+          'flex-1 transition-all duration-200',
           collapsed ? 'ml-16' : 'ml-64'
         )}
       >
