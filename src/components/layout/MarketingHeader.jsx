@@ -43,7 +43,7 @@ export default function MarketingHeader({ breathCount = 10 }) {
               SETRA
             </span>
           </div>
-          <div className="hidden lg:flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
             <button 
               onClick={() => navigate(createPageUrl('Features'))}
               className="text-slate-400 hover:text-white transition-colors"
