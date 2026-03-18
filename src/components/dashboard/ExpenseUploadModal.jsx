@@ -37,49 +37,72 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   const analyzeWithAI = async (fileUrl) => {
     setAnalyzing(true);
     
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Analyze this expense document (receipt/invoice) and extract the following information. Be precise with numbers and dates.
-      
-Return the extracted data in JSON format with these fields:
-- supplier_name: The name of the vendor/supplier/merchant
-- invoice_total: The total amount as a number (without currency symbols)
-- vat_included: Boolean - true if VAT/tax is mentioned or included
-- expense_category: One of these exact values: "food_beverage", "staff_costs", "fixed_costs", "utilities", "operating_expenses", "one_off_expenses"
-- invoice_date: The date in YYYY-MM-DD format (if visible)
-- notes: Any relevant notes about the expense
-
-Category guidelines:
-- food_beverage: Food supplies, beverages, ingredients, restaurant supplies
-- staff_costs: Wages, salaries, contractor payments, training
-- fixed_costs: Rent, insurance, subscriptions, licenses, equipment leases
-- utilities: Electricity, water, gas, internet, phone
-- operating_expenses: Marketing, cleaning supplies, repairs, packaging
-- one_off_expenses: Equipment purchases, renovations, unusual expenses`,
-      file_urls: [fileUrl],
-      response_json_schema: {
-        type: "object",
-        properties: {
-          supplier_name: { type: "string" },
-          invoice_total: { type: "number" },
-          vat_included: { type: "boolean" },
-          expense_category: { type: "string" },
-          invoice_date: { type: "string" },
-          notes: { type: "string" }
+    try {
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url: fileUrl,
+        json_schema: {
+          type: "object",
+          properties: {
+            supplier_name: { type: "string", description: "Vendor/supplier/merchant name" },
+            invoice_total: { type: "number", description: "Total amount without currency symbols" },
+            vat_included: { type: "boolean", description: "Whether VAT/tax is included" },
+            invoice_date: { type: "string", description: "Date in YYYY-MM-DD format" },
+            line_items: {
+              type: "array",
+              description: "Individual items or services on the invoice",
+              items: {
+                type: "object",
+                properties: {
+                  description: { type: "string" },
+                  quantity: { type: "number" },
+                  unit_price: { type: "number" },
+                  total: { type: "number" },
+                  vat_rate: { type: "number", description: "VAT percentage if specified" }
+                }
+              }
+            },
+            vat_amount: { type: "number", description: "Total VAT amount if specified separately" },
+            net_amount: { type: "number", description: "Amount before VAT" },
+            invoice_number: { type: "string", description: "Invoice reference number" }
+          }
         }
-      }
-    });
+      });
 
-    if (result) {
-      setFormData(prev => ({
-        ...prev,
-        supplier_name: result.supplier_name || prev.supplier_name,
-        invoice_total: result.invoice_total ? String(result.invoice_total) : prev.invoice_total,
-        vat_included: result.vat_included ?? prev.vat_included,
-        expense_category: result.expense_category || prev.expense_category,
-        invoice_date: result.invoice_date || prev.invoice_date,
-        notes: result.notes || prev.notes
-      }));
-      setAiSuggested(true);
+      if (result.status === 'success' && result.output) {
+        const extracted = result.output;
+        
+        // Determine expense category based on supplier name and line items
+        let category = '';
+        const supplierLower = (extracted.supplier_name || '').toLowerCase();
+        const itemsText = (extracted.line_items || []).map(i => i.description || '').join(' ').toLowerCase();
+        
+        if (supplierLower.includes('food') || supplierLower.includes('restaurant') || supplierLower.includes('catering') || 
+            itemsText.includes('food') || itemsText.includes('beverage') || itemsText.includes('ingredient')) {
+          category = 'food_beverage';
+        } else if (supplierLower.includes('electric') || supplierLower.includes('water') || supplierLower.includes('gas') || 
+                   itemsText.includes('electricity') || itemsText.includes('utility')) {
+          category = 'utilities';
+        } else if (supplierLower.includes('rent') || supplierLower.includes('insurance') || supplierLower.includes('lease')) {
+          category = 'fixed_costs';
+        } else if (supplierLower.includes('staff') || supplierLower.includes('payroll') || itemsText.includes('salary') || itemsText.includes('wage')) {
+          category = 'staff_costs';
+        } else {
+          category = 'operating_expenses';
+        }
+
+        setFormData(prev => ({
+          ...prev,
+          supplier_name: extracted.supplier_name || prev.supplier_name,
+          invoice_total: extracted.invoice_total ? String(extracted.invoice_total) : prev.invoice_total,
+          vat_included: extracted.vat_included ?? (extracted.vat_amount > 0) ?? prev.vat_included,
+          expense_category: category || prev.expense_category,
+          invoice_date: extracted.invoice_date || prev.invoice_date,
+          notes: extracted.invoice_number ? `Invoice #${extracted.invoice_number}` : prev.notes
+        }));
+        setAiSuggested(true);
+      }
+    } catch (error) {
+      console.error('Error extracting data:', error);
     }
     
     setAnalyzing(false);
