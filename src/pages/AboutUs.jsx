@@ -209,56 +209,47 @@ export default function AboutUs() {
                   </radialGradient>
                 </defs>
 
-                {/* Cyprus island shape — accurate outline */}
+                {/* Cyprus island shape — elongated east-west with Karpaz peninsula */}
                 <path
-                  d="M 80,155 
-                     L 90,148 L 105,145 L 120,148 L 130,143 L 145,140 
-                     L 160,138 L 175,135 L 190,133 L 205,130 L 220,128 
-                     L 235,126 L 250,124 L 265,123 L 280,122 L 295,121 
-                     L 310,120 L 325,119 L 340,118 L 355,117 L 370,116 
-                     L 385,115 L 395,114 L 405,113 
-                     L 415,112 L 425,111 
-                     L 435,113 L 445,118 L 450,122
-                     L 455,117 L 462,113 L 470,112 L 478,113 L 485,118 
-                     L 490,124 L 488,130 L 482,134 L 475,135
-                     L 470,140 L 468,148 L 465,155 L 460,162 
-                     L 452,168 L 445,172 L 435,175 
-                     L 420,178 L 405,180 L 390,181 
-                     L 375,182 L 360,183 L 345,183 
-                     L 330,182 L 315,180 L 300,178 
-                     L 280,175 L 260,172 L 240,170 
-                     L 220,168 L 200,166 L 180,163 
-                     L 160,160 L 140,158 L 120,157 
-                     L 100,157 L 85,157 Z"
+                  d="M 70,160 
+                     Q 80,150 100,148
+                     L 130,145 L 160,143 L 190,142 
+                     L 220,141 L 250,140 L 280,139 
+                     L 310,138 L 340,137 L 370,136
+                     L 400,135 L 420,134
+                     Q 430,133 435,128
+                     L 450,120 L 470,115 L 495,113 L 520,115
+                     Q 530,117 533,122
+                     Q 532,128 525,132
+                     L 505,137 L 485,140
+                     Q 470,143 460,148
+                     L 450,155 L 435,165
+                     Q 425,170 415,172
+                     L 390,175 L 360,177 L 330,178
+                     L 300,178 L 270,177 L 240,175
+                     L 210,172 L 180,169 L 150,166
+                     L 120,163 L 95,161
+                     Q 80,160 70,160 Z"
                   fill="url(#islandFill)"
                   stroke="#7B3BFF"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   filter="url(#cyprusGlow)"
                 />
 
-                {/* Karpaz Peninsula (north-east pointy bit) */}
-                <path
-                  d="M 435,113 L 445,108 L 458,104 L 472,102 L 486,101 L 500,102 L 510,105 L 515,110 L 510,114 L 500,116 L 490,116 L 480,114 L 475,113 L 470,112"
-                  fill="url(#islandFill)"
-                  stroke="#7B3BFF"
-                  strokeWidth="2"
-                  filter="url(#cyprusGlow)"
-                />
-
-                {/* Nicosia pin — roughly center-north of island */}
+                {/* Nicosia pin — center of the island */}
                 {/* Pin body */}
-                <circle cx="285" cy="145" r="10" fill="#7B3BFF" filter="url(#pinGlow)" opacity="0.9" />
-                <circle cx="285" cy="145" r="6" fill="#C084FC" filter="url(#pinGlow)" />
-                <circle cx="285" cy="145" r="3" fill="white" />
+                <circle cx="280" cy="150" r="10" fill="#7B3BFF" filter="url(#pinGlow)" opacity="0.9" />
+                <circle cx="280" cy="150" r="6" fill="#C084FC" filter="url(#pinGlow)" />
+                <circle cx="280" cy="150" r="3" fill="white" />
                 {/* Pin tail */}
-                <line x1="285" y1="155" x2="285" y2="168" stroke="#A855F7" strokeWidth="2.5" filter="url(#pinGlow)" />
-                <circle cx="285" cy="170" r="2" fill="#A855F7" />
+                <line x1="280" y1="160" x2="280" y2="173" stroke="#A855F7" strokeWidth="2.5" filter="url(#pinGlow)" />
+                <circle cx="280" cy="175" r="2" fill="#A855F7" />
 
                 {/* Pulse ring around pin */}
-                <circle cx="285" cy="145" r="18" fill="none" stroke="#7B3BFF" strokeWidth="1.5" opacity="0.4" filter="url(#pinGlow)" />
+                <circle cx="280" cy="150" r="18" fill="none" stroke="#7B3BFF" strokeWidth="1.5" opacity="0.4" filter="url(#pinGlow)" />
 
                 {/* Label */}
-                <text x="298" y="150" fill="#E9D5FF" fontSize="13" fontFamily="system-ui" fontWeight="600">Nicosia</text>
+                <text x="293" y="155" fill="#E9D5FF" fontSize="13" fontFamily="system-ui" fontWeight="600">Nicosia</text>
               </svg>
             </div>
           </motion.div>
