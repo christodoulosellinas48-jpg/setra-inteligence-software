@@ -20,7 +20,7 @@ export default function BottomLogoLink({ collapsed = false }) {
           <img 
             src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
             alt="SETRA"
-            className="w-8 h-8 flex-shrink-0 transition-all duration-300 group-hover:scale-110"
+            className={cn("flex-shrink-0 transition-all duration-300 group-hover:scale-110", collapsed ? "w-10 h-10" : "w-8 h-8")}
             style={{ filter: "drop-shadow(0 0 8px rgba(123,59,255,0.4))" }}
           />
           {!collapsed && (
