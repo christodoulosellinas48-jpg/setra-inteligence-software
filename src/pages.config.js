@@ -18,6 +18,8 @@ import Inventory from './pages/Inventory';
 import Payroll from './pages/Payroll';
 import RecipeManager from './pages/RecipeManager';
 import PurchaseOrders from './pages/PurchaseOrders';
+import MenuEngineering from './pages/MenuEngineering';
+import WasteManagement from './pages/WasteManagement';
 import __Layout from './Layout.jsx';
 
 export const PAGES = {
@@ -41,6 +43,8 @@ export const PAGES = {
     "Payroll": Payroll,
     "RecipeManager": RecipeManager,
     "PurchaseOrders": PurchaseOrders,
+    "MenuEngineering": MenuEngineering,
+    "WasteManagement": WasteManagement,
 }
 
 export const pagesConfig = {

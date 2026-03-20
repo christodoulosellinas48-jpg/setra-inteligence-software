@@ -19,6 +19,8 @@ import {
   Users,
   ChefHat,
   ShoppingCart,
+  Trash2,
+  UtensilsCrossed,
   Settings,
   ChevronLeft,
   ChevronRight
@@ -30,18 +32,20 @@ export default function SidebarLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/Dashboard' },
-    { label: 'Consolidated', icon: Building2, path: '/ConsolidatedView' },
-    { label: 'Budget', icon: Wallet, path: '/Budgeting' },
-    { label: 'Forecast', icon: LineChart, path: '/Forecasting' },
-    { label: 'Reports', icon: BarChart3, path: '/Reports' },
-    { label: 'Audit', icon: ClipboardCheck, path: '/Audit' },
-    { label: 'Bookkeeping', icon: Receipt, path: '/Bookkeeping' },
-    { label: 'Inventory', icon: Package, path: '/Inventory' },
-    { label: 'Recipes', icon: ChefHat, path: '/RecipeManager' },
-    { label: 'Purchase Orders', icon: ShoppingCart, path: '/PurchaseOrders' },
-    { label: 'Payroll', icon: Users, path: '/Payroll' },
-    { label: 'Integrations', icon: Plug, path: '/Integrations' },
+    { label: 'Dashboard',        icon: LayoutDashboard, path: '/Dashboard' },
+    { label: 'Consolidated',     icon: Building2,        path: '/ConsolidatedView' },
+    { label: 'Budget',           icon: Wallet,           path: '/Budgeting' },
+    { label: 'Forecast',         icon: LineChart,        path: '/Forecasting' },
+    { label: 'Reports',          icon: BarChart3,        path: '/Reports' },
+    { label: 'Audit',            icon: ClipboardCheck,   path: '/Audit' },
+    { label: 'Bookkeeping',      icon: Receipt,          path: '/Bookkeeping' },
+    { label: 'Inventory',        icon: Package,          path: '/Inventory' },
+    { label: 'Recipes',          icon: ChefHat,          path: '/RecipeManager' },
+    { label: 'Menu Engineering', icon: UtensilsCrossed,  path: '/MenuEngineering' },
+    { label: 'Purchase Orders',  icon: ShoppingCart,     path: '/PurchaseOrders' },
+    { label: 'Waste',            icon: Trash2,           path: '/WasteManagement' },
+    { label: 'Payroll',          icon: Users,            path: '/Payroll' },
+    { label: 'Integrations',     icon: Plug,             path: '/Integrations' },
   ];
 
   const bottomItems = [
