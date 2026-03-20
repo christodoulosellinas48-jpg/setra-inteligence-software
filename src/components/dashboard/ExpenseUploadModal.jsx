@@ -25,6 +25,7 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   const [aiSuggested, setAiSuggested] = useState(false);
   const [saving, setSaving] = useState(false);
   const [documentUrl, setDocumentUrl] = useState('');
+  const [extractedLineItems, setExtractedLineItems] = useState([]);
   const [formData, setFormData] = useState({
     supplier_name: '',
     invoice_total: '',
@@ -90,6 +91,7 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
           category = 'operating_expenses';
         }
 
+        setExtractedLineItems(extracted.line_items || []);
         setFormData(prev => ({
           ...prev,
           supplier_name: extracted.supplier_name || prev.supplier_name,
@@ -127,7 +129,7 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   const handleSubmit = async () => {
     setSaving(true);
     
-    await base44.entities.ExpenseDocument.create({
+    const doc = await base44.entities.ExpenseDocument.create({
             ...formData,
             invoice_total: parseFloat(formData.invoice_total) || 0,
             document_url: documentUrl,
@@ -136,24 +138,35 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
             last_edited_by: userEmail,
             last_edited_at: new Date().toISOString()
           });
+
+    // Trigger background invoice processing (supplier + inventory updates)
+    base44.functions.invoke('processInvoice', {
+      business_id: businessId,
+      supplier_name: formData.supplier_name,
+      invoice_date: formData.invoice_date,
+      expense_category: formData.expense_category,
+      invoice_total: parseFloat(formData.invoice_total) || 0,
+      line_items: extractedLineItems
+    }).catch(() => {}); // fire and forget
     
     onSave?.();
     setSaving(false);
     onOpenChange(false);
     
     // Reset form
-          setFile(null);
-          setDocumentUrl('');
-          setAiSuggested(false);
-          setFormData({
-            supplier_name: '',
-            invoice_total: '',
-            vat_included: false,
-            expense_category: '',
-            invoice_date: '',
-            notes: ''
-          });
-        };
+    setFile(null);
+    setDocumentUrl('');
+    setAiSuggested(false);
+    setExtractedLineItems([]);
+    setFormData({
+      supplier_name: '',
+      invoice_total: '',
+      vat_included: false,
+      expense_category: '',
+      invoice_date: '',
+      notes: ''
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

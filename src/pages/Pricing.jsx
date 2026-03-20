@@ -19,7 +19,9 @@ export default function Pricing() {
       features: [
         'Dashboard: Real-time financial metrics and KPIs',
         'Reports: Standard P&L statements, expense breakdowns',
-        'Cost Control: Basic tracking of food and staff costs'
+        'Cost Control: Basic tracking of food and staff costs',
+        'Inventory: Stock level tracking and reorder alerts',
+        'Waste Management: Log and track food waste & spoilage'
       ]
     },
     {
@@ -32,6 +34,10 @@ export default function Pricing() {
         'Budgeting: Create, track, and optimize budgets',
         'Analytics: Deeper insights, trend analysis, custom dashboards',
         'Forecasting: 6-month revenue and expense projections',
+        'Vendor Management: Supplier directory, spend analysis',
+        'Smart Procurement: Purchase order creation and tracking',
+        'Menu Engineering: Popularity vs profitability analysis',
+        'Recipe Costing: Ingredient-level food cost calculation',
         'Integrations: Core POS and accounting system integrations'
       ]
     },
@@ -44,6 +50,9 @@ export default function Pricing() {
       features: [
         'All Pro Plan features',
         'AI Counselor Chat: 24/7 business assistant with personalized insights',
+        'Supply Chain Automation: Auto-reordering, invoice-to-inventory sync',
+        'Smart Invoice Extraction: AI-powered automatic data extraction',
+        'Payroll Management: Employee contracts, shift tracking, labor costs',
         'Smart Invoice Extraction: AI-powered automatic data extraction',
         'Early Access to New Features: Get Menu Costing first',
         'Bookkeeping: Automated invoice/receipt parsing, bank reconciliation',

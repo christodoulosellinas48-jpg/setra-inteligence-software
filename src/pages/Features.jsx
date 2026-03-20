@@ -8,7 +8,8 @@ import MarketingHeader from '@/components/layout/MarketingHeader';
 import { 
   BarChart3, Receipt, TrendingUp, FileText, Target, 
   Wallet, Plug, Settings, ClipboardCheck, LineChart,
-  Shield, Zap, ArrowRight, CheckCircle2, Sparkles, ScanLine
+  Shield, Zap, ArrowRight, CheckCircle2, Sparkles, ScanLine,
+  Store, RefreshCw, ShoppingCart
 } from 'lucide-react';
 
 export default function Features() {
@@ -216,6 +217,48 @@ export default function Features() {
       ],
       gradient: "from-[#A855F7] to-[#C084FC]",
       tier: "premium"
+    },
+    {
+      icon: Store,
+      title: "Vendor Management",
+      description: "Centralized supplier directory with spend analysis and relationship tracking",
+      details: [
+        "Supplier directory auto-populated from invoices",
+        "Total spend and invoice count per supplier",
+        "Category-based supplier classification",
+        "Contact info and last order tracking",
+        "Supplier cost impact analysis"
+      ],
+      gradient: "from-[#7B3BFF] to-[#A855F7]",
+      tier: "pro"
+    },
+    {
+      icon: RefreshCw,
+      title: "Supply Chain Automation",
+      description: "Automate reordering, supplier communication, and inventory reconciliation",
+      details: [
+        "Auto-create purchase orders when stock is low",
+        "Email purchase orders directly to suppliers",
+        "Invoice-to-inventory automatic reconciliation",
+        "New ingredients auto-added from invoices",
+        "Stock levels updated on invoice upload"
+      ],
+      gradient: "from-[#C084FC] to-[#E9D5FF]",
+      tier: "premium"
+    },
+    {
+      icon: ShoppingCart,
+      title: "Smart Procurement",
+      description: "Streamlined purchase order management with supplier workflow automation",
+      details: [
+        "Draft purchase orders from reorder thresholds",
+        "Send orders to suppliers with one click",
+        "Track order status from draft to received",
+        "Supplier-grouped order generation",
+        "Purchase history and cost tracking"
+      ],
+      gradient: "from-[#8B5CF6] to-[#A855F7]",
+      tier: "pro"
     }
   ];
 
