@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
-import { Building2, TrendingUp, FileText, Calendar, Mail, Phone } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Building2, TrendingUp, FileText, Calendar, Mail, Phone, X, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CATEGORY_COLORS = {
@@ -16,8 +17,17 @@ const CATEGORY_COLORS = {
   other: 'bg-slate-500/20 text-slate-400 border-slate-500/30'
 };
 
+const STATUS_STYLES = {
+  new: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+  parsed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  needs_review: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  approved: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  posted: 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+};
+
 function VendorsContent() {
   const { currentBusiness } = useBusiness();
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness?.currency] || '€';
 
   const { data: suppliers = [], isLoading: loadingSuppliers } = useQuery({
@@ -29,6 +39,12 @@ function VendorsContent() {
   const { data: expenses = [] } = useQuery({
     queryKey: ['allExpenses', currentBusiness?.id],
     queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-invoice_date', 100),
+    enabled: !!currentBusiness
+  });
+
+  const { data: documents = [] } = useQuery({
+    queryKey: ['documents', currentBusiness?.id],
+    queryFn: () => base44.entities.Document.filter({ business_id: currentBusiness.id }, '-invoice_date', 200),
     enabled: !!currentBusiness
   });
 
@@ -100,7 +116,10 @@ function VendorsContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
               >
-                <Card className="bg-[#151528]/80 border-white/5 hover:border-[#7B3BFF]/30 transition-all duration-200 h-full">
+                <Card
+                  className="bg-[#151528]/80 border-white/5 hover:border-[#7B3BFF]/30 transition-all duration-200 h-full cursor-pointer"
+                  onClick={() => setSelectedSupplier(supplier)}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
@@ -150,6 +169,121 @@ function VendorsContent() {
           })}
         </div>
       )}
+
+      {/* Vendor Invoice Detail Modal */}
+      <Dialog open={!!selectedSupplier} onOpenChange={() => setSelectedSupplier(null)}>
+        <DialogContent className="bg-[#151528] border-white/10 max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-[#7B3BFF]/15 flex items-center justify-center">
+                <Building2 className="w-4 h-4 text-[#A855F7]" />
+              </div>
+              {selectedSupplier?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSupplier && (
+            <VendorInvoiceList
+              supplier={selectedSupplier}
+              documents={documents}
+              expenses={expenses}
+              currencySymbol={currencySymbol}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function VendorInvoiceList({ supplier, documents, expenses, currencySymbol }) {
+  const supplierDocs = useMemo(() => {
+    return documents.filter(d => d.supplier_name?.toLowerCase().trim() === supplier.name?.toLowerCase().trim());
+  }, [documents, supplier]);
+
+  const supplierExpenses = useMemo(() => {
+    return expenses.filter(e => e.supplier_name?.toLowerCase().trim() === supplier.name?.toLowerCase().trim());
+  }, [expenses, supplier]);
+
+  const allInvoices = useMemo(() => {
+    const fromDocs = supplierDocs.map(d => ({
+      id: d.id,
+      invoice_number: d.invoice_number || '—',
+      invoice_date: d.invoice_date || '—',
+      due_date: d.due_date,
+      gross_total: d.gross_total,
+      net_total: d.net_total,
+      vat_total: d.vat_total,
+      status: d.status,
+      source: 'document'
+    }));
+    const fromExp = supplierExpenses
+      .filter(e => !supplierDocs.find(d => d.invoice_number === e.invoice_number))
+      .map(e => ({
+        id: e.id,
+        invoice_number: e.invoice_number || '—',
+        invoice_date: e.invoice_date || '—',
+        due_date: null,
+        gross_total: e.invoice_total,
+        net_total: null,
+        vat_total: null,
+        status: 'posted',
+        source: 'expense'
+      }));
+    return [...fromDocs, ...fromExp].sort((a, b) => (b.invoice_date > a.invoice_date ? 1 : -1));
+  }, [supplierDocs, supplierExpenses]);
+
+  const totalSpend = allInvoices.reduce((s, i) => s + (i.gross_total || 0), 0);
+
+  if (allInvoices.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
+        <FileText className="w-10 h-10 text-slate-600 mb-3" />
+        <p className="text-slate-400">No invoices found for this supplier.</p>
+        <p className="text-slate-600 text-sm mt-1">Upload invoices in the Bookkeeping section to populate this view.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white/5 rounded-xl p-3 text-center">
+          <p className="text-slate-500 text-xs">Total Invoices</p>
+          <p className="text-white font-bold text-xl mt-1">{allInvoices.length}</p>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3 text-center">
+          <p className="text-slate-500 text-xs">Total Spend</p>
+          <p className="text-white font-bold text-xl mt-1">{currencySymbol}{totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3 text-center">
+          <p className="text-slate-500 text-xs">Latest Invoice</p>
+          <p className="text-white font-bold text-sm mt-1">{allInvoices[0]?.invoice_date || '—'}</p>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {allInvoices.map(inv => (
+          <div key={inv.id} className="bg-white/5 rounded-xl p-4 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-white font-medium">{inv.invoice_number}</p>
+                <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Issued: {inv.invoice_date}</span>
+                  {inv.due_date && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Due: {inv.due_date}</span>}
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-white font-bold">{currencySymbol}{(inv.gross_total || 0).toFixed(2)}</p>
+                {inv.net_total != null && (
+                  <p className="text-slate-500 text-xs">Net: {currencySymbol}{inv.net_total.toFixed(2)} · VAT: {currencySymbol}{(inv.vat_total || 0).toFixed(2)}</p>
+                )}
+              </div>
+            </div>
+            {inv.status && (
+              <Badge className={`text-xs border ${STATUS_STYLES[inv.status] || STATUS_STYLES.new} capitalize`}>{inv.status?.replace(/_/g, ' ')}</Badge>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
