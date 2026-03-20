@@ -16,6 +16,8 @@ import Settings from './pages/Settings';
 import AboutUs from './pages/AboutUs';
 import Inventory from './pages/Inventory';
 import Payroll from './pages/Payroll';
+import RecipeManager from './pages/RecipeManager';
+import PurchaseOrders from './pages/PurchaseOrders';
 import __Layout from './Layout.jsx';
 
 export const PAGES = {
@@ -37,6 +39,8 @@ export const PAGES = {
     "AboutUs": AboutUs,
     "Inventory": Inventory,
     "Payroll": Payroll,
+    "RecipeManager": RecipeManager,
+    "PurchaseOrders": PurchaseOrders,
 }
 
 export const pagesConfig = {
