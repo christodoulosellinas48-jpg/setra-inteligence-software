@@ -17,6 +17,8 @@ import {
   Plug,
   Package,
   Users,
+  ChefHat,
+  ShoppingCart,
   Settings,
   ChevronLeft,
   ChevronRight
@@ -36,6 +38,8 @@ export default function SidebarLayout({ children }) {
     { label: 'Audit', icon: ClipboardCheck, path: '/Audit' },
     { label: 'Bookkeeping', icon: Receipt, path: '/Bookkeeping' },
     { label: 'Inventory', icon: Package, path: '/Inventory' },
+    { label: 'Recipes', icon: ChefHat, path: '/RecipeManager' },
+    { label: 'Purchase Orders', icon: ShoppingCart, path: '/PurchaseOrders' },
     { label: 'Payroll', icon: Users, path: '/Payroll' },
     { label: 'Integrations', icon: Plug, path: '/Integrations' },
   ];
