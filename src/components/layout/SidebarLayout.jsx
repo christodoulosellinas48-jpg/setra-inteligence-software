@@ -15,7 +15,8 @@ import {
   ClipboardCheck,
   Receipt,
   Plug,
-  FileText,
+  Package,
+  Users,
   Settings,
   ChevronLeft,
   ChevronRight
@@ -34,6 +35,8 @@ export default function SidebarLayout({ children }) {
     { label: 'Reports', icon: BarChart3, path: '/Reports' },
     { label: 'Audit', icon: ClipboardCheck, path: '/Audit' },
     { label: 'Bookkeeping', icon: Receipt, path: '/Bookkeeping' },
+    { label: 'Inventory', icon: Package, path: '/Inventory' },
+    { label: 'Payroll', icon: Users, path: '/Payroll' },
     { label: 'Integrations', icon: Plug, path: '/Integrations' },
   ];
 
