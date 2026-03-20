@@ -67,11 +67,23 @@ function RecipeManagerContent() {
     onSuccess: () => qc.invalidateQueries(['recipes', currentBusiness?.id])
   });
 
+  // Convert qty to the base unit of the inventory item's unit_cost
+  const convertToBaseUnit = (qty, fromUnit, toUnit) => {
+    if (fromUnit === toUnit) return qty;
+    // Normalize everything to kg or l, then convert to target
+    const toKgOrL = { kg: 1, g: 0.001, lb: 0.453592, oz: 0.028349, l: 1, ml: 0.001, pc: 1 };
+    const fromFactor = toKgOrL[fromUnit] ?? 1;
+    const toFactor = toKgOrL[toUnit] ?? 1;
+    return qty * (fromFactor / toFactor);
+  };
+
   // Get real-time unit cost from inventory
   const getIngredientCost = (recipe) => {
     const invItem = inventoryItems.find(i => i.id === recipe.inventory_item_id || i.ingredient_name?.toLowerCase() === recipe.ingredient_name?.toLowerCase());
     const unitCost = invItem?.unit_cost ?? recipe.unit_cost ?? 0;
-    const effectiveQty = recipe.qty * (100 / (recipe.yield_pct || 100));
+    const invUnit = invItem?.unit ?? recipe.unit;
+    const convertedQty = convertToBaseUnit(recipe.qty, recipe.unit, invUnit);
+    const effectiveQty = convertedQty * (100 / (recipe.yield_pct || 100));
     return unitCost * effectiveQty;
   };
 
