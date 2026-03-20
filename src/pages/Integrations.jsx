@@ -219,7 +219,7 @@ function IntegrationsContent() {
                 <Plug className="w-5 h-5 text-[#C084FC]" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Integration Hub</h1>
+                <h1 className="text-2xl font-bold text-white">Setra Connect</h1>
                 <p className="text-sm text-slate-500">Connect SETRA with your business systems</p>
               </div>
             </div>
@@ -232,7 +232,7 @@ function IntegrationsContent() {
         <Card className="bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 border-[#7B3BFF]/20 p-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">Enterprise Integration Infrastructure</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">Setra Connect — Enterprise Integration Infrastructure</h2>
               <p className="text-slate-400 mb-4 max-w-2xl">
                 Connect SETRA to your existing business systems for unified operational and financial intelligence. 
                 Seamless data flow across POS, accounting, inventory, and payroll platforms.
