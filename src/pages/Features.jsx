@@ -108,7 +108,7 @@ export default function Features() {
     },
     {
       icon: Plug,
-      title: "Integrations",
+      title: "Setra Connect",
       description: "Connect your POS, accounting, and business tools seamlessly",
       details: [
         "POS system integrations",
