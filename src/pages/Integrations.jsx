@@ -209,6 +209,13 @@ function IntegrationsContent() {
     if (integrationId === 'toast') setShowToastModal(true);
   };
 
+  const filteredIntegrations = INTEGRATIONS.filter(integration => {
+    const categoryMatch = selectedCategory === 'all' || integration.category === selectedCategory;
+    const searchMatch = integration.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                       integration.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return categoryMatch && searchMatch;
+  });
+
   const popularIntegrations = INTEGRATIONS.filter(i => i.popular);
 
   return (
