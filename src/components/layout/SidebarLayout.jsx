@@ -47,7 +47,7 @@ export default function SidebarLayout({ children }) {
     { label: 'Vendors',          icon: Store,             path: '/Vendors' },
     { label: 'Waste',            icon: Trash2,           path: '/WasteManagement' },
     { label: 'Payroll',          icon: Users,            path: '/Payroll' },
-    { label: 'Setra Connect',     icon: Plug,             path: '/Integrations' },
+
   ];
 
   const bottomItems = [
