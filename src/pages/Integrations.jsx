@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ToastConnectModal from '@/components/integrations/ToastConnectModal';
+import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -190,13 +192,22 @@ function IntegrationsContent() {
   const { currentBusiness } = useBusiness();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showToastModal, setShowToastModal] = useState(false);
+  const [connectionStatuses, setConnectionStatuses] = useState({});
 
-  const filteredIntegrations = INTEGRATIONS.filter(integration => {
-    const categoryMatch = selectedCategory === 'all' || integration.category === selectedCategory;
-    const searchMatch = integration.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       integration.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return categoryMatch && searchMatch;
-  });
+  useEffect(() => {
+    if (!currentBusiness) return;
+    base44.functions.invoke('toastPosSync', {
+      action: 'status',
+      business_id: currentBusiness.id
+    }).then(res => {
+      setConnectionStatuses(prev => ({ ...prev, toast: res.data }));
+    }).catch(() => {});
+  }, [currentBusiness]);
+
+  const handleConnect = (integrationId) => {
+    if (integrationId === 'toast') setShowToastModal(true);
+  };
 
   const popularIntegrations = INTEGRATIONS.filter(i => i.popular);
 
@@ -324,6 +335,18 @@ function IntegrationsContent() {
           </Card>
         )}
       </main>
+
+      {currentBusiness && (
+        <ToastConnectModal
+          open={showToastModal}
+          onOpenChange={setShowToastModal}
+          businessId={currentBusiness.id}
+          onConnected={() => {
+            setConnectionStatuses(prev => ({ ...prev, toast: { connected: true } }));
+            setShowToastModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
