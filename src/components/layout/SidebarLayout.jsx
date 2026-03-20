@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useRealtimeSync from '@/hooks/useRealtimeSync';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import LogoLink from '@/components/ui/LogoLink';
@@ -31,6 +32,7 @@ export default function SidebarLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  useRealtimeSync();
 
   const navItems = [
     { label: 'Dashboard',        icon: LayoutDashboard, path: '/Dashboard' },
