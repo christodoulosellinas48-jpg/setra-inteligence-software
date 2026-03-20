@@ -100,8 +100,33 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. If food_beverage and line items exist, update inventory
-    if (expense_category === 'food_beverage' && line_items && line_items.length > 0) {
+    // 4. Update inventory for all line items
+    const CATEGORY_TO_INVENTORY = {
+      food_beverage: 'other',
+      staff_costs: 'other',
+      fixed_costs: 'other',
+      utilities: 'other',
+      operating_expenses: 'other',
+      other: 'other'
+    };
+
+    // Infer inventory category from supplier category
+    const inferInventoryCategory = (expCat, description) => {
+      const desc = (description || '').toLowerCase();
+      if (expCat === 'food_beverage') {
+        if (desc.match(/beef|pork|lamb|chicken|veal|meat|steak|mince|sausage|bacon|ribs/)) return 'meat_fish';
+        if (desc.match(/fish|salmon|cod|tuna|sea|prawn|shrimp|squid|octopus/)) return 'meat_fish';
+        if (desc.match(/milk|cheese|cream|butter|yogurt|dairy/)) return 'dairy';
+        if (desc.match(/tomato|lettuce|pepper|onion|garlic|potato|vegetable|fruit|herb|salad/)) return 'produce';
+        if (desc.match(/beer|wine|spirit|vodka|whisky|gin|liquor|drink|juice|water|soda/)) return 'beverages';
+        if (desc.match(/flour|sugar|rice|pasta|oil|sauce|tin|can|dried|spice/)) return 'dry_goods';
+        return 'dry_goods';
+      }
+      if (expCat === 'operating_expenses') return 'packaging';
+      return 'other';
+    };
+
+    if (line_items && line_items.length > 0) {
       const allInventory = await base44.entities.InventoryItem.filter({ business_id });
 
       for (const item of line_items) {
@@ -127,12 +152,12 @@ Deno.serve(async (req) => {
           const newItem = await base44.entities.InventoryItem.create({
             business_id,
             ingredient_name: item.description,
-            unit: 'kg',
+            unit: item.unit || 'kg',
             current_stock: qty,
             unit_cost: unitCost,
             supplier_name: supplier_name,
             last_restocked_date: invoice_date || new Date().toISOString().split('T')[0],
-            category: 'other'
+            category: inferInventoryCategory(expense_category, item.description)
           });
           results.inventory_created.push(newItem.ingredient_name);
         }
