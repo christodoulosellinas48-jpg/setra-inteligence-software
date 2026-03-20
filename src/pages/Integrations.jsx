@@ -285,7 +285,7 @@ function IntegrationsContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
                 >
-                  <IntegrationCard integration={integration} compact />
+                  <IntegrationCard integration={integration} compact onConnect={handleConnect} connectionStatuses={connectionStatuses} />
                 </motion.div>
               ))}
             </div>
@@ -323,7 +323,7 @@ function IntegrationsContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
             >
-              <IntegrationCard integration={integration} />
+              <IntegrationCard integration={integration} onConnect={handleConnect} connectionStatuses={connectionStatuses} />
             </motion.div>
           ))}
         </div>
@@ -351,7 +351,8 @@ function IntegrationsContent() {
   );
 }
 
-function IntegrationCard({ integration, compact = false }) {
+function IntegrationCard({ integration, compact = false, onConnect, connectionStatuses = {} }) {
+  const isConnected = connectionStatuses[integration.id]?.connected;
   const getStatusBadge = (status) => {
     if (status === 'available') {
       return (
@@ -403,17 +404,19 @@ function IntegrationCard({ integration, compact = false }) {
 
       <Button
         disabled={integration.status !== 'available'}
+        onClick={() => integration.status === 'available' && onConnect?.(integration.id)}
         className={`w-full ${
-          integration.status === 'available'
+          isConnected
+            ? 'bg-emerald-600 hover:bg-emerald-700'
+            : integration.status === 'available'
             ? ''
             : 'bg-slate-800 text-slate-500 cursor-not-allowed'
         }`}
       >
-        {integration.status === 'available' ? (
-          <>
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Connect
-          </>
+        {isConnected ? (
+          <><Check className="w-4 h-4 mr-2" />Connected</>
+        ) : integration.status === 'available' ? (
+          <><ExternalLink className="w-4 h-4 mr-2" />Connect</>
         ) : (
           'Coming Soon'
         )}
