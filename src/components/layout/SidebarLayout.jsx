@@ -189,8 +189,7 @@ export default function SidebarLayout({ children }) {
       <main
         className={cn(
           'flex-1 transition-all duration-300 min-w-0',
-          'md:' + (collapsed ? 'ml-16' : 'ml-64'),
-          'ml-0'
+          collapsed ? 'md:ml-16' : 'md:ml-64'
         )}
       >
         {/* Top Header with User Menu */}
