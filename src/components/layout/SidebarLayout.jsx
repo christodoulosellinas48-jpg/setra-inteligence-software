@@ -15,12 +15,12 @@ import {
   BarChart3,
   ClipboardCheck,
   Receipt,
-  Plug,
   Package,
   Boxes,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Zap
 } from 'lucide-react';
 
 export default function SidebarLayout({ children }) {
@@ -39,7 +39,6 @@ export default function SidebarLayout({ children }) {
     { label: 'Bookkeeping',      icon: Receipt,          path: '/Bookkeeping' },
     { label: 'Inventory',        icon: Package,          path: '/Inventory' },
     { label: 'Recipes',          icon: Boxes,            path: '/RecipeManager' },
-    { label: 'Operations',       icon: Plug,             path: '/OperationsHub' },
 
   ];
 
@@ -75,7 +74,8 @@ export default function SidebarLayout({ children }) {
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto flex flex-col">
+          <div className="space-y-1">
           {navItems.map((item) => (
             <Button
               key={item.path}
@@ -91,6 +91,38 @@ export default function SidebarLayout({ children }) {
               {!collapsed && <span>{item.label}</span>}
             </Button>
           ))}
+          </div>
+
+          {/* Operations Hub — Special CTA */}
+          <div className="mt-auto pt-3">
+            {!collapsed && <div className="h-px bg-white/5 mb-3" />}
+            <button
+              onClick={() => navigate('/OperationsHub')}
+              className={cn(
+                'w-full rounded-xl transition-all duration-200 group relative overflow-hidden',
+                collapsed ? 'p-2' : 'p-3',
+                isActive('/OperationsHub')
+                  ? 'bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] shadow-[0_0_24px_rgba(123,59,255,0.6)]'
+                  : 'bg-gradient-to-r from-[#7B3BFF]/20 to-[#A855F7]/10 hover:from-[#7B3BFF]/40 hover:to-[#A855F7]/25 border border-[#7B3BFF]/30 hover:border-[#7B3BFF]/60 hover:shadow-[0_0_20px_rgba(123,59,255,0.4)]'
+              )}
+            >
+              {collapsed ? (
+                <div className="flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-[#C084FC] group-hover:text-white transition-colors" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#7B3BFF]/30 flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-4 h-4 text-[#C084FC]" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-white">Operations Hub</p>
+                    <p className="text-xs text-[#C084FC]/70">All ops in one place</p>
+                  </div>
+                </div>
+              )}
+            </button>
+          </div>
         </nav>
 
         {/* Bottom Items */}
