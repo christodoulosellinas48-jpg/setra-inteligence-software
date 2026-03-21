@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useRealtimeSync from '@/hooks/useRealtimeSync';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -27,7 +27,11 @@ export default function SidebarLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   useRealtimeSync();
+
+  // Close mobile sidebar on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   const navItems = [
     { label: 'Dashboard',        icon: LayoutDashboard, path: '/Dashboard' },
@@ -50,11 +54,25 @@ export default function SidebarLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#0B0B12] flex">
+      {/* Mobile overlay backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-200 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
-          collapsed ? 'w-16' : 'w-64'
+          'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-300 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
+          // Desktop behaviour
+          'md:translate-x-0',
+          collapsed ? 'md:w-16' : 'md:w-64',
+          // Mobile behaviour
+          mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0',
+          // Always w-64 on mobile when open
+          !collapsed && 'w-64'
         )}
       >
         {/* Logo */}
@@ -170,13 +188,25 @@ export default function SidebarLayout({ children }) {
       {/* Main Content */}
       <main
         className={cn(
-          'flex-1 transition-all duration-200',
-          collapsed ? 'ml-16' : 'ml-64'
+          'flex-1 transition-all duration-300 min-w-0',
+          'md:' + (collapsed ? 'ml-16' : 'ml-64'),
+          'ml-0'
         )}
       >
         {/* Top Header with User Menu */}
-        <header className="sticky top-0 z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-end px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
-          <UserMenu />
+        <header className="sticky top-0 z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
+          {/* Mobile hamburger */}
+          <button
+            className="md:hidden text-slate-400 hover:text-white p-1"
+            onClick={() => setMobileOpen(o => !o)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="ml-auto">
+            <UserMenu />
+          </div>
         </header>
         {children}
       </main>
