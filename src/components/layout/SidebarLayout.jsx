@@ -17,12 +17,7 @@ import {
   Receipt,
   Plug,
   Package,
-  Users,
-  ChefHat,
-  ShoppingCart,
-  Trash2,
-  UtensilsCrossed,
-  Store,
+  Boxes,
   Settings,
   ChevronLeft,
   ChevronRight
@@ -43,12 +38,8 @@ export default function SidebarLayout({ children }) {
     { label: 'Audit',            icon: ClipboardCheck,   path: '/Audit' },
     { label: 'Bookkeeping',      icon: Receipt,          path: '/Bookkeeping' },
     { label: 'Inventory',        icon: Package,          path: '/Inventory' },
-    { label: 'Recipes',          icon: ChefHat,          path: '/RecipeManager' },
-    { label: 'Menu Engineering', icon: UtensilsCrossed,  path: '/MenuEngineering' },
-    { label: 'Purchase Orders',  icon: ShoppingCart,     path: '/PurchaseOrders' },
-    { label: 'Vendors',          icon: Store,             path: '/Vendors' },
-    { label: 'Waste',            icon: Trash2,           path: '/WasteManagement' },
-    { label: 'Payroll',          icon: Users,            path: '/Payroll' },
+    { label: 'Recipes',          icon: Boxes,            path: '/RecipeManager' },
+    { label: 'Operations',       icon: Plug,             path: '/OperationsHub' },
 
   ];
 

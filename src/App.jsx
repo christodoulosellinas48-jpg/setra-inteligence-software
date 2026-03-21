@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ConsolidatedView from './pages/ConsolidatedView';
+import OperationsHub from './pages/OperationsHub';
 import Vendors from './pages/Vendors';
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import Home from './pages/Home';
@@ -73,6 +74,11 @@ const AuthenticatedApp = () => {
       <Route path="/Vendors" element={
         <LayoutWrapper currentPageName="Vendors">
           <Vendors />
+        </LayoutWrapper>
+      } />
+      <Route path="/OperationsHub" element={
+        <LayoutWrapper currentPageName="OperationsHub">
+          <OperationsHub />
         </LayoutWrapper>
       } />
       <Route path="*" element={<PageNotFound />} />
