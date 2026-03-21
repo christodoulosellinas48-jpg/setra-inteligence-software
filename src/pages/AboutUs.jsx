@@ -39,10 +39,10 @@ export default function AboutUs() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
               About Setra
             </h1>
-            <p className="text-xl text-slate-400 mb-16">
+            <p className="text-base sm:text-xl text-slate-400 mb-10 sm:mb-16">
               Empowering Businesses with AI
             </p>
 
@@ -66,7 +66,7 @@ export default function AboutUs() {
       </section>
 
       {/* Our Mission */}
-      <section className="relative py-16 px-4 sm:px-6">
+      <section className="relative py-10 sm:py-16 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -74,8 +74,8 @@ export default function AboutUs() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-bold text-white mb-6">Our Mission</h2>
-            <p className="text-lg text-slate-400 leading-relaxed">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-6">Our Mission</h2>
+            <p className="text-base sm:text-lg text-slate-400 leading-relaxed">
               We strive to revolutionize business operations through cutting-edge AI technology. 
               Our mission is to enhance the efficiency and intelligence of enterprises worldwide.
             </p>
@@ -163,8 +163,8 @@ export default function AboutUs() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold text-white mb-4">Our Offices</h2>
-            <p className="text-xl text-slate-400">Rooted in Cyprus, Built for the World</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4">Our Offices</h2>
+            <p className="text-base sm:text-xl text-slate-400">Rooted in Cyprus, Built for the World</p>
           </motion.div>
 
           {/* Cyprus Map */}
@@ -228,7 +228,7 @@ export default function AboutUs() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-bold text-white mb-6">Want to Join Our Team?</h2>
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-6">Want to Join Our Team?</h2>
             <Button className="px-8 py-6 text-lg">
               View Open Positions
             </Button>
