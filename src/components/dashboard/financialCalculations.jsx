@@ -114,7 +114,7 @@ export function calculateFinancials(data, businessType) {
      statusScores[fixedCostStatus] * 0.1)
   );
   
-  const overallStatus = healthScore >= 75 ? 'healthy' : healthScore >= 50 ? 'warning' : 'risk';
+  const overallStatus = healthScore >= 65 ? 'healthy' : healthScore >= 40 ? 'warning' : 'risk';
   
   return {
     revenue,
