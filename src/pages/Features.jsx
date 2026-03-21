@@ -9,7 +9,7 @@ import {
   BarChart3, Receipt, TrendingUp, FileText, Target, 
   Wallet, Plug, Settings, ClipboardCheck, LineChart,
   Shield, Zap, ArrowRight, CheckCircle2, Sparkles, ScanLine,
-  Store, RefreshCw, ShoppingCart
+  Store, RefreshCw, ShoppingCart, Boxes
 } from 'lucide-react';
 
 export default function Features() {
@@ -259,6 +259,20 @@ export default function Features() {
       ],
       gradient: "from-[#8B5CF6] to-[#A855F7]",
       tier: "pro"
+    },
+    {
+      icon: Boxes,
+      title: "Operations Hub",
+      description: "A unified command centre for all your day-to-day operational workflows",
+      details: [
+        "Menu Engineering: profitability & popularity matrix",
+        "Purchase Orders: create, send, and track procurement",
+        "Vendors & Suppliers: spend analysis and invoice history",
+        "Waste Management: log, track, and reduce food waste",
+        "Payroll & Staff: shifts, labour costs, and contracts"
+      ],
+      gradient: "from-[#7B3BFF] to-[#C084FC]",
+      tier: "premium"
     }
   ];
 
