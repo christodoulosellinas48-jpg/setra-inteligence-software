@@ -14,8 +14,7 @@ import {
 
 export default function Features() {
   const navigate = useNavigate();
-  const [expandedCards, setExpandedCards] = React.useState({});
-  const toggleCard = (index) => setExpandedCards(prev => ({ ...prev, [index]: !prev[index] }));
+  const [showMore, setShowMore] = React.useState({ basic: false, pro: false, premium: false });
 
   const tierConfig = {
     basic: { label: 'BASIC', color: 'from-[#7B3BFF] to-[#A855F7]' },
@@ -321,54 +320,74 @@ export default function Features() {
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Features by Tier */}
       <section className="relative py-8 sm:py-12 px-4 sm:px-6 pb-20 sm:pb-32">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card
-                  className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 hover:border-[#7B3BFF]/60 transition-all duration-300 group relative overflow-hidden cursor-pointer"
-                  onClick={() => toggleCard(index)}
-                >
-                  {feature.tier && (
-                    <div className={`absolute top-4 right-4 bg-gradient-to-r ${tierConfig[feature.tier].color} text-white text-xs font-bold px-3 py-1 rounded-full`}>
-                      {tierConfig[feature.tier].label}
-                    </div>
-                  )}
-                  <div className="relative mb-4 sm:mb-6">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 relative">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-opacity`} />
-                      <div className={`relative w-full h-full bg-gradient-to-br ${feature.gradient} opacity-10 rounded-2xl flex items-center justify-center border border-[#7B3BFF]/30 group-hover:scale-110 transition-transform`}>
-                        <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#E9D5FF]" />
-                      </div>
-                    </div>
+        <div className="max-w-7xl mx-auto space-y-16">
+          {[
+            { key: 'basic', label: 'Basic', color: 'from-[#7B3BFF] to-[#A855F7]', desc: 'Everything you need to get started and stay in control.' },
+            { key: 'pro', label: 'Pro', color: 'from-[#A855F7] to-[#C084FC]', desc: 'Advanced tools for growing hospitality businesses.' },
+            { key: 'premium', label: 'Premium', color: 'from-[#C084FC] to-[#E9D5FF]', desc: 'Full suite with AI automation and compliance infrastructure.' }
+          ].map(tier => {
+            const tierFeatures = features.filter(f => f.tier === tier.key);
+            const visible = showMore[tier.key] ? tierFeatures : tierFeatures.slice(0, 5);
+            return (
+              <div key={tier.key}>
+                {/* Tier Header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`bg-gradient-to-r ${tier.color} text-white text-sm font-bold px-4 py-1.5 rounded-full`}>{tier.label}</div>
+                  <p className="text-slate-400 text-sm">{tier.desc}</p>
+                </div>
+
+                {/* Feature Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {visible.map((feature, index) => (
+                    <motion.div
+                      key={feature.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                      viewport={{ once: true }}
+                    >
+                      <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-5 sm:p-6 hover:border-[#7B3BFF]/60 transition-all duration-300 group h-full">
+                        <div className="flex items-start gap-4 mb-3">
+                          <div className="w-10 h-10 relative flex-shrink-0">
+                            <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-xl blur-lg`} />
+                            <div className={`relative w-full h-full bg-gradient-to-br ${feature.gradient} opacity-10 rounded-xl flex items-center justify-center border border-[#7B3BFF]/30`}>
+                              <feature.icon className="w-5 h-5 text-[#E9D5FF]" />
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="text-base font-bold text-white">{feature.title}</h3>
+                            <p className="text-xs text-slate-400 mt-0.5">{feature.description}</p>
+                          </div>
+                        </div>
+                        <ul className="space-y-1.5 border-t border-white/10 pt-3">
+                          {feature.details.map((detail, i) => (
+                            <li key={i} className="flex items-start gap-2 text-xs text-slate-500">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
+                              <span>{detail}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Show More */}
+                {tierFeatures.length > 5 && (
+                  <div className="mt-4 text-center">
+                    <button
+                      onClick={() => setShowMore(prev => ({ ...prev, [tier.key]: !prev[tier.key] }))}
+                      className="text-sm text-[#A855F7] hover:text-[#C084FC] transition-colors underline underline-offset-4"
+                    >
+                      {showMore[tier.key] ? `Show less` : `Show ${tierFeatures.length - 5} more features`}
+                    </button>
                   </div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">{feature.title}</h3>
-                    <span className="text-slate-500 text-sm mt-1 flex-shrink-0">{expandedCards[index] ? '▲' : '▼'}</span>
-                  </div>
-                  <p className="text-sm sm:text-base text-slate-400 mb-4">{feature.description}</p>
-                  {expandedCards[index] && (
-                    <ul className="space-y-1.5 sm:space-y-2 border-t border-white/10 pt-4">
-                      {feature.details.map((detail, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-500">
-                          <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
-                          <span>{detail}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
