@@ -14,6 +14,8 @@ import {
 
 export default function Features() {
   const navigate = useNavigate();
+  const [expandedCards, setExpandedCards] = React.useState({});
+  const toggleCard = (index) => setExpandedCards(prev => ({ ...prev, [index]: !prev[index] }));
 
   const tierConfig = {
     basic: { label: 'BASIC', color: 'from-[#7B3BFF] to-[#A855F7]' },
@@ -331,15 +333,15 @@ export default function Features() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 h-full hover:border-[#7B3BFF]/60 transition-all duration-300 group relative overflow-hidden">
-                  {/* Tier Badge */}
+                <Card
+                  className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-6 sm:p-8 hover:border-[#7B3BFF]/60 transition-all duration-300 group relative overflow-hidden cursor-pointer"
+                  onClick={() => toggleCard(index)}
+                >
                   {feature.tier && (
                     <div className={`absolute top-4 right-4 bg-gradient-to-r ${tierConfig[feature.tier].color} text-white text-xs font-bold px-3 py-1 rounded-full`}>
                       {tierConfig[feature.tier].label}
                     </div>
                   )}
-                  
-                  {/* Icon */}
                   <div className="relative mb-4 sm:mb-6">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 relative">
                       <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-opacity`} />
@@ -348,20 +350,21 @@ export default function Features() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Title & Description */}
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">{feature.title}</h3>
-                  <p className="text-sm sm:text-base text-slate-400 mb-4 sm:mb-6">{feature.description}</p>
-
-                  {/* Details List */}
-                  <ul className="space-y-1.5 sm:space-y-2">
-                    {feature.details.map((detail, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-500">
-                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
-                        <span>{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">{feature.title}</h3>
+                    <span className="text-slate-500 text-sm mt-1 flex-shrink-0">{expandedCards[index] ? '▲' : '▼'}</span>
+                  </div>
+                  <p className="text-sm sm:text-base text-slate-400 mb-4">{feature.description}</p>
+                  {expandedCards[index] && (
+                    <ul className="space-y-1.5 sm:space-y-2 border-t border-white/10 pt-4">
+                      {feature.details.map((detail, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-500">
+                          <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#7B3BFF] mt-0.5 flex-shrink-0" />
+                          <span>{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </Card>
               </motion.div>
             ))}
