@@ -63,7 +63,11 @@ function SettingsContent() {
     for (const s of snapshots) await base44.entities.FinancialSnapshot.delete(s.id);
     for (const m of members) await base44.entities.BusinessMember.delete(m.id);
     
-    await base44.entities.Business.delete(currentBusiness.id);
+    try {
+      await base44.entities.Business.delete(currentBusiness.id);
+    } catch (e) {
+      // Business may have already been deleted — proceed with cleanup
+    }
     localStorage.removeItem('currentBusinessId');
     await refreshBusinesses();
     navigate(createPageUrl('Dashboard'));
