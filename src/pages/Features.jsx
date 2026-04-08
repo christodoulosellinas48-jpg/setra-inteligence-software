@@ -329,7 +329,7 @@ export default function Features() {
             { key: 'premium', label: 'Premium', color: 'from-[#C084FC] to-[#E9D5FF]', desc: 'Full suite with AI automation and compliance infrastructure.' }
           ].map(tier => {
             const tierFeatures = features.filter(f => f.tier === tier.key);
-            const visible = showMore[tier.key] ? tierFeatures : tierFeatures.slice(0, 5);
+            const visible = showMore[tier.key] ? tierFeatures : tierFeatures.slice(0, 3);
             return (
               <div key={tier.key}>
                 {/* Tier Header */}
@@ -375,13 +375,13 @@ export default function Features() {
                 </div>
 
                 {/* Show More */}
-                {tierFeatures.length > 5 && (
+                {tierFeatures.length > 3 && (
                   <div className="mt-4 text-center">
                     <button
                       onClick={() => setShowMore(prev => ({ ...prev, [tier.key]: !prev[tier.key] }))}
                       className="text-sm text-[#A855F7] hover:text-[#C084FC] transition-colors underline underline-offset-4"
                     >
-                      {showMore[tier.key] ? `Show less` : `Show ${tierFeatures.length - 5} more features`}
+                      {showMore[tier.key] ? `Show less` : `Show ${tierFeatures.length - 3} more features`}
                     </button>
                   </div>
                 )}
