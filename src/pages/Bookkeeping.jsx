@@ -50,8 +50,8 @@ function BookkeepingContent() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-10 h-10 text-emerald-400" />
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 border border-[#7B3BFF]/20 flex items-center justify-center mx-auto mb-6">
+            <Building2 className="w-10 h-10 text-[#C084FC]" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">No Business Selected</h1>
           <p className="text-slate-400 mb-8">
@@ -59,7 +59,6 @@ function BookkeepingContent() {
           </p>
           <Button 
             onClick={() => navigate(createPageUrl('Dashboard'))}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             Go to Dashboard
           </Button>

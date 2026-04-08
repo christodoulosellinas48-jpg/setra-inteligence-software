@@ -115,7 +115,7 @@ function ReportsContent() {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Date Range Selection */}
-        <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+        <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <ReportDatePicker 
               dateRange={dateRange}
@@ -143,11 +143,11 @@ function ReportsContent() {
         {/* Charts Grid */}
         <Suspense fallback={
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
             </Card>
-            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
             </Card>
           </div>
         }>
@@ -159,8 +159,8 @@ function ReportsContent() {
 
         {/* Financial Summary */}
         <Suspense fallback={
-          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-64 flex items-center justify-center">
-            <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-64 flex items-center justify-center">
+            <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
           </Card>
         }>
           <FinancialSummaryTable data={currentBusiness} calculations={financials} />
@@ -168,7 +168,7 @@ function ReportsContent() {
 
         {/* Saved Snapshots */}
         {snapshots.length > 0 && (
-          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold text-white mb-4">Saved Financial Snapshots</h3>
             <div className="overflow-x-auto">
               <table className="w-full">

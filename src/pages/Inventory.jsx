@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
 import { Plus, AlertTriangle, Package, DollarSign, Trash2, Edit2, RefreshCw } from 'lucide-react';
+import EmptyState from '@/components/ui/EmptyState';
 
 const CATEGORIES = [
   { value: 'produce', label: 'Produce' },
@@ -143,10 +144,11 @@ function InventoryContent() {
         {isLoading ? (
           <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 text-[#7B3BFF] animate-spin" /></div>
         ) : filtered.length === 0 ? (
-          <Card className="p-12 text-center bg-[#151528]/80 border-white/5">
-            <Package className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400">No items found. Add your first inventory item.</p>
-          </Card>
+          <EmptyState
+            icon={Package}
+            title="No items found"
+            description="Add your first inventory item to start tracking stock levels."
+          />
         ) : (
           <Card className="bg-[#151528]/80 border-white/5 overflow-hidden">
             <div className="overflow-x-auto">
