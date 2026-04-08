@@ -390,7 +390,7 @@ function DashboardContent() {
             </div>
           </Card>
 
-          {/* Sensitivity Simulator */
+          {/* Sensitivity Simulator */}
           <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
             <div className="flex items-center gap-3 mb-6">
               <IconContainer icon={Sliders} />
