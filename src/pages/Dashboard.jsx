@@ -14,6 +14,9 @@ import {
   ChevronRight, RefreshCw, Mail, Building2, Trash2, Sparkles
 } from 'lucide-react';
 import AICounselorChat from '@/components/AICounselorChat';
+import IconContainer from '@/components/ui/IconContainer';
+import ThemedSpinner from '@/components/ui/ThemedSpinner';
+import EmptyState from '@/components/ui/EmptyState';
 
 import MetricCard from '@/components/dashboard/MetricCard';
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
@@ -160,7 +163,7 @@ function DashboardContent() {
   if (businessLoading) {
     return (
       <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
+        <ThemedSpinner size="lg" />
       </div>
     );
   }
@@ -172,37 +175,41 @@ function DashboardContent() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-md"
+          className="text-center max-w-md w-full"
         >
-          <div className="mb-6">
-            <img 
+          <div className="mb-8">
+            <img
               src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
               alt="SETRA"
-              className="h-16 mx-auto"
-              style={{ filter: "drop-shadow(0 0 15px rgba(123,59,255,0.5))" }}
+              className="h-14 mx-auto"
+              style={{ filter: 'drop-shadow(0 0 20px rgba(123,59,255,0.6))' }}
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">Welcome to SETRA</h1>
-          <p className="text-slate-400 mb-8">
-            Create your first business to start tracking finances, managing budgets, and gaining insights.
-          </p>
-          <Button 
-            onClick={() => navigate(createPageUrl('CreateBusiness'))}
-            className="px-8 py-6 text-lg"
-          >
-            Create Your First Business
-          </Button>
-          {pendingInvitations.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => navigate(createPageUrl('Invitations'))}
-              variant="outline"
-              className="mt-4"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              {pendingInvitations.length} Pending Invitation{pendingInvitations.length > 1 ? 's' : ''}
-            </Button>
-          )}
+          <EmptyState
+            icon={Building2}
+            title="Welcome to SETRA"
+            description="Create your first business to start tracking finances, managing budgets, and gaining insights."
+            action={
+              <div className="flex flex-col items-center gap-3">
+                <Button
+                  onClick={() => navigate(createPageUrl('CreateBusiness'))}
+                  className="px-8 py-6 text-lg w-full"
+                >
+                  Create Your First Business
+                </Button>
+                {pendingInvitations.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(createPageUrl('Invitations'))}
+                    className="w-full border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    {pendingInvitations.length} Pending Invitation{pendingInvitations.length > 1 ? 's' : ''}
+                  </Button>
+                )}
+              </div>
+            }
+          />
         </motion.div>
       </div>
     );
@@ -264,9 +271,7 @@ function DashboardContent() {
         <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center shadow-lg shadow-[#7B3BFF]/10">
-                <Calculator className="w-5 h-5 text-[#C084FC]" />
-              </div>
+              <IconContainer icon={Calculator} />
               <div>
                 <h2 className="text-lg font-semibold text-white">Financial Inputs</h2>
                 <p className="text-sm text-slate-500">
@@ -353,11 +358,11 @@ function DashboardContent() {
         {/* Budget & Cash Flow Charts */}
         <Suspense fallback={
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" />
+            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <ThemedSpinner />
             </Card>
-            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" />
+            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <ThemedSpinner />
             </Card>
           </div>
         }>
@@ -370,11 +375,9 @@ function DashboardContent() {
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Insights */}
-          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-amber-400" />
-              </div>
+              <IconContainer icon={FileText} />
               <div>
                 <h2 className="text-lg font-semibold text-white">Business Insights</h2>
                 <p className="text-sm text-slate-500">AI-powered recommendations</p>
@@ -387,19 +390,17 @@ function DashboardContent() {
             </div>
           </Card>
 
-          {/* Sensitivity Simulator */}
-          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+          {/* Sensitivity Simulator */
+          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                <Sliders className="w-5 h-5 text-purple-400" />
-              </div>
+              <IconContainer icon={Sliders} />
               <div>
                 <h2 className="text-lg font-semibold text-white">Profit Simulator</h2>
                 <p className="text-sm text-slate-500">Test scenario impacts</p>
               </div>
             </div>
 
-            <Suspense fallback={<div className="h-48 flex items-center justify-center"><RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" /></div>}>
+            <Suspense fallback={<div className="h-48 flex items-center justify-center"><ThemedSpinner /></div>}>
               <div className="space-y-6 mb-8">
                 <SensitivitySlider
                   label="Revenue Change"
@@ -421,7 +422,7 @@ function DashboardContent() {
 
             {/* Simulated Results */}
             {hasSimulationChanges && simulatedFinancials && (
-              <div className="bg-slate-800/50 rounded-xl p-4 space-y-3">
+              <div className="bg-[#0B0B12]/60 border border-white/5 rounded-xl p-4 space-y-3">
                 <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Projected Impact</h3>
                 
                 <div className="flex items-center justify-between">
@@ -442,7 +443,7 @@ function DashboardContent() {
                   </span>
                 </div>
                 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-700">
+                <div className="flex items-center justify-between pt-2 border-t border-white/5">
                   <span className="text-slate-400">Health Status</span>
                   <span className={`font-bold capitalize ${
                     simulatedFinancials.overallStatus === 'healthy' ? 'text-emerald-400' :
@@ -457,20 +458,28 @@ function DashboardContent() {
         </div>
 
         {/* Recent Expenses */}
-        {expenses.length > 0 && (
-          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-cyan-400" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Recent Expenses</h2>
-                  <p className="text-sm text-slate-500">{expenses.length} documents uploaded</p>
-                </div>
+        <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <IconContainer icon={FileText} />
+              <div>
+                <h2 className="text-lg font-semibold text-white">Recent Expenses</h2>
+                <p className="text-sm text-slate-500">{expenses.length} documents uploaded</p>
               </div>
             </div>
-            
+          </div>
+          
+          {expenses.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-slate-500 text-sm">No expenses uploaded yet.</p>
+              {canEdit() && (
+                <Button variant="outline" onClick={() => setShowUploadModal(true)} className="mt-4">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload First Expense
+                </Button>
+              )}
+            </div>
+          ) : (
             <div className="space-y-2">
               {expenses.slice(0, 5).map((expense, idx) => (
                 <motion.div
@@ -478,11 +487,11 @@ function DashboardContent() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800/50 transition-colors group"
+                  className="flex items-center justify-between p-4 bg-[#0B0B12]/60 border border-white/5 rounded-xl hover:border-[#7B3BFF]/20 transition-colors group"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-slate-400" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/10 to-[#A855F7]/10 border border-[#7B3BFF]/10 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-[#C084FC]" />
                     </div>
                     <div>
                       <p className="font-medium text-white">{expense.supplier_name}</p>
@@ -514,8 +523,8 @@ function DashboardContent() {
                 </motion.div>
               ))}
             </div>
-          </Card>
-        )}
+          )}
+        </Card>
       </main>
 
       {canEdit() && (
