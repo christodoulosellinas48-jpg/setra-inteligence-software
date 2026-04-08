@@ -35,7 +35,6 @@ export default function SidebarLayout({ children }) {
 
   const navItems = [
     { label: 'Dashboard',        icon: LayoutDashboard, path: '/Dashboard' },
-    { label: 'Consolidated',     icon: Building2,        path: '/ConsolidatedView' },
     { label: 'Budget',           icon: Wallet,           path: '/Budgeting' },
     { label: 'Forecast',         icon: LineChart,        path: '/Forecasting' },
     { label: 'Reports',          icon: BarChart3,        path: '/Reports' },
@@ -43,7 +42,6 @@ export default function SidebarLayout({ children }) {
     { label: 'Bookkeeping',      icon: Receipt,          path: '/Bookkeeping' },
     { label: 'Inventory',        icon: Package,          path: '/Inventory' },
     { label: 'Recipes',          icon: Boxes,            path: '/RecipeManager' },
-
   ];
 
   const bottomItems = [

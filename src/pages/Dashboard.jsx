@@ -242,6 +242,13 @@ function DashboardContent() {
                   {pendingInvitations.length}
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={() => navigate('/ConsolidatedView')}
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Consolidated View
+              </Button>
               <Button 
                 onClick={() => setShowCounselorChat(true)}
                 variant="outline"
