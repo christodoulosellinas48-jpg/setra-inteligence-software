@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { UtensilsCrossed, ShoppingCart, Store, Trash2, Users, ArrowRight } from 'lucide-react';
+import { UtensilsCrossed, ShoppingCart, Store, Trash2, Users, ArrowRight, ChefHat } from 'lucide-react';
 
 const MODULES = [
   {
@@ -60,6 +60,17 @@ const MODULES = [
     iconColor: 'text-pink-400',
     iconBg: 'bg-pink-500/15',
     badge: 'HR & Labour'
+  },
+  {
+    id: 'recipes',
+    label: 'Recipe Manager',
+    icon: ChefHat,
+    path: '/RecipeManager',
+    description: 'Link inventory ingredients to menu items and track real-time food cost percentages per dish.',
+    color: 'from-yellow-500/20 to-orange-500/10',
+    iconColor: 'text-yellow-400',
+    iconBg: 'bg-yellow-500/15',
+    badge: 'Food Cost'
   }
 ];
 

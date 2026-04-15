@@ -16,7 +16,6 @@ import {
   ClipboardCheck,
   Receipt,
   Package,
-  Boxes,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -34,7 +33,6 @@ const ALL_NAV_ITEMS = [
   { label: 'Bookkeeping', icon: Receipt,          path: '/Bookkeeping',   permission: 'manage_bookkeeping' },
   { label: 'VAT',         icon: FileSpreadsheet,  path: '/VATModule',     permission: 'manage_vat' },
   { label: 'Inventory',   icon: Package,          path: '/Inventory',     permission: 'manage_inventory' },
-  { label: 'Recipes',     icon: Boxes,            path: '/RecipeManager', permission: 'manage_inventory' },
 ];
 
 export default function SidebarLayout({ children }) {
