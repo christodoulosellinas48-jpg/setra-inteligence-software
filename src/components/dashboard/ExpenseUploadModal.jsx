@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, FileText, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
+import AutomationResultBanner from './AutomationResultBanner';
 
 const EXPENSE_CATEGORIES = [
   { value: 'food_beverage', label: 'Food & Beverage' },
@@ -51,6 +52,7 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   const [aiData, setAiData] = useState(null); // raw AI extraction result
   const [showLineItems, setShowLineItems] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [automationResult, setAutomationResult] = useState(null);
 
   const [form, setForm] = useState({
     supplier_name: '',
@@ -187,36 +189,58 @@ Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why",
 
   const handleSubmit = async () => {
     setSaving(true);
-    await base44.entities.ExpenseDocument.create({
+    setAutomationResult(null);
+
+    // 1. Save the ExpenseDocument first to get its ID
+    const expenseDoc = await base44.entities.ExpenseDocument.create({
       supplier_name: form.supplier_name,
+      supplier_vat_number: aiData?.supplier_vat_number || '',
+      invoice_number: form.invoice_number,
+      invoice_date: form.invoice_date,
+      due_date: aiData?.due_date || '',
       invoice_total: parseFloat(form.invoice_total) || 0,
+      net_amount: parseFloat(form.net_amount) || 0,
+      vat_amount: parseFloat(form.vat_amount) || 0,
+      vat_rate: parseFloat(form.vat_rate) || 0,
       vat_included: form.vat_included,
       expense_category: form.expense_category,
-      invoice_date: form.invoice_date,
-      notes: form.notes,
       document_url: documentUrl,
+      status: 'pending',
+      confidence_score: aiData?.confidence_score || 0,
+      notes: form.notes,
       business_id: businessId,
       uploaded_by: userEmail,
       last_edited_by: userEmail,
       last_edited_at: new Date().toISOString()
     });
 
-    base44.functions.invoke('processInvoice', {
-      business_id: businessId,
-      supplier_name: form.supplier_name,
-      invoice_date: form.invoice_date,
-      expense_category: form.expense_category,
-      invoice_total: parseFloat(form.invoice_total) || 0,
-      vat_included: form.vat_included,
-      vat_amount: parseFloat(form.vat_amount) || 0,
-      net_amount: parseFloat(form.net_amount) || 0,
-      line_items: aiData?.line_items || []
-    }).catch(() => {});
+    // 2. Run full automation — await it so we can show results
+    try {
+      const response = await base44.functions.invoke('processInvoice', {
+        business_id: businessId,
+        expense_document_id: expenseDoc.id,
+        supplier_name: form.supplier_name,
+        supplier_vat_number: aiData?.supplier_vat_number || '',
+        invoice_number: form.invoice_number,
+        invoice_date: form.invoice_date,
+        due_date: aiData?.due_date || '',
+        expense_category: form.expense_category,
+        invoice_total: parseFloat(form.invoice_total) || 0,
+        net_amount: parseFloat(form.net_amount) || 0,
+        vat_amount: parseFloat(form.vat_amount) || 0,
+        vat_rate: parseFloat(form.vat_rate) || 0,
+        vat_included: form.vat_included,
+        line_items: aiData?.line_items || []
+      });
+      if (response?.data?.results) {
+        setAutomationResult(response.data.results);
+      }
+    } catch (err) {
+      console.error('Automation error:', err);
+    }
 
     onSave?.();
     setSaving(false);
-    handleReset();
-    onOpenChange(false);
   };
 
   const handleReset = () => {
@@ -225,6 +249,7 @@ Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why",
     setDocumentUrl('');
     setAiData(null);
     setShowLineItems(false);
+    setAutomationResult(null);
     setForm({ supplier_name: '', invoice_number: '', invoice_date: '', invoice_total: '', net_amount: '', vat_amount: '', vat_rate: '', vat_included: false, expense_category: '', notes: '' });
   };
 
@@ -456,9 +481,28 @@ Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why",
             </div>
           )}
 
-          <Button onClick={handleSubmit} disabled={!canSave} className="w-full h-11">
-            {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Expense'}
-          </Button>
+          {/* Automation Result */}
+          {automationResult && (
+            <AutomationResultBanner result={{
+              supplier: automationResult.supplier_action,
+              ledger: automationResult.ledger_entry ? 'created' : null,
+              vat_updated: automationResult.vat_period_updated,
+              inventory_updated: automationResult.inventory_updates?.length || 0,
+              inventory_created: automationResult.inventory_created?.length || 0,
+              purchases: automationResult.purchase_records?.length || 0,
+              snapshot: automationResult.snapshot_updated
+            }} />
+          )}
+
+          {automationResult ? (
+            <Button onClick={() => { handleReset(); onOpenChange(false); }} className="w-full h-11">
+              Done
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={!canSave} className="w-full h-11">
+              {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing & updating system...</> : 'Save & Process Invoice'}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

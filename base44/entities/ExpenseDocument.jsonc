@@ -1,0 +1,100 @@
+{
+  "name": "ExpenseDocument",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_vat_number": {
+      "type": "string"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "invoice_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "invoice_total": {
+      "type": "number",
+      "description": "Gross total including VAT"
+    },
+    "net_amount": {
+      "type": "number",
+      "description": "Total excluding VAT"
+    },
+    "vat_amount": {
+      "type": "number",
+      "description": "VAT amount"
+    },
+    "vat_rate": {
+      "type": "number",
+      "description": "VAT rate percentage"
+    },
+    "vat_included": {
+      "type": "boolean",
+      "default": false
+    },
+    "expense_category": {
+      "type": "string",
+      "enum": [
+        "food_beverage",
+        "staff_costs",
+        "fixed_costs",
+        "utilities",
+        "operating_expenses",
+        "one_off_expenses"
+      ]
+    },
+    "document_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "posted",
+        "failed",
+        "needs_review"
+      ],
+      "default": "pending"
+    },
+    "confidence_score": {
+      "type": "number",
+      "default": 0,
+      "description": "AI extraction confidence 0-1"
+    },
+    "automation_result": {
+      "type": "string",
+      "description": "JSON summary of what the automation updated"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "uploaded_by": {
+      "type": "string"
+    },
+    "last_edited_by": {
+      "type": "string"
+    },
+    "last_edited_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "business_id",
+    "supplier_name",
+    "invoice_total",
+    "expense_category"
+  ]
+}

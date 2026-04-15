@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     const {
       business_id,
-      document_id,
+      expense_document_id,
       supplier_name,
       supplier_vat_number,
       invoice_date,
@@ -45,37 +45,46 @@ Deno.serve(async (req) => {
       invoice_total,
       vat_included,
       vat_amount,
-      net_amount
+      net_amount,
+      vat_rate: invoiceVatRate
     } = await req.json();
 
     if (!business_id || !supplier_name) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Mark document as processing
+    if (expense_document_id) {
+      await base44.entities.ExpenseDocument.update(expense_document_id, { status: 'processing' });
+    }
+
     const results = {
       supplier: null,
+      supplier_action: null,
       ledger_entry: null,
       vat_line: null,
+      vat_period_updated: false,
       inventory_updates: [],
       inventory_created: [],
       purchase_records: [],
-      document_lines: []
+      document_lines: [],
+      snapshot_updated: false
     };
 
     // 1. Create or update Supplier record
     const existingSuppliers = await base44.entities.Supplier.filter({ business_id, name: supplier_name });
-
     if (existingSuppliers.length > 0) {
       const existing = existingSuppliers[0];
-      const updated = await base44.entities.Supplier.update(existing.id, {
+      await base44.entities.Supplier.update(existing.id, {
         total_spend: (existing.total_spend || 0) + (invoice_total || 0),
         invoice_count: (existing.invoice_count || 0) + 1,
         last_order_date: invoice_date || new Date().toISOString().split('T')[0],
         category: expense_category || existing.category
       });
-      results.supplier = updated;
+      results.supplier = supplier_name;
+      results.supplier_action = 'updated';
     } else {
-      const newSupplier = await base44.entities.Supplier.create({
+      await base44.entities.Supplier.create({
         business_id,
         name: supplier_name,
         category: expense_category || 'other',
@@ -83,13 +92,14 @@ Deno.serve(async (req) => {
         invoice_count: 1,
         last_order_date: invoice_date || new Date().toISOString().split('T')[0]
       });
-      results.supplier = newSupplier;
+      results.supplier = supplier_name;
+      results.supplier_action = 'created';
     }
 
-    // 2. Create LedgerEntry
-    const grossAmount = invoice_total || 0;
+    // 2. Calculate VAT amounts
     const businesses = await base44.entities.Business.filter({ id: business_id });
-    const vatRate = businesses[0]?.vat_rate || 19;
+    const vatRate = invoiceVatRate || businesses[0]?.vat_rate || 19;
+    const grossAmount = invoice_total || 0;
 
     let finalNetAmount = net_amount || grossAmount;
     let finalVatAmount = vat_amount || 0;
@@ -97,8 +107,12 @@ Deno.serve(async (req) => {
     if (!vat_amount && vat_included && grossAmount > 0) {
       finalNetAmount = parseFloat((grossAmount / (1 + vatRate / 100)).toFixed(2));
       finalVatAmount = parseFloat((grossAmount - finalNetAmount).toFixed(2));
+    } else if (!net_amount && !vat_amount) {
+      finalNetAmount = grossAmount;
+      finalVatAmount = 0;
     }
 
+    // 3. Create LedgerEntry
     const ledgerEntry = await base44.entities.LedgerEntry.create({
       business_id,
       date: invoice_date || new Date().toISOString().split('T')[0],
@@ -108,35 +122,34 @@ Deno.serve(async (req) => {
       vat_amount: finalVatAmount,
       gross_amount: grossAmount,
       source: 'document',
-      source_id: document_id || null,
-      posted: false,
+      source_id: expense_document_id || null,
+      posted: true,
       vat_direction: 'input',
       description: `${supplier_name} — ${expense_category?.replace(/_/g, ' ') || 'expense'}`
     });
-    results.ledger_entry = ledgerEntry;
+    results.ledger_entry = ledgerEntry.id;
 
-    // 3. VATSummaryLine + update VAT period
+    // 4. VAT period update
     if (finalVatAmount > 0) {
       const vatPeriods = await base44.entities.VATPeriod.filter({ business_id, status: 'open' });
       if (vatPeriods.length > 0) {
         const vatPeriod = vatPeriods[0];
-        const vatLine = await base44.entities.VATSummaryLine.create({
+        await base44.entities.VATSummaryLine.create({
           vat_period_id: vatPeriod.id,
-          vat_rate_code: String(vatRate),
+          vat_rate_code: String(Math.round(vatRate)),
           taxable_base: finalNetAmount,
           vat_amount: finalVatAmount,
           direction: 'input'
         });
-        results.vat_line = vatLine;
-
         await base44.entities.VATPeriod.update(vatPeriod.id, {
           input_vat: (vatPeriod.input_vat || 0) + finalVatAmount,
           net_vat_payable: ((vatPeriod.output_vat || 0) - ((vatPeriod.input_vat || 0) + finalVatAmount))
         });
+        results.vat_period_updated = true;
       }
     }
 
-    // 4. Create DocumentLines + update/create inventory + Purchase records
+    // 5. Line items: DocumentLines + Inventory + Purchases
     if (line_items && line_items.length > 0) {
       const allInventory = await base44.entities.InventoryItem.filter({ business_id });
 
@@ -148,25 +161,25 @@ Deno.serve(async (req) => {
         const lineVat = item.vat_amount || 0;
         const lineGross = item.line_gross || (lineNet + lineVat);
 
-        // Create DocumentLine if we have a document_id
-        if (document_id) {
-          const docLine = await base44.entities.DocumentLine.create({
-            document_id,
+        // Create DocumentLine
+        if (expense_document_id) {
+          await base44.entities.DocumentLine.create({
+            document_id: expense_document_id,
             description: item.description,
             qty,
             unit_price_net: unitCost,
             line_net: lineNet,
-            vat_rate_code: item.vat_rate_code || String(vatRate),
+            vat_rate_code: item.vat_rate ? String(Math.round(item.vat_rate)) : String(Math.round(vatRate)),
             vat_amount: lineVat,
             line_gross: lineGross,
             category_code: CATEGORY_CODE_MAP[expense_category] || 'OPEX',
             confidence_score: item.confidence || 0.9,
             categorization_reason: 'ai'
           });
-          results.document_lines.push(docLine);
+          results.document_lines.push(item.description);
         }
 
-        // Inventory update/create for food_beverage and packaging
+        // Inventory tracking
         const shouldTrackInventory = ['food_beverage', 'operating_expenses', 'packaging'].includes(expense_category);
         if (shouldTrackInventory) {
           const descLower = item.description.toLowerCase().trim();
@@ -196,9 +209,8 @@ Deno.serve(async (req) => {
             results.inventory_created.push(newItem.ingredient_name);
           }
 
-          // Create Purchase record for food/bev items
           if (expense_category === 'food_beverage') {
-            const purchaseRecord = await base44.entities.Purchase.create({
+            await base44.entities.Purchase.create({
               business_id,
               supplier_name,
               date: invoice_date || new Date().toISOString().split('T')[0],
@@ -213,21 +225,73 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 5. Mark document as approved/posted if it was passed
-    if (document_id) {
-      await base44.entities.Document.update(document_id, {
+    // 6. Update FinancialSnapshot for current month
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+
+    const existingSnapshots = await base44.entities.FinancialSnapshot.filter({
+      business_id,
+      period_start: monthStart
+    });
+
+    const CATEGORY_TO_SNAPSHOT_FIELD = {
+      food_beverage: 'purchases_food_bev',
+      staff_costs: 'staff_costs',
+      fixed_costs: 'rent_fixed_costs',
+      utilities: 'utilities',
+      operating_expenses: 'other_operating',
+      one_off_expenses: 'other_operating'
+    };
+
+    const snapshotField = CATEGORY_TO_SNAPSHOT_FIELD[expense_category];
+
+    if (snapshotField) {
+      if (existingSnapshots.length > 0) {
+        const snap = existingSnapshots[0];
+        await base44.entities.FinancialSnapshot.update(snap.id, {
+          [snapshotField]: (snap[snapshotField] || 0) + grossAmount,
+          total_expenses: (snap.total_expenses || 0) + grossAmount,
+          updated_at: new Date().toISOString()
+        });
+      } else {
+        await base44.entities.FinancialSnapshot.create({
+          business_id,
+          period_start: monthStart,
+          period_end: monthEnd,
+          [snapshotField]: grossAmount,
+          total_expenses: grossAmount
+        });
+      }
+      results.snapshot_updated = true;
+    }
+
+    // 7. Mark ExpenseDocument as posted with automation result summary
+    if (expense_document_id) {
+      await base44.entities.ExpenseDocument.update(expense_document_id, {
         status: 'posted',
-        net_total: finalNetAmount,
-        vat_total: finalVatAmount,
-        gross_total: grossAmount,
-        supplier_vat_number: supplier_vat_number || null,
-        invoice_number: invoice_number || null,
-        due_date: due_date || null
+        automation_result: JSON.stringify({
+          supplier: results.supplier_action,
+          ledger: 'created',
+          vat_updated: results.vat_period_updated,
+          inventory_updated: results.inventory_updates.length,
+          inventory_created: results.inventory_created.length,
+          purchases: results.purchase_records.length,
+          snapshot: results.snapshot_updated
+        })
       });
     }
 
     return Response.json({ success: true, results });
   } catch (error) {
+    // Mark as failed if we have a document id
+    try {
+      const base44 = createClientFromRequest(req);
+      const body = await req.json().catch(() => ({}));
+      if (body.expense_document_id) {
+        await base44.entities.ExpenseDocument.update(body.expense_document_id, { status: 'failed' });
+      }
+    } catch (_) {}
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
