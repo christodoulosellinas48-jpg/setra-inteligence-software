@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -25,11 +25,10 @@ import FinancialInputs from '@/components/dashboard/FinancialInputs';
 import { useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 
-// Lazy load heavy components
-const SensitivitySlider = lazy(() => import('@/components/dashboard/SensitivitySlider'));
-const ExpenseUploadModal = lazy(() => import('@/components/dashboard/ExpenseUploadModal'));
-const BudgetVsActualMini = lazy(() => import('@/components/dashboard/BudgetVsActualMini'));
-const CashFlowMiniChart = lazy(() => import('@/components/dashboard/CashFlowMiniChart'));
+import SensitivitySlider from '@/components/dashboard/SensitivitySlider';
+import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
+import BudgetVsActualMini from '@/components/dashboard/BudgetVsActualMini';
+import CashFlowMiniChart from '@/components/dashboard/CashFlowMiniChart';
 
 import { 
   calculateFinancials, 
@@ -363,21 +362,10 @@ function DashboardContent() {
         )}
 
         {/* Budget & Cash Flow Charts */}
-        <Suspense fallback={
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <ThemedSpinner />
-            </Card>
-            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <ThemedSpinner />
-            </Card>
-          </div>
-        }>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <BudgetVsActualMini budget={budgets[0]} actual={currentBusiness} />
-            <CashFlowMiniChart currentBusiness={currentBusiness} snapshots={snapshots} />
-          </div>
-        </Suspense>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <BudgetVsActualMini budget={budgets[0]} actual={currentBusiness} />
+          <CashFlowMiniChart currentBusiness={currentBusiness} snapshots={snapshots} />
+        </div>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -407,25 +395,23 @@ function DashboardContent() {
               </div>
             </div>
 
-            <Suspense fallback={<div className="h-48 flex items-center justify-center"><ThemedSpinner /></div>}>
-              <div className="space-y-6 mb-8">
-                <SensitivitySlider
-                  label="Revenue Change"
-                  value={simulationValues.revenue}
-                  onChange={(v) => setSimulationValues({ ...simulationValues, revenue: v })}
-                />
-                <SensitivitySlider
-                  label="Food Cost Change"
-                  value={simulationValues.foodCost}
-                  onChange={(v) => setSimulationValues({ ...simulationValues, foodCost: v })}
-                />
-                <SensitivitySlider
-                  label="Staff Cost Change"
-                  value={simulationValues.staffCost}
-                  onChange={(v) => setSimulationValues({ ...simulationValues, staffCost: v })}
-                />
-              </div>
-            </Suspense>
+            <div className="space-y-6 mb-8">
+              <SensitivitySlider
+                label="Revenue Change"
+                value={simulationValues.revenue}
+                onChange={(v) => setSimulationValues({ ...simulationValues, revenue: v })}
+              />
+              <SensitivitySlider
+                label="Food Cost Change"
+                value={simulationValues.foodCost}
+                onChange={(v) => setSimulationValues({ ...simulationValues, foodCost: v })}
+              />
+              <SensitivitySlider
+                label="Staff Cost Change"
+                value={simulationValues.staffCost}
+                onChange={(v) => setSimulationValues({ ...simulationValues, staffCost: v })}
+              />
+            </div>
 
             {/* Simulated Results */}
             {hasSimulationChanges && simulatedFinancials && (
@@ -535,15 +521,13 @@ function DashboardContent() {
       </main>
 
       {canEdit() && (
-        <Suspense fallback={null}>
-          <ExpenseUploadModal 
-            open={showUploadModal} 
-            onOpenChange={setShowUploadModal}
-            onSave={() => queryClient.invalidateQueries(['expenses', currentBusiness?.id])}
-            businessId={currentBusiness?.id}
-            userEmail={user?.email}
-          />
-        </Suspense>
+        <ExpenseUploadModal 
+          open={showUploadModal} 
+          onOpenChange={setShowUploadModal}
+          onSave={() => queryClient.invalidateQueries(['expenses', currentBusiness?.id])}
+          businessId={currentBusiness?.id}
+          userEmail={user?.email}
+        />
       )}
 
       <Sheet open={showCounselorChat} onOpenChange={setShowCounselorChat}>
