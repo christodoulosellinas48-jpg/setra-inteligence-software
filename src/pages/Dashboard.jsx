@@ -26,6 +26,7 @@ import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 
 import SensitivitySlider from '@/components/dashboard/SensitivitySlider';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
+import AddFromSystemButton from '@/components/dashboard/AddFromSystemButton';
 import BudgetVsActualMini from '@/components/dashboard/BudgetVsActualMini';
 import CashFlowMiniChart from '@/components/dashboard/CashFlowMiniChart';
 
@@ -284,6 +285,17 @@ function DashboardContent() {
                 </p>
               </div>
             </div>
+            {canEdit() && (
+              <AddFromSystemButton
+                businessId={currentBusiness?.id}
+                disabled={!currentBusiness}
+                onApply={(totals) => {
+                  Object.entries(totals).forEach(([key, value]) => {
+                    handleInputChange(key, value);
+                  });
+                }}
+              />
+            )}
           </div>
           <FinancialInputs 
             values={localBusinessData} 
