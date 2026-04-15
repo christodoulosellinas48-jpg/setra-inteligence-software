@@ -1,11 +1,10 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Wallet, RefreshCw } from 'lucide-react';
+import { Wallet, RefreshCw } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, addMonths } from 'date-fns';
 
 import BudgetForm from '@/components/budget/BudgetForm';
@@ -92,35 +91,18 @@ function BudgetingContent() {
     );
   }
 
-  const businessDisplayName = BENCHMARKS[currentBusiness.business_type]?.displayName || 'Business';
+  const businessDisplayName = BENCHMARKS[currentBusiness.industry_group]?.displayName || 'Business';
 
   return (
     <div className="min-h-screen bg-[#0B0B12]">
-      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate(createPageUrl('Dashboard'))}
-                className="text-slate-400 hover:text-white"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Wallet className="w-6 h-6 text-[#C084FC]" />
-                  Cost Control
-                </h1>
-                <p className="text-slate-500 text-sm">{currentBusiness.name} • {businessDisplayName}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+            <Wallet className="w-6 h-6 text-[#C084FC]" />
+            Cost Control
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">{currentBusiness.name} • {businessDisplayName}</p>
+        </div>
         {canEdit() && (
           <BudgetForm
             budget={budgetForm}

@@ -206,7 +206,7 @@ function InventoryContent() {
 
       {/* Add/Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 max-w-lg">
+        <DialogContent className="bg-[#0F0F1E] border-white/10 max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-white">{editing ? 'Edit Item' : 'Add Inventory Item'}</DialogTitle>
           </DialogHeader>
@@ -214,45 +214,45 @@ function InventoryContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Label className="text-slate-400 mb-1.5 block">Ingredient Name</Label>
-                <Input value={form.ingredient_name} onChange={e => setForm({ ...form, ingredient_name: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="e.g. Tomatoes" />
+                <Input value={form.ingredient_name} onChange={e => setForm({ ...form, ingredient_name: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="e.g. Tomatoes" />
               </div>
               <div>
                 <Label className="text-slate-400 mb-1.5 block">Category</Label>
                 <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value} className="text-white">{c.label}</SelectItem>)}
+                  <SelectTrigger className="bg-[#151528] border-white/10 text-white"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-[#151528] border-white/10">
+                     {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value} className="text-white">{c.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-slate-400 mb-1.5 block">Unit</Label>
                 <Select value={form.unit} onValueChange={v => setForm({ ...form, unit: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {UNITS.map(u => <SelectItem key={u} value={u} className="text-white">{u}</SelectItem>)}
+                  <SelectTrigger className="bg-[#151528] border-white/10 text-white"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-[#151528] border-white/10">
+                     {UNITS.map(u => <SelectItem key={u} value={u} className="text-white">{u}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="text-slate-400 mb-1.5 block">Current Stock</Label>
-                <Input type="number" value={form.current_stock} onChange={e => setForm({ ...form, current_stock: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0" />
+                <Input type="number" value={form.current_stock} onChange={e => setForm({ ...form, current_stock: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="0" />
               </div>
               <div>
                 <Label className="text-slate-400 mb-1.5 block">Reorder Threshold</Label>
-                <Input type="number" value={form.reorder_threshold} onChange={e => setForm({ ...form, reorder_threshold: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0" />
+                <Input type="number" value={form.reorder_threshold} onChange={e => setForm({ ...form, reorder_threshold: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="0" />
               </div>
               <div>
                 <Label className="text-slate-400 mb-1.5 block">Unit Cost (€)</Label>
-                <Input type="number" value={form.unit_cost} onChange={e => setForm({ ...form, unit_cost: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0.00" />
+                <Input type="number" value={form.unit_cost} onChange={e => setForm({ ...form, unit_cost: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="0.00" />
               </div>
               <div>
                 <Label className="text-slate-400 mb-1.5 block">Last Restocked</Label>
-                <Input type="date" value={form.last_restocked_date} onChange={e => setForm({ ...form, last_restocked_date: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
+                <Input type="date" value={form.last_restocked_date} onChange={e => setForm({ ...form, last_restocked_date: e.target.value })} className="bg-[#151528] border-white/10 text-white" />
               </div>
               <div className="col-span-2">
                 <Label className="text-slate-400 mb-1.5 block">Supplier</Label>
-                <Input value={form.supplier_name} onChange={e => setForm({ ...form, supplier_name: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="Supplier name" />
+                <Input value={form.supplier_name} onChange={e => setForm({ ...form, supplier_name: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="Supplier name" />
               </div>
             </div>
             <Button onClick={handleSubmit} disabled={!form.ingredient_name || saveMutation.isPending} className="w-full">

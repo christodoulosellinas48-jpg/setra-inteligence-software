@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { ClipboardCheck, ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 
 import AuditOverview from '../components/audit/AuditOverview.jsx';
 import PricingAudit from '../components/audit/PricingAudit.jsx';
@@ -32,7 +31,7 @@ function AuditContent() {
       <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center p-6">
         <Card className="bg-slate-900/50 border-slate-800 p-8 text-center">
           <p className="text-slate-400 mb-4">No business selected</p>
-          <Button onClick={() => navigate(createPageUrl('Dashboard'))}>
+          <Button onClick={() => navigate('/Dashboard')}>
             Go to Dashboard
           </Button>
         </Card>
@@ -46,7 +45,7 @@ function AuditContent() {
       <div className="relative max-w-7xl mx-auto p-6">
         <Button
           variant="ghost"
-          onClick={() => navigate(createPageUrl('Dashboard'))}
+          onClick={() => navigate('/Dashboard')}
           className="text-slate-400 hover:text-white mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
