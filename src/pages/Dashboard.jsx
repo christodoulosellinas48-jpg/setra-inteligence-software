@@ -245,64 +245,88 @@ function DashboardContent() {
   const businessDisplayName = BENCHMARKS[currentBusiness.business_type]?.displayName || 'Business';
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness.currency] || '€';
 
+  const healthStatusColor = financials?.overallStatus === 'healthy' ? 'text-emerald-400'
+    : financials?.overallStatus === 'warning' ? 'text-amber-400' : 'text-rose-400';
+
   return (
     <div className="min-h-screen bg-[#0B0B12]">
-      {/* Header */}
-      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <BusinessSwitcher />
-              <div>
-                <p className="text-slate-500 text-sm">{businessDisplayName} • {userRole}</p>
-              </div>
-            </div>
+      {/* Sticky Header */}
+      <header className="border-b border-white/[0.06] backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95">
+        <div className="max-w-7xl mx-auto px-6 py-3.5">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
+              <BusinessSwitcher />
+              <div className="h-5 w-px bg-white/10" />
+              <div>
+                <p className="text-xs text-slate-500">{businessDisplayName}
+                  <span className="mx-1.5 text-slate-700">·</span>
+                  <span className="capitalize text-slate-500">{userRole}</span>
+                </p>
+              </div>
+              {financials && (
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                  financials.overallStatus === 'healthy' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                  : financials.overallStatus === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                  : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                } capitalize`}>
+                  {financials.overallStatus}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
               {pendingInvitations.length > 0 && (
-                <Button 
+                <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => navigate('/Invitations')}
-                  variant="outline"
-                  className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                  className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10 text-xs h-8"
                 >
-                  <Mail className="w-4 h-4 mr-2" />
-                  {pendingInvitations.length}
+                  <Mail className="w-3.5 h-3.5 mr-1.5" />
+                  {pendingInvitations.length} Invite{pendingInvitations.length > 1 ? 's' : ''}
                 </Button>
               )}
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => navigate('/ConsolidatedView')}
+                className="text-xs h-8"
               >
-                <Building2 className="w-4 h-4 mr-2" />
-                Consolidated View
+                <Building2 className="w-3.5 h-3.5 mr-1.5" />
+                Multi-Site
               </Button>
-              <Button 
-                onClick={() => setShowCounselorChat(true)}
+              <Button
+                size="sm"
                 variant="outline"
+                onClick={() => setShowCounselorChat(true)}
+                className="text-xs h-8 border-[#7B3BFF]/40 text-[#C084FC] hover:bg-[#7B3BFF]/10"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Open AI Counselor Chat
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                AI Counselor
               </Button>
               {financials && (
                 <Button
+                  size="sm"
                   onClick={saveSnapshot}
                   disabled={savingSnapshot}
                   variant="outline"
+                  className="text-xs h-8"
                 >
                   {snapshotSaved
-                    ? <><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" />Saved!</>
+                    ? <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />Saved</>
                     : savingSnapshot
-                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Saving...</>
-                    : <><Save className="w-4 h-4 mr-2" />Save Snapshot</>
+                    ? <><RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />Saving...</>
+                    : <><Save className="w-3.5 h-3.5 mr-1.5" />Save Snapshot</>
                   }
                 </Button>
               )}
               {canEdit() && (
-                <Button 
+                <Button
+                  size="sm"
                   onClick={() => setShowUploadModal(true)}
+                  className="text-xs h-8"
                 >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Expense
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  Upload Invoice
                 </Button>
               )}
             </div>
@@ -310,19 +334,54 @@ function DashboardContent() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Health Indicator */}
-        {financials && <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />}
+      <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
+        {/* Health + Key Profit metrics at the top */}
+        {financials && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Health panel - spans 1 col */}
+            <div className="lg:col-span-1">
+              <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />
+            </div>
+            {/* Top 2 financial KPIs */}
+            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+              <MetricCard
+                title="Net Profit"
+                value={financials.netProfit}
+                prefix={currencySymbol}
+                status={financials.netProfit >= 0 ? 'healthy' : 'risk'}
+                icon={DollarSign}
+                delay={0}
+              />
+              <MetricCard
+                title="Profit Margin"
+                value={financials.profitMargin}
+                suffix="%"
+                status={financials.profitMarginStatus}
+                benchmark={`Target: ${financials.benchmarks.profitMargin.healthy}%+`}
+                icon={Percent}
+                delay={0.1}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Section Divider */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/[0.05]" />
+          <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest px-2">Financial Inputs</span>
+          <div className="h-px flex-1 bg-white/[0.05]" />
+        </div>
 
         {/* Financial Inputs Section */}
-        <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
-          <div className="flex items-center justify-between mb-6">
+        <Card className="bg-[#0F0F1E]/80 border-white/[0.06] p-6 rounded-2xl">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <IconContainer icon={Calculator} />
               <div>
-                <h2 className="text-lg font-semibold text-white">Financial Inputs</h2>
-                <p className="text-sm text-slate-500">
-                  {canEdit() ? 'Enter your monthly figures' : 'View-only mode'}
+                <h2 className="text-base font-semibold text-white">Monthly Figures</h2>
+                <p className="text-xs text-slate-500">
+                  {canEdit() ? 'Enter or auto-fill from your uploaded invoices' : 'View-only mode'}
                 </p>
               </div>
             </div>
@@ -338,25 +397,24 @@ function DashboardContent() {
               />
             )}
           </div>
-          <FinancialInputs 
-            values={localBusinessData} 
-            onChange={handleInputChange} 
+          <FinancialInputs
+            values={localBusinessData}
+            onChange={handleInputChange}
             disabled={!canEdit()}
             currencySymbol={currencySymbol}
           />
         </Card>
 
-        {/* Key Metrics Grid */}
+        {/* Section Divider */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/[0.05]" />
+          <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest px-2">Performance Metrics</span>
+          <div className="h-px flex-1 bg-white/[0.05]" />
+        </div>
+
+        {/* Full Metrics Grid */}
         {financials && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <MetricCard
-              title="Net Profit (After Tax)"
-              value={financials.netProfit}
-              prefix={currencySymbol}
-              status={financials.netProfit >= 0 ? 'healthy' : 'risk'}
-              icon={DollarSign}
-              delay={0}
-            />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             <MetricCard
               title="Tax Amount"
               value={financials.taxAmount}
@@ -364,90 +422,92 @@ function DashboardContent() {
               status="neutral"
               benchmark={`Rate: ${financials.taxRate}%`}
               icon={DollarSign}
-              delay={0.1}
+              delay={0}
             />
             <MetricCard
-              title="Profit Margin"
-              value={financials.profitMargin}
-              suffix="%"
-              status={financials.profitMarginStatus}
-              benchmark={`Target: ${financials.benchmarks.profitMargin.healthy}%+`}
-              icon={Percent}
-              delay={0.2}
-            />
-            <MetricCard
-              title="Break-even Revenue"
+              title="Break-even"
               value={financials.breakEvenRevenue}
               prefix={currencySymbol}
               status="neutral"
               icon={Target}
-              delay={0.3}
+              delay={0.05}
             />
             <MetricCard
-              title="Food Cost Ratio"
+              title="Food Cost"
               value={financials.foodCostRatio}
               suffix="%"
               status={financials.foodCostStatus}
-              benchmark={`Healthy: <${financials.benchmarks.foodCostRatio.healthy}%`}
+              benchmark={`<${financials.benchmarks.foodCostRatio.healthy}%`}
               icon={TrendingUp}
-              delay={0.4}
+              delay={0.1}
             />
             <MetricCard
-              title="Staff Cost Ratio"
+              title="Staff Cost"
               value={financials.staffCostRatio}
               suffix="%"
               status={financials.staffCostStatus}
-              benchmark={`Healthy: <${financials.benchmarks.staffCostRatio.healthy}%`}
+              benchmark={`<${financials.benchmarks.staffCostRatio.healthy}%`}
               icon={TrendingUp}
-              delay={0.5}
+              delay={0.15}
             />
             <MetricCard
-              title="Fixed Cost Load"
+              title="Fixed Cost"
               value={financials.fixedCostRatio}
               suffix="%"
               status={financials.fixedCostStatus}
-              benchmark={`Healthy: <${financials.benchmarks.fixedCostRatio.healthy}%`}
+              benchmark={`<${financials.benchmarks.fixedCostRatio.healthy}%`}
               icon={TrendingUp}
-              delay={0.6}
+              delay={0.2}
             />
           </div>
         )}
 
         {/* Budget & Cash Flow Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <BudgetVsActualMini budget={budgets[0]} actual={currentBusiness} />
           <CashFlowMiniChart currentBusiness={currentBusiness} snapshots={snapshots} />
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Section Divider */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/[0.05]" />
+          <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest px-2">Intelligence</span>
+          <div className="h-px flex-1 bg-white/[0.05]" />
+        </div>
+
+        {/* Insights + Simulator */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Insights */}
-          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
-            <div className="flex items-center gap-3 mb-6">
-              <IconContainer icon={FileText} />
+          <Card className="bg-[#0F0F1E]/80 border-white/[0.06] p-6 rounded-2xl">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/10 border border-[#7B3BFF]/20 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-[#C084FC]" />
+              </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Business Insights</h2>
-                <p className="text-sm text-slate-500">AI-powered recommendations</p>
+                <h2 className="text-base font-semibold text-white">AI Insights</h2>
+                <p className="text-xs text-slate-500">Recommendations based on your numbers</p>
               </div>
             </div>
             <div className="space-y-3">
-              {insights.map((insight, idx) => (
+              {insights.length > 0 ? insights.map((insight, idx) => (
                 <InsightCard key={idx} {...insight} delay={idx * 0.1} />
-              ))}
+              )) : (
+                <p className="text-sm text-slate-500 py-4 text-center">Enter your financial figures above to see personalised insights.</p>
+              )}
             </div>
           </Card>
 
-          {/* Sensitivity Simulator */}
-          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
-            <div className="flex items-center gap-3 mb-6">
+          {/* Profit Simulator */}
+          <Card className="bg-[#0F0F1E]/80 border-white/[0.06] p-6 rounded-2xl">
+            <div className="flex items-center gap-3 mb-5">
               <IconContainer icon={Sliders} />
               <div>
-                <h2 className="text-lg font-semibold text-white">Profit Simulator</h2>
-                <p className="text-sm text-slate-500">Test scenario impacts</p>
+                <h2 className="text-base font-semibold text-white">Profit Simulator</h2>
+                <p className="text-xs text-slate-500">Model scenario impact before making decisions</p>
               </div>
             </div>
 
-            <div className="space-y-6 mb-8">
+            <div className="space-y-5 mb-6">
               <SensitivitySlider
                 label="Revenue Change"
                 value={simulationValues.revenue}
@@ -465,32 +525,27 @@ function DashboardContent() {
               />
             </div>
 
-            {/* Simulated Results */}
-            {hasSimulationChanges && simulatedFinancials && (
-              <div className="bg-[#0B0B12]/60 border border-white/5 rounded-xl p-4 space-y-3">
-                <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Projected Impact</h3>
-                
+            {hasSimulationChanges && simulatedFinancials ? (
+              <div className="bg-[#0B0B12]/60 border border-white/[0.06] rounded-xl p-4 space-y-3">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-3">Projected Impact</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Net Profit</span>
-                  <span className={`font-bold ${simulatedFinancials.netProfit >= financials.netProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className="text-sm text-slate-400">Net Profit</span>
+                  <span className={`text-sm font-bold ${simulatedFinancials.netProfit >= financials.netProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {currencySymbol}{simulatedFinancials.netProfit.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                    <span className="text-xs ml-1 opacity-70">
-                      ({simulatedFinancials.netProfit >= financials.netProfit ? '+' : ''}
-                      {(simulatedFinancials.netProfit - financials.netProfit).toLocaleString('en-US', { maximumFractionDigits: 0 })})
+                    <span className="text-xs ml-1.5 opacity-70">
+                      ({simulatedFinancials.netProfit >= financials.netProfit ? '+' : ''}{(simulatedFinancials.netProfit - financials.netProfit).toLocaleString('en-US', { maximumFractionDigits: 0 })})
                     </span>
                   </span>
                 </div>
-                
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Profit Margin</span>
-                  <span className={`font-bold ${simulatedFinancials.profitMargin >= financials.profitMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className="text-sm text-slate-400">Profit Margin</span>
+                  <span className={`text-sm font-bold ${simulatedFinancials.profitMargin >= financials.profitMargin ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {simulatedFinancials.profitMargin.toFixed(1)}%
                   </span>
                 </div>
-                
-                <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                  <span className="text-slate-400">Health Status</span>
-                  <span className={`font-bold capitalize ${
+                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+                  <span className="text-sm text-slate-400">Health Status</span>
+                  <span className={`text-sm font-bold capitalize ${
                     simulatedFinancials.overallStatus === 'healthy' ? 'text-emerald-400' :
                     simulatedFinancials.overallStatus === 'warning' ? 'text-amber-400' : 'text-rose-400'
                   }`}>
@@ -498,29 +553,53 @@ function DashboardContent() {
                   </span>
                 </div>
               </div>
+            ) : (
+              <div className="bg-[#0B0B12]/40 border border-dashed border-white/[0.06] rounded-xl p-5 text-center">
+                <p className="text-xs text-slate-600">Adjust the sliders above to model different scenarios</p>
+              </div>
             )}
           </Card>
         </div>
 
+        {/* Section Divider */}
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/[0.05]" />
+          <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest px-2">Recent Activity</span>
+          <div className="h-px flex-1 bg-white/[0.05]" />
+        </div>
+
         {/* Recent Expenses */}
-        <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
-          <div className="flex items-center justify-between mb-6">
+        <Card className="bg-[#0F0F1E]/80 border-white/[0.06] p-6 rounded-2xl">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <IconContainer icon={FileText} />
               <div>
-                <h2 className="text-lg font-semibold text-white">Recent Expenses</h2>
-                <p className="text-sm text-slate-500">{expenses.length} documents uploaded</p>
+                <h2 className="text-base font-semibold text-white">Recent Invoices</h2>
+                <p className="text-xs text-slate-500">{expenses.length} document{expenses.length !== 1 ? 's' : ''} uploaded</p>
               </div>
             </div>
+            {expenses.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/Expenses')}
+                className="text-xs text-slate-400 hover:text-white h-8"
+              >
+                View all <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            )}
           </div>
-          
+
           {expenses.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-slate-500 text-sm">No expenses uploaded yet.</p>
+            <div className="py-10 text-center border border-dashed border-white/[0.06] rounded-xl">
+              <div className="w-10 h-10 rounded-xl bg-[#151528] border border-white/[0.06] flex items-center justify-center mx-auto mb-3">
+                <FileText className="w-5 h-5 text-slate-600" />
+              </div>
+              <p className="text-sm text-slate-500 mb-4">No invoices uploaded yet</p>
               {canEdit() && (
-                <Button variant="outline" onClick={() => setShowUploadModal(true)} className="mt-4">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload First Expense
+                <Button size="sm" variant="outline" onClick={() => setShowUploadModal(true)} className="text-xs h-8">
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  Upload First Invoice
                 </Button>
               )}
             </div>
@@ -529,29 +608,27 @@ function DashboardContent() {
               {expenses.slice(0, 5).map((expense, idx) => (
                 <motion.div
                   key={expense.id}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="flex items-center justify-between p-4 bg-[#0B0B12]/60 border border-white/5 rounded-xl hover:border-[#7B3BFF]/20 transition-colors group"
+                  transition={{ delay: idx * 0.04 }}
+                  className="flex items-center justify-between px-4 py-3 bg-[#0B0B12]/60 border border-white/[0.05] rounded-xl hover:border-[#7B3BFF]/20 transition-colors group"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/10 to-[#A855F7]/10 border border-[#7B3BFF]/10 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-[#C084FC]" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#7B3BFF]/10 to-[#A855F7]/10 border border-[#7B3BFF]/10 flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4 text-[#C084FC]" />
                     </div>
                     <div>
-                      <p className="font-medium text-white">{expense.supplier_name}</p>
-                      <p className="text-sm text-slate-500 capitalize">
+                      <p className="text-sm font-medium text-white leading-tight">{expense.supplier_name}</p>
+                      <p className="text-xs text-slate-500 capitalize mt-0.5">
                         {expense.expense_category?.replace(/_/g, ' ')}
-                        {expense.uploaded_by && <span className="ml-2">• by {expense.uploaded_by}</span>}
+                        {expense.invoice_date && <span className="ml-2 text-slate-600">· {expense.invoice_date}</span>}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <p className="font-semibold text-white">{currencySymbol}{expense.invoice_total?.toLocaleString()}</p>
-                      {expense.vat_included && (
-                        <p className="text-xs text-slate-500">VAT incl.</p>
-                      )}
+                      <p className="text-sm font-semibold text-white">{currencySymbol}{expense.invoice_total?.toLocaleString()}</p>
+                      {expense.vat_included && <p className="text-[10px] text-slate-600">VAT incl.</p>}
                     </div>
                     {canEdit() && (
                       <Button
@@ -559,9 +636,9 @@ function DashboardContent() {
                         size="icon"
                         onClick={() => deleteExpense.mutate(expense.id)}
                         disabled={deleteExpense.isPending}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                        className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-rose-400 hover:bg-rose-500/10"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     )}
                   </div>

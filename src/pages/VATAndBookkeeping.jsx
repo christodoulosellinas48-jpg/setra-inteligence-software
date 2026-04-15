@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Inbox,
@@ -19,7 +19,10 @@ import {
   RefreshCw,
   CalendarDays,
   Calculator,
-  ShieldAlert
+  ShieldAlert,
+  BookOpen,
+  Download,
+  CheckCircle2
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 
@@ -143,94 +146,134 @@ export default function VATAndBookkeeping() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">No Business Selected</h1>
           <p className="text-slate-400 mb-8">Please select a business to access bookkeeping & VAT features.</p>
-          <Button onClick={() => navigate(createPageUrl('Dashboard'))}>Go to Dashboard</Button>
+          <Button onClick={() => navigate('/Dashboard')}>Go to Dashboard</Button>
         </motion.div>
       </div>
     );
   }
 
+  const TAB_CONFIG = [
+    { value: 'vat',        icon: Percent,     label: 'VAT',         desc: 'Periods, calculator, reports' },
+    { value: 'inbox',      icon: Inbox,        label: 'Inbox',       desc: 'Review uploaded documents' },
+    { value: 'bank',       icon: CreditCard,   label: 'Bank',        desc: 'Reconcile transactions' },
+    { value: 'pl',         icon: TrendingUp,   label: 'P&L',         desc: 'Profit & loss statement' },
+    { value: 'payroll',    icon: Users,        label: 'Payroll',     desc: 'Staff costs & shifts' },
+    { value: 'accountant', icon: UserCircle,   label: 'Accountant',  desc: 'Accountant portal' },
+    { value: 'exports',    icon: Download,     label: 'Exports',     desc: 'Download reports & data' },
+  ];
+
   return (
     <div className="min-h-screen bg-[#0B0B12]">
-      {/* Header */}
-      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
+      {/* Page Header */}
+      <div className="border-b border-white/[0.06] bg-[#0B0B12]/95 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center">
-                <Receipt className="w-5 h-5 text-[#C084FC]" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/15 border border-[#7B3BFF]/25 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-[#C084FC]" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">VAT & Bookkeeping</h1>
-                <p className="text-sm text-slate-500">{currentBusiness.name}</p>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-lg font-bold text-white">VAT & Bookkeeping</h1>
+                  {currentBusiness.vat_registered && (
+                    <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/20 text-[10px] px-2 py-0">
+                      <CheckCircle2 className="w-2.5 h-2.5 mr-1" />VAT Registered
+                    </Badge>
+                  )}
+                  {currentBusiness.entity_type === 'ltd' && (
+                    <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/20 text-[10px] px-2 py-0">
+                      Ltd Company
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">{currentBusiness.name} · Financial compliance & records</p>
               </div>
             </div>
             {currentBusiness.entity_type === 'ltd' && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                <AlertCircle className="w-4 h-4 text-amber-400" />
-                <span className="text-xs text-amber-400">Ltd: Statutory audit requires licensed auditor sign-off</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/25 rounded-lg">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="text-xs text-amber-400/90">Statutory audit requires licensed auditor sign-off</span>
               </div>
             )}
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-8 gap-2 bg-slate-900/50 p-2 rounded-xl">
-            <TabsTrigger value="vat" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <Percent className="w-4 h-4 mr-2" />
-              VAT
-            </TabsTrigger>
-            <TabsTrigger value="inbox" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <Inbox className="w-4 h-4 mr-2" />
-              Inbox
-            </TabsTrigger>
-            <TabsTrigger value="bank" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <CreditCard className="w-4 h-4 mr-2" />
-              Bank
-            </TabsTrigger>
-            <TabsTrigger value="pl" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              P&L
-            </TabsTrigger>
-            <TabsTrigger value="payroll" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <Users className="w-4 h-4 mr-2" />
-              Payroll
-            </TabsTrigger>
-            <TabsTrigger value="accountant" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <UserCircle className="w-4 h-4 mr-2" />
-              Accountant
-            </TabsTrigger>
-            <TabsTrigger value="exports" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <FileText className="w-4 h-4 mr-2" />
-              Exports
-            </TabsTrigger>
-          </TabsList>
 
-          <div className="mt-6">
-            <TabsContent value="inbox">
+          {/* Premium Tab Navigation */}
+          <div className="flex gap-1 p-1 bg-[#0F0F1E] border border-white/[0.06] rounded-2xl overflow-x-auto">
+            {TAB_CONFIG.map(tab => {
+              const TabIcon = tab.icon;
+              const isActive = activeTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white shadow-lg shadow-[#7B3BFF]/20'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <TabIcon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active tab description strip */}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-3 mb-5 flex items-center gap-2"
+          >
+            {(() => {
+              const tab = TAB_CONFIG.find(t => t.value === activeTab);
+              if (!tab) return null;
+              const TabIcon = tab.icon;
+              return (
+                <>
+                  <TabIcon className="w-3.5 h-3.5 text-[#C084FC]" />
+                  <span className="text-xs text-slate-500">{tab.desc}</span>
+                </>
+              );
+            })()}
+          </motion.div>
+
+          <motion.div
+            key={`content-${activeTab}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <TabsContent value="inbox" className="mt-0">
               <InboxTab businessId={currentBusiness.id} />
             </TabsContent>
-            <TabsContent value="bank">
+            <TabsContent value="bank" className="mt-0">
               <BankReconciliationTab businessId={currentBusiness.id} />
             </TabsContent>
-            <TabsContent value="vat">
+            <TabsContent value="vat" className="mt-0">
               <VATSection business={currentBusiness} hasPermission={hasPermission} />
             </TabsContent>
-            <TabsContent value="pl">
+            <TabsContent value="pl" className="mt-0">
               <PLTab businessId={currentBusiness.id} />
             </TabsContent>
-            <TabsContent value="payroll">
+            <TabsContent value="payroll" className="mt-0">
               <PayrollTab businessId={currentBusiness.id} />
             </TabsContent>
-            <TabsContent value="accountant">
+            <TabsContent value="accountant" className="mt-0">
               <AccountantPortalTab />
             </TabsContent>
-            <TabsContent value="exports">
+            <TabsContent value="exports" className="mt-0">
               <ExportsTab businessId={currentBusiness.id} business={currentBusiness} />
             </TabsContent>
-          </div>
+          </motion.div>
         </Tabs>
       </main>
     </div>
