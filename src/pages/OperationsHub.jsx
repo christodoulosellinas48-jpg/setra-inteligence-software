@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { UtensilsCrossed, ShoppingCart, Store, Trash2, Users, ArrowRight, ChefHat } from 'lucide-react';
+import { UtensilsCrossed, ShoppingCart, Store, Trash2, Users, ArrowRight, ChefHat, Package } from 'lucide-react';
 
 const MODULES = [
   {
@@ -60,6 +60,17 @@ const MODULES = [
     iconColor: 'text-pink-400',
     iconBg: 'bg-pink-500/15',
     badge: 'HR & Labour'
+  },
+  {
+    id: 'inventory',
+    label: 'Inventory',
+    icon: Package,
+    path: '/Inventory',
+    description: 'Track stock levels, set reorder thresholds, and monitor ingredient costs across your operation.',
+    color: 'from-cyan-500/20 to-teal-500/10',
+    iconColor: 'text-cyan-400',
+    iconBg: 'bg-cyan-500/15',
+    badge: 'Stock'
   },
   {
     id: 'recipes',

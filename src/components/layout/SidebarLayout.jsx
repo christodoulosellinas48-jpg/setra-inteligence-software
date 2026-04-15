@@ -15,7 +15,6 @@ import {
   BarChart3,
   ClipboardCheck,
   Receipt,
-  Package,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -32,7 +31,6 @@ const ALL_NAV_ITEMS = [
   { label: 'Audit',       icon: ClipboardCheck,   path: '/Audit',         permission: 'view_reports' },
   { label: 'Bookkeeping', icon: Receipt,          path: '/Bookkeeping',   permission: 'manage_bookkeeping' },
   { label: 'VAT',         icon: FileSpreadsheet,  path: '/VATModule',     permission: 'manage_vat' },
-  { label: 'Inventory',   icon: Package,          path: '/Inventory',     permission: 'manage_inventory' },
 ];
 
 export default function SidebarLayout({ children }) {
