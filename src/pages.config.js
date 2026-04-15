@@ -1,5 +1,4 @@
 import Audit from './pages/Audit';
-import Bookkeeping from './pages/Bookkeeping';
 import Budgeting from './pages/Budgeting';
 import ConsolidatedView from './pages/ConsolidatedView';
 import CreateBusiness from './pages/CreateBusiness';
@@ -24,7 +23,6 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "Audit": Audit,
-    "Bookkeeping": Bookkeeping,
     "Budgeting": Budgeting,
     "ConsolidatedView": ConsolidatedView,
     "CreateBusiness": CreateBusiness,
