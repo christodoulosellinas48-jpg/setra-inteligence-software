@@ -7,7 +7,23 @@ const CATEGORY_CODE_MAP = {
   utilities: 'UTIL',
   operating_expenses: 'OPEX',
   one_off_expenses: 'ONE_OFF',
+  packaging: 'OPEX',
   other: 'OPEX'
+};
+
+const inferInventoryCategory = (expCat, description) => {
+  const desc = (description || '').toLowerCase();
+  if (expCat === 'food_beverage') {
+    if (desc.match(/beef|pork|lamb|chicken|veal|meat|steak|mince|sausage|bacon|ribs/)) return 'meat_fish';
+    if (desc.match(/fish|salmon|cod|tuna|sea|prawn|shrimp|squid|octopus/)) return 'meat_fish';
+    if (desc.match(/milk|cheese|cream|butter|yogurt|dairy/)) return 'dairy';
+    if (desc.match(/tomato|lettuce|pepper|onion|garlic|potato|vegetable|fruit|herb|salad/)) return 'produce';
+    if (desc.match(/beer|wine|spirit|vodka|whisky|gin|liquor|drink|juice|water|soda/)) return 'beverages';
+    if (desc.match(/flour|sugar|rice|pasta|oil|sauce|tin|can|dried|spice/)) return 'dry_goods';
+    return 'dry_goods';
+  }
+  if (expCat === 'operating_expenses' || expCat === 'packaging') return 'packaging';
+  return 'other';
 };
 
 Deno.serve(async (req) => {
@@ -16,13 +32,35 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { business_id, supplier_name, invoice_date, expense_category, line_items, invoice_total, vat_included, vat_amount, net_amount } = await req.json();
+    const {
+      business_id,
+      document_id,
+      supplier_name,
+      supplier_vat_number,
+      invoice_date,
+      due_date,
+      invoice_number,
+      expense_category,
+      line_items,
+      invoice_total,
+      vat_included,
+      vat_amount,
+      net_amount
+    } = await req.json();
 
     if (!business_id || !supplier_name) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const results = { supplier: null, ledger_entry: null, vat_line: null, inventory_updates: [], inventory_created: [] };
+    const results = {
+      supplier: null,
+      ledger_entry: null,
+      vat_line: null,
+      inventory_updates: [],
+      inventory_created: [],
+      purchase_records: [],
+      document_lines: []
+    };
 
     // 1. Create or update Supplier record
     const existingSuppliers = await base44.entities.Supplier.filter({ business_id, name: supplier_name });
@@ -56,7 +94,6 @@ Deno.serve(async (req) => {
     let finalNetAmount = net_amount || grossAmount;
     let finalVatAmount = vat_amount || 0;
 
-    // If VAT amounts not provided but vat_included, back-calculate
     if (!vat_amount && vat_included && grossAmount > 0) {
       finalNetAmount = parseFloat((grossAmount / (1 + vatRate / 100)).toFixed(2));
       finalVatAmount = parseFloat((grossAmount - finalNetAmount).toFixed(2));
@@ -71,6 +108,7 @@ Deno.serve(async (req) => {
       vat_amount: finalVatAmount,
       gross_amount: grossAmount,
       source: 'document',
+      source_id: document_id || null,
       posted: false,
       vat_direction: 'input',
       description: `${supplier_name} — ${expense_category?.replace(/_/g, ' ') || 'expense'}`
@@ -98,56 +136,94 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. Update/create inventory items from line items
-    const inferInventoryCategory = (expCat, description) => {
-      const desc = (description || '').toLowerCase();
-      if (expCat === 'food_beverage') {
-        if (desc.match(/beef|pork|lamb|chicken|veal|meat|steak|mince|sausage|bacon|ribs/)) return 'meat_fish';
-        if (desc.match(/fish|salmon|cod|tuna|sea|prawn|shrimp|squid|octopus/)) return 'meat_fish';
-        if (desc.match(/milk|cheese|cream|butter|yogurt|dairy/)) return 'dairy';
-        if (desc.match(/tomato|lettuce|pepper|onion|garlic|potato|vegetable|fruit|herb|salad/)) return 'produce';
-        if (desc.match(/beer|wine|spirit|vodka|whisky|gin|liquor|drink|juice|water|soda/)) return 'beverages';
-        if (desc.match(/flour|sugar|rice|pasta|oil|sauce|tin|can|dried|spice/)) return 'dry_goods';
-        return 'dry_goods';
-      }
-      if (expCat === 'operating_expenses') return 'packaging';
-      return 'other';
-    };
-
+    // 4. Create DocumentLines + update/create inventory + Purchase records
     if (line_items && line_items.length > 0) {
       const allInventory = await base44.entities.InventoryItem.filter({ business_id });
 
       for (const item of line_items) {
         if (!item.description) continue;
-        const descLower = item.description.toLowerCase().trim();
-        const match = allInventory.find(inv =>
-          inv.ingredient_name && inv.ingredient_name.toLowerCase().trim() === descLower
-        );
         const qty = item.quantity || 1;
         const unitCost = item.unit_price || (item.total ? item.total / qty : 0);
+        const lineNet = item.line_net || (unitCost * qty);
+        const lineVat = item.vat_amount || 0;
+        const lineGross = item.line_gross || (lineNet + lineVat);
 
-        if (match) {
-          await base44.entities.InventoryItem.update(match.id, {
-            current_stock: (match.current_stock || 0) + qty,
-            unit_cost: unitCost || match.unit_cost,
-            supplier_name,
-            last_restocked_date: invoice_date || new Date().toISOString().split('T')[0]
+        // Create DocumentLine if we have a document_id
+        if (document_id) {
+          const docLine = await base44.entities.DocumentLine.create({
+            document_id,
+            description: item.description,
+            qty,
+            unit_price_net: unitCost,
+            line_net: lineNet,
+            vat_rate_code: item.vat_rate_code || String(vatRate),
+            vat_amount: lineVat,
+            line_gross: lineGross,
+            category_code: CATEGORY_CODE_MAP[expense_category] || 'OPEX',
+            confidence_score: item.confidence || 0.9,
+            categorization_reason: 'ai'
           });
-          results.inventory_updates.push(match.ingredient_name);
-        } else {
-          const newItem = await base44.entities.InventoryItem.create({
-            business_id,
-            ingredient_name: item.description,
-            unit: item.unit || 'kg',
-            current_stock: qty,
-            unit_cost: unitCost,
-            supplier_name,
-            last_restocked_date: invoice_date || new Date().toISOString().split('T')[0],
-            category: inferInventoryCategory(expense_category, item.description)
-          });
-          results.inventory_created.push(newItem.ingredient_name);
+          results.document_lines.push(docLine);
+        }
+
+        // Inventory update/create for food_beverage and packaging
+        const shouldTrackInventory = ['food_beverage', 'operating_expenses', 'packaging'].includes(expense_category);
+        if (shouldTrackInventory) {
+          const descLower = item.description.toLowerCase().trim();
+          const match = allInventory.find(inv =>
+            inv.ingredient_name && inv.ingredient_name.toLowerCase().trim() === descLower
+          );
+
+          if (match) {
+            await base44.entities.InventoryItem.update(match.id, {
+              current_stock: (match.current_stock || 0) + qty,
+              unit_cost: unitCost || match.unit_cost,
+              supplier_name,
+              last_restocked_date: invoice_date || new Date().toISOString().split('T')[0]
+            });
+            results.inventory_updates.push(match.ingredient_name);
+          } else {
+            const newItem = await base44.entities.InventoryItem.create({
+              business_id,
+              ingredient_name: item.description,
+              unit: item.unit || 'kg',
+              current_stock: qty,
+              unit_cost: unitCost,
+              supplier_name,
+              last_restocked_date: invoice_date || new Date().toISOString().split('T')[0],
+              category: inferInventoryCategory(expense_category, item.description)
+            });
+            results.inventory_created.push(newItem.ingredient_name);
+          }
+
+          // Create Purchase record for food/bev items
+          if (expense_category === 'food_beverage') {
+            const purchaseRecord = await base44.entities.Purchase.create({
+              business_id,
+              supplier_name,
+              date: invoice_date || new Date().toISOString().split('T')[0],
+              ingredient_name: item.description,
+              qty,
+              unit: item.unit || 'kg',
+              total_cost: lineNet || (unitCost * qty)
+            });
+            results.purchase_records.push(item.description);
+          }
         }
       }
+    }
+
+    // 5. Mark document as approved/posted if it was passed
+    if (document_id) {
+      await base44.entities.Document.update(document_id, {
+        status: 'posted',
+        net_total: finalNetAmount,
+        vat_total: finalVatAmount,
+        gross_total: grossAmount,
+        supplier_vat_number: supplier_vat_number || null,
+        invoice_number: invoice_number || null,
+        due_date: due_date || null
+      });
     }
 
     return Response.json({ success: true, results });
