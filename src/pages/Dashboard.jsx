@@ -10,8 +10,9 @@ import { debounce } from 'lodash';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw, Mail, Building2, Trash2, Sparkles
+  ChevronRight, RefreshCw, Mail, Building2, Trash2, Sparkles, Save, CheckCircle2
 } from 'lucide-react';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import AICounselorChat from '@/components/AICounselorChat';
 import IconContainer from '@/components/ui/IconContainer';
 import ThemedSpinner from '@/components/ui/ThemedSpinner';
@@ -43,6 +44,33 @@ function DashboardContent() {
   const { currentBusiness, user, loading: businessLoading, canEdit, userRole } = useBusiness();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showCounselorChat, setShowCounselorChat] = useState(false);
+  const [savingSnapshot, setSavingSnapshot] = useState(false);
+  const [snapshotSaved, setSnapshotSaved] = useState(false);
+
+  const saveSnapshot = async () => {
+    if (!currentBusiness || !financials) return;
+    setSavingSnapshot(true);
+    const now = new Date();
+    await base44.entities.FinancialSnapshot.create({
+      business_id: currentBusiness.id,
+      period_start: startOfMonth(now).toISOString().split('T')[0],
+      period_end: endOfMonth(now).toISOString().split('T')[0],
+      period_type: 'monthly',
+      monthly_revenue: currentBusiness.monthly_revenue || 0,
+      rent_fixed_costs: currentBusiness.rent_fixed_costs || 0,
+      staff_costs: currentBusiness.staff_costs || 0,
+      purchases_food_bev: currentBusiness.purchases_food_bev || 0,
+      utilities: currentBusiness.utilities || 0,
+      other_operating: currentBusiness.other_operating || 0,
+      net_profit: financials.netProfit,
+      profit_margin: financials.profitMargin,
+      created_by_email: user?.email,
+    });
+    queryClient.invalidateQueries(['financialSnapshots', currentBusiness?.id]);
+    setSavingSnapshot(false);
+    setSnapshotSaved(true);
+    setTimeout(() => setSnapshotSaved(false), 3000);
+  };
   const [simulationValues, setSimulationValues] = useState({
     revenue: 0,
     foodCost: 0,
@@ -255,10 +283,23 @@ function DashboardContent() {
                 <Sparkles className="w-4 h-4 mr-2" />
                 Open AI Counselor Chat
               </Button>
+              {financials && (
+                <Button
+                  onClick={saveSnapshot}
+                  disabled={savingSnapshot}
+                  variant="outline"
+                >
+                  {snapshotSaved
+                    ? <><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" />Saved!</>
+                    : savingSnapshot
+                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                    : <><Save className="w-4 h-4 mr-2" />Save Snapshot</>
+                  }
+                </Button>
+              )}
               {canEdit() && (
                 <Button 
                   onClick={() => setShowUploadModal(true)}
-
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Upload Expense
