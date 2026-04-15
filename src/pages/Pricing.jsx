@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import MarketingHeader from '@/components/layout/MarketingHeader';
@@ -159,7 +158,7 @@ export default function Pricing() {
 
                     {/* CTA Button */}
                     <Button 
-                      onClick={() => navigate(createPageUrl('Onboarding'))}
+                      onClick={() => navigate('/Onboarding')}
                       className="w-full"
                       variant={plan.popular ? 'default' : 'outline'}
                     >
@@ -192,7 +191,7 @@ export default function Pricing() {
               <Button variant="outline" className="w-full sm:w-auto">
                 Contact Sales
               </Button>
-              <Button onClick={() => navigate(createPageUrl('Features'))} className="w-full sm:w-auto">
+              <Button onClick={() => navigate('/Features')} className="w-full sm:w-auto">
                 View All Features
               </Button>
             </div>
