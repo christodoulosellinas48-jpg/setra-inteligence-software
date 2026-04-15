@@ -47,8 +47,9 @@ function SettingsContent() {
   const handleSave = async () => {
     setSaving(true);
     await updateBusiness.mutateAsync({
+      ...currentBusiness,
       ...businessForm,
-      industry_group: currentBusiness.industry_group
+      industry_group: currentBusiness.industry_group || currentBusiness.business_type
     });
   };
 
