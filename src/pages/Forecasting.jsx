@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 
 import ScenarioSelector from '@/components/forecast/ScenarioSelector';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 
 // Lazy load chart components
 const ProjectionChart = lazy(() => import('@/components/forecast/ProjectionChart'));
@@ -286,9 +286,5 @@ function ForecastingContent() {
 }
 
 export default function Forecasting() {
-  return (
-    <BusinessProvider>
-      <ForecastingContent />
-    </BusinessProvider>
-  );
+  return <ForecastingContent />;
 }

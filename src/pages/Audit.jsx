@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BusinessProvider, useBusiness } from '../components/business/BusinessContext';
+import { useBusiness } from '../components/business/BusinessContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { ClipboardCheck, ArrowLeft, RefreshCw } from 'lucide-react';
@@ -105,9 +105,5 @@ function AuditContent() {
 }
 
 export default function Audit() {
-  return (
-    <BusinessProvider>
-      <AuditContent />
-    </BusinessProvider>
-  );
+  return <AuditContent />;
 }

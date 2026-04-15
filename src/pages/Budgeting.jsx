@@ -10,7 +10,7 @@ import { format, startOfMonth, endOfMonth, addMonths } from 'date-fns';
 
 import BudgetForm from '@/components/budget/BudgetForm';
 import { BENCHMARKS } from '@/components/dashboard/financialCalculations';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 
 // Lazy load chart components
 const BudgetVsActualChart = lazy(() => import('@/components/budget/BudgetVsActualChart'));
@@ -189,9 +189,5 @@ function BudgetingContent() {
 }
 
 export default function Budgeting() {
-  return (
-    <BusinessProvider>
-      <BudgetingContent />
-    </BusinessProvider>
-  );
+  return <BudgetingContent />;
 }

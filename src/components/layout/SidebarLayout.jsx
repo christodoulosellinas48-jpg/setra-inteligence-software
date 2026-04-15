@@ -22,6 +22,18 @@ import {
   ChevronRight,
   Zap
 } from 'lucide-react';
+import { useBusiness } from '@/components/business/BusinessContext';
+
+const ALL_NAV_ITEMS = [
+  { label: 'Dashboard',   icon: LayoutDashboard, path: '/Dashboard',     permission: null },
+  { label: 'Budget',      icon: Wallet,          path: '/Budgeting',     permission: 'manage_budget' },
+  { label: 'Forecast',    icon: LineChart,        path: '/Forecasting',   permission: 'manage_budget' },
+  { label: 'Reports',     icon: BarChart3,        path: '/Reports',       permission: 'view_reports' },
+  { label: 'Audit',       icon: ClipboardCheck,   path: '/Audit',         permission: 'view_reports' },
+  { label: 'Bookkeeping', icon: Receipt,          path: '/Bookkeeping',   permission: 'manage_bookkeeping' },
+  { label: 'Inventory',   icon: Package,          path: '/Inventory',     permission: 'manage_inventory' },
+  { label: 'Recipes',     icon: Boxes,            path: '/RecipeManager', permission: 'manage_inventory' },
+];
 
 export default function SidebarLayout({ children }) {
   const navigate = useNavigate();
@@ -30,22 +42,18 @@ export default function SidebarLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   useRealtimeSync();
 
+  const { hasPermission, isOwner } = useBusiness();
+
   // Close mobile sidebar on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  const navItems = [
-    { label: 'Dashboard',        icon: LayoutDashboard, path: '/Dashboard' },
-    { label: 'Budget',           icon: Wallet,           path: '/Budgeting' },
-    { label: 'Forecast',         icon: LineChart,        path: '/Forecasting' },
-    { label: 'Reports',          icon: BarChart3,        path: '/Reports' },
-    { label: 'Audit',            icon: ClipboardCheck,   path: '/Audit' },
-    { label: 'Bookkeeping',      icon: Receipt,          path: '/Bookkeeping' },
-    { label: 'Inventory',        icon: Package,          path: '/Inventory' },
-    { label: 'Recipes',          icon: Boxes,            path: '/RecipeManager' },
-  ];
+  const navItems = ALL_NAV_ITEMS.filter(item =>
+    !item.permission || hasPermission(item.permission)
+  );
 
   const bottomItems = [
-    { label: 'Settings', icon: Settings, path: '/Settings' }
+    // Only owners see Settings
+    ...(isOwner() ? [{ label: 'Settings', icon: Settings, path: '/Settings' }] : []),
   ];
 
   const isActive = (path) => location.pathname === path;

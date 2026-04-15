@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 import { Plus, AlertTriangle, Package, DollarSign, Trash2, Edit2, RefreshCw } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 
@@ -266,5 +266,5 @@ function InventoryContent() {
 }
 
 export default function Inventory() {
-  return <BusinessProvider><InventoryContent /></BusinessProvider>;
+  return <InventoryContent />;
 }

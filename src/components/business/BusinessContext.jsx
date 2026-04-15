@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMemberPermissions } from './permissions';
 
 const BusinessContext = createContext(null);
 
@@ -8,6 +9,7 @@ export function BusinessProvider({ children }) {
   const [businesses, setBusinesses] = useState([]);
   const [currentBusiness, setCurrentBusiness] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [userMember, setUserMember] = useState(null); // full member record for permission lookup
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -71,6 +73,7 @@ export function BusinessProvider({ children }) {
   const loadUserRole = async (email, business) => {
     if (business.owner_email === email) {
       setUserRole('owner');
+      setUserMember(null);
       return;
     }
     
@@ -82,8 +85,10 @@ export function BusinessProvider({ children }) {
     
     if (memberships.length > 0) {
       setUserRole(memberships[0].role);
+      setUserMember(memberships[0]);
     } else {
       setUserRole(null);
+      setUserMember(null);
     }
   };
 
@@ -101,18 +106,27 @@ export function BusinessProvider({ children }) {
   const canManageTeam = () => userRole === 'owner';
   const isOwner = () => userRole === 'owner';
 
+  // Granular permission check
+  const hasPermission = (permission) => {
+    if (userRole === 'owner') return true;
+    const perms = getMemberPermissions(userMember);
+    return perms.includes(permission);
+  };
+
   return (
     <BusinessContext.Provider value={{
       user,
       businesses,
       currentBusiness,
       userRole,
+      userMember,
       loading,
       switchBusiness,
       refreshBusinesses,
       canEdit,
       canManageTeam,
-      isOwner
+      isOwner,
+      hasPermission
     }}>
       {children}
     </BusinessContext.Provider>

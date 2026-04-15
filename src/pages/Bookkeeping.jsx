@@ -19,7 +19,7 @@ import {
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 
 import InboxTab from '@/components/bookkeeping/InboxTab';
 import BankReconciliationTab from '@/components/bookkeeping/BankReconciliationTab';
@@ -168,9 +168,5 @@ function BookkeepingContent() {
 }
 
 export default function Bookkeeping() {
-  return (
-    <BusinessProvider>
-      <BookkeepingContent />
-    </BusinessProvider>
-  );
+  return <BookkeepingContent />;
 }

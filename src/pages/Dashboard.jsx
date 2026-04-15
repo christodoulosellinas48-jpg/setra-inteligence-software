@@ -22,7 +22,7 @@ import MetricCard from '@/components/dashboard/MetricCard';
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
 import InsightCard from '@/components/dashboard/InsightCard';
 import FinancialInputs from '@/components/dashboard/FinancialInputs';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 
 // Lazy load heavy components
@@ -559,9 +559,5 @@ function DashboardContent() {
 }
 
 export default function Dashboard() {
-  return (
-    <BusinessProvider>
-      <DashboardContent />
-    </BusinessProvider>
-  );
+  return <DashboardContent />;
 }

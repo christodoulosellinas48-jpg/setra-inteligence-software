@@ -19,7 +19,7 @@ const FinancialSummaryTable = lazy(() => import('@/components/reports/FinancialS
 const ExportButtons = lazy(() => import('@/components/reports/ExportButtons'));
 
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 
 function ReportsContent() {
   const navigate = useNavigate();
@@ -212,9 +212,5 @@ function ReportsContent() {
 }
 
 export default function Reports() {
-  return (
-    <BusinessProvider>
-      <ReportsContent />
-    </BusinessProvider>
-  );
+  return <ReportsContent />;
 }

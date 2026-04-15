@@ -1,0 +1,54 @@
+{
+  "name": "BusinessMember",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the team member"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "manager",
+        "accountant",
+        "viewer"
+      ],
+      "default": "viewer"
+    },
+    "permissions": {
+      "type": "string",
+      "description": "JSON array of granted permissions: upload_expenses, view_reports, manage_vat, manage_bookkeeping, manage_inventory, manage_budget, manage_payroll"
+    },
+    "invited_by": {
+      "type": "string",
+      "description": "Email of who sent the invitation"
+    },
+    "invitation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending"
+    },
+    "invited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "business_id",
+    "user_email",
+    "role"
+  ]
+}
