@@ -18,7 +18,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Zap
+  Zap,
+  FileStack
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 
@@ -28,7 +29,8 @@ const ALL_NAV_ITEMS = [
   { label: 'Forecast',    icon: LineChart,        path: '/Forecasting',   permission: 'manage_budget' },
   { label: 'Reports',     icon: BarChart3,        path: '/Reports',       permission: 'view_reports' },
   { label: 'Audit',       icon: ClipboardCheck,   path: '/Audit',         permission: 'view_reports' },
-  { label: 'VAT & Bookkeeping', icon: Receipt, path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
+  { label: 'Expenses',          icon: FileStack,   path: '/Expenses',          permission: 'upload_expenses' },
+  { label: 'VAT & Bookkeeping', icon: Receipt,     path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
 ];
 
 export default function SidebarLayout({ children }) {
