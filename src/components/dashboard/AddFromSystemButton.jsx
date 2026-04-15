@@ -70,7 +70,7 @@ export default function AddFromSystemButton({ businessId, onApply, disabled }) {
       ) : (
         <Sparkles className="w-4 h-4" />
       )}
-      {applied ? 'Applied!' : loading ? 'Loading...' : 'Add from System'}
+      {applied ? 'Applied!' : loading ? 'Loading...' : 'Auto-fill from Invoices'}
     </Button>
   );
 }
