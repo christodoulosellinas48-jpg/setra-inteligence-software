@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Upload, FileText, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Upload, FileText, Loader2, Sparkles, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const EXPENSE_CATEGORIES = [
-  { value: 'food_beverage', label: 'Food & Beverage Purchases' },
+  { value: 'food_beverage', label: 'Food & Beverage' },
   { value: 'staff_costs', label: 'Staff Costs' },
   { value: 'fixed_costs', label: 'Fixed Costs' },
   { value: 'utilities', label: 'Utilities' },
@@ -18,309 +19,445 @@ const EXPENSE_CATEGORIES = [
   { value: 'one_off_expenses', label: 'One-Off Expenses' }
 ];
 
+const CATEGORY_KEYWORDS = {
+  food_beverage: ['food', 'restaurant', 'catering', 'bakery', 'meat', 'fish', 'dairy', 'produce', 'beverage', 'drink', 'wine', 'beer', 'grocery', 'supplier', 'fresh', 'ingredient'],
+  utilities: ['electric', 'electricity', 'water', 'gas', 'energy', 'power', 'telecom', 'internet', 'phone'],
+  fixed_costs: ['rent', 'insurance', 'lease', 'mortgage', 'rates', 'license', 'subscription'],
+  staff_costs: ['staff', 'payroll', 'salary', 'wage', 'agency', 'recruitment', 'uniform'],
+  operating_expenses: ['cleaning', 'maintenance', 'repair', 'packaging', 'office', 'supplies', 'advertising', 'marketing']
+};
+
+function inferCategory(supplierName, lineItems, rawText) {
+  const combined = [supplierName, ...(lineItems || []).map(i => i.description || ''), rawText || ''].join(' ').toLowerCase();
+  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (keywords.some(k => combined.includes(k))) return cat;
+  }
+  return 'operating_expenses';
+}
+
+function ConfidencePill({ score }) {
+  if (score == null) return null;
+  const pct = Math.round(score * 100);
+  const color = pct >= 85 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+    : pct >= 60 ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+    : 'bg-rose-500/15 text-rose-400 border-rose-500/30';
+  return <Badge className={`text-xs ${color}`}>{pct}% confidence</Badge>;
+}
+
 export default function ExpenseUploadModal({ open, onOpenChange, onSave, businessId, userEmail }) {
   const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [aiSuggested, setAiSuggested] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [stage, setStage] = useState('idle'); // idle | uploading | analyzing | ready
   const [documentUrl, setDocumentUrl] = useState('');
-  const [extractedLineItems, setExtractedLineItems] = useState([]);
-  const [formData, setFormData] = useState({
+  const [aiData, setAiData] = useState(null); // raw AI extraction result
+  const [showLineItems, setShowLineItems] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [form, setForm] = useState({
     supplier_name: '',
+    invoice_number: '',
+    invoice_date: '',
     invoice_total: '',
+    net_amount: '',
+    vat_amount: '',
+    vat_rate: '',
     vat_included: false,
     expense_category: '',
-    invoice_date: '',
     notes: ''
   });
 
-  const analyzeWithAI = async (fileUrl) => {
-    setAnalyzing(true);
-    
+  const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const analyzeWithAI = async (fileUrl, fileName) => {
+    setStage('analyzing');
     try {
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      // Step 1: Extract raw structured data from document
+      const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url: fileUrl,
         json_schema: {
-          type: "object",
+          type: 'object',
           properties: {
-            supplier_name: { type: "string", description: "Vendor/supplier/merchant name" },
-            invoice_total: { type: "number", description: "Total amount without currency symbols" },
-            vat_included: { type: "boolean", description: "Whether VAT/tax is included" },
-            invoice_date: { type: "string", description: "Date in YYYY-MM-DD format" },
+            supplier_name: { type: 'string' },
+            supplier_vat_number: { type: 'string' },
+            invoice_number: { type: 'string' },
+            invoice_date: { type: 'string', description: 'YYYY-MM-DD format' },
+            due_date: { type: 'string', description: 'YYYY-MM-DD format' },
+            gross_total: { type: 'number', description: 'Total including VAT' },
+            net_total: { type: 'number', description: 'Total excluding VAT' },
+            vat_total: { type: 'number', description: 'Total VAT amount' },
+            vat_rate: { type: 'number', description: 'VAT percentage (e.g. 19)' },
+            currency: { type: 'string' },
             line_items: {
-              type: "array",
-              description: "Individual items or services on the invoice",
+              type: 'array',
               items: {
-                type: "object",
+                type: 'object',
                 properties: {
-                  description: { type: "string" },
-                  quantity: { type: "number" },
-                  unit_price: { type: "number" },
-                  total: { type: "number" },
-                  vat_rate: { type: "number", description: "VAT percentage if specified" }
+                  description: { type: 'string' },
+                  quantity: { type: 'number' },
+                  unit: { type: 'string' },
+                  unit_price: { type: 'number' },
+                  total: { type: 'number' },
+                  vat_rate: { type: 'number' }
                 }
               }
             },
-            vat_amount: { type: "number", description: "Total VAT amount if specified separately" },
-            net_amount: { type: "number", description: "Amount before VAT" },
-            invoice_number: { type: "string", description: "Invoice reference number" }
+            confidence_score: { type: 'number', description: '0 to 1, how confident the extraction is' },
+            needs_review: { type: 'boolean', description: 'True if document is unclear or incomplete' },
+            review_reason: { type: 'string', description: 'Why manual review is needed' }
           }
         }
       });
 
-      if (result.status === 'success' && result.output) {
-        const extracted = result.output;
-        
-        // Determine expense category based on supplier name and line items
-        let category = '';
-        const supplierLower = (extracted.supplier_name || '').toLowerCase();
-        const itemsText = (extracted.line_items || []).map(i => i.description || '').join(' ').toLowerCase();
-        
-        if (supplierLower.includes('food') || supplierLower.includes('restaurant') || supplierLower.includes('catering') || 
-            itemsText.includes('food') || itemsText.includes('beverage') || itemsText.includes('ingredient')) {
-          category = 'food_beverage';
-        } else if (supplierLower.includes('electric') || supplierLower.includes('water') || supplierLower.includes('gas') || 
-                   itemsText.includes('electricity') || itemsText.includes('utility')) {
-          category = 'utilities';
-        } else if (supplierLower.includes('rent') || supplierLower.includes('insurance') || supplierLower.includes('lease')) {
-          category = 'fixed_costs';
-        } else if (supplierLower.includes('staff') || supplierLower.includes('payroll') || itemsText.includes('salary') || itemsText.includes('wage')) {
-          category = 'staff_costs';
-        } else {
-          category = 'operating_expenses';
-        }
-
-        setExtractedLineItems(extracted.line_items || []);
-        setFormData(prev => ({
-          ...prev,
-          supplier_name: extracted.supplier_name || prev.supplier_name,
-          invoice_total: extracted.invoice_total ? String(extracted.invoice_total) : prev.invoice_total,
-          vat_included: extracted.vat_included ?? (extracted.vat_amount > 0) ?? prev.vat_included,
-          expense_category: category || prev.expense_category,
-          invoice_date: extracted.invoice_date || prev.invoice_date,
-          notes: extracted.invoice_number ? `Invoice #${extracted.invoice_number}` : prev.notes
-        }));
-        setAiSuggested(true);
+      if (extracted.status !== 'success' || !extracted.output) {
+        setStage('ready');
+        return;
       }
-    } catch (error) {
-      console.error('Error extracting data:', error);
+
+      const data = extracted.output;
+
+      // Step 2: Use LLM to intelligently categorize and validate
+      const categoryResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert bookkeeper for hospitality businesses. Based on this invoice data, determine the best expense category.
+
+Supplier: ${data.supplier_name || 'Unknown'}
+Line items: ${(data.line_items || []).map(i => i.description).join(', ') || 'None listed'}
+Invoice total: ${data.gross_total || 0}
+
+Available categories:
+- food_beverage: Ingredients, beverages, produce, meat, dairy, dry goods for the business
+- staff_costs: Wages, payroll, recruitment, uniforms, staff agency fees
+- fixed_costs: Rent, insurance, equipment leases, licenses, subscriptions
+- utilities: Electricity, water, gas, internet, phone bills
+- operating_expenses: Cleaning supplies, packaging, maintenance, marketing, miscellaneous
+
+Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why", "confidence": 0.0-1.0}`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            category: { type: 'string' },
+            reason: { type: 'string' },
+            confidence: { type: 'number' }
+          }
+        }
+      });
+
+      const suggestedCategory = categoryResult?.category || inferCategory(data.supplier_name, data.line_items);
+
+      setAiData({ ...data, category_suggestion: categoryResult });
+
+      // Pre-fill form with extracted data
+      setForm({
+        supplier_name: data.supplier_name || '',
+        invoice_number: data.invoice_number || '',
+        invoice_date: data.invoice_date || '',
+        invoice_total: data.gross_total != null ? String(data.gross_total) : '',
+        net_amount: data.net_total != null ? String(data.net_total) : '',
+        vat_amount: data.vat_total != null ? String(data.vat_total) : '',
+        vat_rate: data.vat_rate != null ? String(data.vat_rate) : '',
+        vat_included: (data.vat_total > 0) || false,
+        expense_category: suggestedCategory || '',
+        notes: [
+          data.invoice_number ? `Invoice #${data.invoice_number}` : '',
+          data.supplier_vat_number ? `Supplier VAT: ${data.supplier_vat_number}` : '',
+          data.needs_review ? `⚠️ ${data.review_reason}` : ''
+        ].filter(Boolean).join(' | ')
+      });
+
+      setStage('ready');
+    } catch (err) {
+      console.error('AI extraction error:', err);
+      setStage('ready');
     }
-    
-    setAnalyzing(false);
   };
 
   const handleFileUpload = async (e) => {
-    const selectedFile = e.target.files[0];
+    const selectedFile = e.target.files?.[0] || e.dataTransfer?.files?.[0];
     if (!selectedFile) return;
-    
     setFile(selectedFile);
-    setUploading(true);
-    setAiSuggested(false);
-    
+    setStage('uploading');
+    setAiData(null);
     const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
     setDocumentUrl(file_url);
-    setUploading(false);
-    
-    // Automatically analyze the document with AI
-    await analyzeWithAI(file_url);
+    await analyzeWithAI(file_url, selectedFile.name);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    handleFileUpload({ target: { files: e.dataTransfer.files } });
   };
 
   const handleSubmit = async () => {
     setSaving(true);
-    
-    const doc = await base44.entities.ExpenseDocument.create({
-            ...formData,
-            invoice_total: parseFloat(formData.invoice_total) || 0,
-            document_url: documentUrl,
-            business_id: businessId,
-            uploaded_by: userEmail,
-            last_edited_by: userEmail,
-            last_edited_at: new Date().toISOString()
-          });
+    await base44.entities.ExpenseDocument.create({
+      supplier_name: form.supplier_name,
+      invoice_total: parseFloat(form.invoice_total) || 0,
+      vat_included: form.vat_included,
+      expense_category: form.expense_category,
+      invoice_date: form.invoice_date,
+      notes: form.notes,
+      document_url: documentUrl,
+      business_id: businessId,
+      uploaded_by: userEmail,
+      last_edited_by: userEmail,
+      last_edited_at: new Date().toISOString()
+    });
 
-    // Trigger background invoice processing (supplier + inventory updates)
     base44.functions.invoke('processInvoice', {
       business_id: businessId,
-      supplier_name: formData.supplier_name,
-      invoice_date: formData.invoice_date,
-      expense_category: formData.expense_category,
-      invoice_total: parseFloat(formData.invoice_total) || 0,
-      line_items: extractedLineItems
-    }).catch(() => {}); // fire and forget
-    
+      supplier_name: form.supplier_name,
+      invoice_date: form.invoice_date,
+      expense_category: form.expense_category,
+      invoice_total: parseFloat(form.invoice_total) || 0,
+      vat_included: form.vat_included,
+      vat_amount: parseFloat(form.vat_amount) || 0,
+      net_amount: parseFloat(form.net_amount) || 0,
+      line_items: aiData?.line_items || []
+    }).catch(() => {});
+
     onSave?.();
     setSaving(false);
+    handleReset();
     onOpenChange(false);
-    
-    // Reset form
-    setFile(null);
-    setDocumentUrl('');
-    setAiSuggested(false);
-    setExtractedLineItems([]);
-    setFormData({
-      supplier_name: '',
-      invoice_total: '',
-      vat_included: false,
-      expense_category: '',
-      invoice_date: '',
-      notes: ''
-    });
   };
 
+  const handleReset = () => {
+    setFile(null);
+    setStage('idle');
+    setDocumentUrl('');
+    setAiData(null);
+    setShowLineItems(false);
+    setForm({ supplier_name: '', invoice_number: '', invoice_date: '', invoice_total: '', net_amount: '', vat_amount: '', vat_rate: '', vat_included: false, expense_category: '', notes: '' });
+  };
+
+  const needsReview = aiData?.needs_review;
+  const confidence = aiData?.confidence_score;
+  const lineItems = aiData?.line_items || [];
+  const canSave = form.supplier_name && form.invoice_total && form.expense_category && !saving;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-700 max-w-lg">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleReset(); onOpenChange(v); }}>
+      <DialogContent className="bg-[#0F0F1E] border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl text-white">Upload Expense Document</DialogTitle>
+          <DialogTitle className="text-xl text-white flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#C084FC]" />
+            AI Expense Capture
+          </DialogTitle>
+          <p className="text-slate-400 text-sm">Upload an invoice or receipt — AI will extract and categorize everything automatically.</p>
         </DialogHeader>
-        
-        <div className="space-y-6 py-4">
-          {/* File Upload Area */}
-          <div className="relative">
+
+        <div className="space-y-5 py-2">
+          {/* Drop Zone */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            className="relative"
+          >
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              disabled={stage === 'uploading' || stage === 'analyzing'}
             />
-            <div className="border-2 border-dashed border-slate-700 rounded-xl p-8 text-center hover:border-slate-600 transition-colors">
+            <div className={`border-2 border-dashed rounded-xl p-7 text-center transition-colors ${
+              stage === 'ready' && !needsReview ? 'border-emerald-500/40 bg-emerald-500/5'
+              : needsReview ? 'border-amber-500/40 bg-amber-500/5'
+              : stage !== 'idle' ? 'border-[#7B3BFF]/40 bg-[#7B3BFF]/5'
+              : 'border-white/10 hover:border-white/20'
+            }`}>
               <AnimatePresence mode="wait">
-                {uploading ? (
-                  <motion.div
-                    key="uploading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center"
-                  >
-                    <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-3" />
-                    <p className="text-slate-400">Uploading document...</p>
+                {stage === 'uploading' && (
+                  <motion.div key="up" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center">
+                    <Loader2 className="w-9 h-9 text-[#C084FC] animate-spin mb-2" />
+                    <p className="text-slate-300 font-medium">Uploading document...</p>
                   </motion.div>
-                ) : analyzing ? (
-                                        <motion.div
-                                          key="analyzing"
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          exit={{ opacity: 0 }}
-                                          className="flex flex-col items-center"
-                                        >
-                                          <div className="relative">
-                                            <Sparkles className="w-10 h-10 text-purple-400 mb-3 animate-pulse" />
-                                          </div>
-                                          <p className="text-purple-400 font-medium">AI Analyzing Document...</p>
-                                          <p className="text-slate-500 text-sm mt-1">Extracting expense details</p>
-                                        </motion.div>
-                                      ) : file ? (
-                                        <motion.div
-                                          key="uploaded"
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          className="flex flex-col items-center"
-                                        >
-                                          {aiSuggested ? (
-                                            <CheckCircle2 className="w-10 h-10 text-emerald-400 mb-3" />
-                                          ) : (
-                                            <FileText className="w-10 h-10 text-emerald-400 mb-3" />
-                                          )}
-                                          <p className="text-white font-medium">{file.name}</p>
-                                          {aiSuggested && (
-                                            <p className="text-emerald-400 text-sm mt-1 flex items-center gap-1">
-                                              <Sparkles className="w-3 h-3" /> AI auto-filled details
-                                            </p>
-                                          )}
-                                          <p className="text-slate-500 text-sm mt-1">Click to replace</p>
-                                        </motion.div>
-                                      ) : (
-                  <motion.div
-                    key="empty"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center"
-                  >
-                    <Upload className="w-10 h-10 text-slate-500 mb-3" />
-                    <p className="text-slate-400">Drop your invoice here or click to browse</p>
-                    <p className="text-slate-600 text-sm mt-1">PDF, JPG, PNG supported</p>
+                )}
+                {stage === 'analyzing' && (
+                  <motion.div key="ai" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      <div className="w-9 h-9 rounded-full border-2 border-[#7B3BFF]/30 border-t-[#7B3BFF] animate-spin" />
+                      <Sparkles className="w-4 h-4 text-[#C084FC] absolute inset-0 m-auto animate-pulse" />
+                    </div>
+                    <p className="text-[#C084FC] font-medium">AI Reading & Categorising...</p>
+                    <p className="text-slate-500 text-sm mt-1">Extracting supplier, amounts, VAT, line items</p>
+                  </motion.div>
+                )}
+                {stage === 'ready' && (
+                  <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-1">
+                    {needsReview
+                      ? <AlertCircle className="w-9 h-9 text-amber-400 mb-1" />
+                      : <CheckCircle2 className="w-9 h-9 text-emerald-400 mb-1" />
+                    }
+                    <p className="text-white font-medium">{file?.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {needsReview
+                        ? <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30">Needs Review</Badge>
+                        : <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30"><Sparkles className="w-3 h-3 mr-1" />AI Extracted</Badge>
+                      }
+                      <ConfidencePill score={confidence} />
+                    </div>
+                    <p className="text-slate-500 text-xs mt-1">Click to replace document</p>
+                  </motion.div>
+                )}
+                {stage === 'idle' && (
+                  <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center">
+                    <Upload className="w-9 h-9 text-slate-500 mb-2" />
+                    <p className="text-slate-300">Drop invoice / receipt here or click to browse</p>
+                    <p className="text-slate-500 text-sm mt-1">PDF, JPG, PNG — AI will auto-fill all fields</p>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           </div>
 
-          {/* Form Fields */}
+          {/* Review Warning */}
+          {needsReview && aiData?.review_reason && (
+            <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+              <p className="text-amber-300 text-sm">{aiData.review_reason}</p>
+            </div>
+          )}
+
+          {/* Category AI Suggestion */}
+          {aiData?.category_suggestion?.reason && (
+            <div className="flex items-start gap-3 p-3 bg-[#7B3BFF]/10 border border-[#7B3BFF]/20 rounded-xl">
+              <Sparkles className="w-4 h-4 text-[#C084FC] mt-0.5 flex-shrink-0" />
+              <p className="text-slate-300 text-sm"><span className="text-[#C084FC] font-medium">Category rationale:</span> {aiData.category_suggestion.reason}</p>
+            </div>
+          )}
+
+          {/* Main Form Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <Label className="text-slate-400 mb-2 block">Supplier Name</Label>
-              <Input
-                value={formData.supplier_name}
-                onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-                placeholder="Enter supplier name"
-              />
+              <Label className="text-slate-400 mb-1.5 block text-sm">Supplier Name *</Label>
+              <div className="relative">
+                <Input value={form.supplier_name} onChange={e => setField('supplier_name', e.target.value)}
+                  className="bg-[#151528] border-white/10 text-white pr-8" placeholder="e.g. Metro Cash & Carry" />
+                {stage === 'ready' && form.supplier_name && <Edit3 className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />}
+              </div>
             </div>
-            
+
             <div>
-              <Label className="text-slate-400 mb-2 block">Invoice Total</Label>
-              <Input
-                type="number"
-                value={formData.invoice_total}
-                onChange={(e) => setFormData({ ...formData, invoice_total: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-                placeholder="0.00"
-              />
+              <Label className="text-slate-400 mb-1.5 block text-sm">Invoice Date</Label>
+              <Input type="date" value={form.invoice_date} onChange={e => setField('invoice_date', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" />
             </div>
-            
+
             <div>
-              <Label className="text-slate-400 mb-2 block">Invoice Date</Label>
-              <Input
-                type="date"
-                value={formData.invoice_date}
-                onChange={(e) => setFormData({ ...formData, invoice_date: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
+              <Label className="text-slate-400 mb-1.5 block text-sm">Invoice Number</Label>
+              <Input value={form.invoice_number} onChange={e => setField('invoice_number', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" placeholder="e.g. INV-00123" />
             </div>
-            
+
+            {/* VAT Breakdown */}
+            <div>
+              <Label className="text-slate-400 mb-1.5 block text-sm">Gross Total (incl. VAT) *</Label>
+              <Input type="number" value={form.invoice_total} onChange={e => setField('invoice_total', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" placeholder="0.00" />
+            </div>
+
+            <div>
+              <Label className="text-slate-400 mb-1.5 block text-sm">Net Total (excl. VAT)</Label>
+              <Input type="number" value={form.net_amount} onChange={e => setField('net_amount', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" placeholder="0.00" />
+            </div>
+
+            <div>
+              <Label className="text-slate-400 mb-1.5 block text-sm">VAT Amount</Label>
+              <Input type="number" value={form.vat_amount} onChange={e => setField('vat_amount', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" placeholder="0.00" />
+            </div>
+
+            <div>
+              <Label className="text-slate-400 mb-1.5 block text-sm">VAT Rate (%)</Label>
+              <Input type="number" value={form.vat_rate} onChange={e => setField('vat_rate', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" placeholder="e.g. 19" />
+            </div>
+
             <div className="col-span-2">
-              <Label className="text-slate-400 mb-2 block">Expense Category</Label>
-              <Select
-                value={formData.expense_category}
-                onValueChange={(value) => setFormData({ ...formData, expense_category: value })}
-              >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+              <Label className="text-slate-400 mb-1.5 block text-sm">Expense Category *</Label>
+              <Select value={form.expense_category} onValueChange={v => setField('expense_category', v)}>
+                <SelectTrigger className="bg-[#151528] border-white/10 text-white">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {EXPENSE_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value} className="text-white hover:bg-slate-700">
-                      {cat.label}
-                    </SelectItem>
+                <SelectContent className="bg-[#151528] border-white/10">
+                  {EXPENSE_CATEGORIES.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value} className="text-white">{cat.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="col-span-2 flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
-              <Label className="text-slate-300">VAT Included?</Label>
-              <Switch
-                checked={formData.vat_included}
-                onCheckedChange={(checked) => setFormData({ ...formData, vat_included: checked })}
-              />
+
+            <div className="col-span-2 flex items-center justify-between p-3 bg-[#151528]/60 border border-white/5 rounded-xl">
+              <div>
+                <Label className="text-slate-300 text-sm">VAT Included in Total</Label>
+                <p className="text-slate-500 text-xs">Toggle on if gross total already includes VAT</p>
+              </div>
+              <Switch checked={form.vat_included} onCheckedChange={v => setField('vat_included', v)} />
+            </div>
+
+            <div className="col-span-2">
+              <Label className="text-slate-400 mb-1.5 block text-sm">Notes</Label>
+              <Input value={form.notes} onChange={e => setField('notes', e.target.value)}
+                className="bg-[#151528] border-white/10 text-white" placeholder="Optional notes" />
             </div>
           </div>
 
-          <Button 
-            onClick={handleSubmit}
-            disabled={!formData.supplier_name || !formData.invoice_total || !formData.expense_category || saving}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Expense'
-            )}
+          {/* Line Items Collapsible */}
+          {lineItems.length > 0 && (
+            <div className="rounded-xl border border-white/5 overflow-hidden">
+              <button
+                onClick={() => setShowLineItems(s => !s)}
+                className="w-full flex items-center justify-between p-4 bg-[#151528]/60 hover:bg-[#151528] transition-colors text-left"
+              >
+                <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#C084FC]" />
+                  {lineItems.length} Line Item{lineItems.length > 1 ? 's' : ''} Extracted
+                </span>
+                {showLineItems ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+              </button>
+              <AnimatePresence>
+                {showLineItems && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-white/5 bg-[#0B0B12]/40">
+                            <th className="text-left px-4 py-2.5 text-slate-500 font-medium">Description</th>
+                            <th className="text-right px-4 py-2.5 text-slate-500 font-medium">Qty</th>
+                            <th className="text-right px-4 py-2.5 text-slate-500 font-medium">Unit Price</th>
+                            <th className="text-right px-4 py-2.5 text-slate-500 font-medium">Total</th>
+                            <th className="text-right px-4 py-2.5 text-slate-500 font-medium">VAT%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {lineItems.map((item, i) => (
+                            <tr key={i} className="border-b border-white/5 last:border-0">
+                              <td className="px-4 py-2.5 text-slate-300">{item.description}</td>
+                              <td className="px-4 py-2.5 text-right text-slate-400">{item.quantity ?? '—'}</td>
+                              <td className="px-4 py-2.5 text-right text-slate-400">{item.unit_price != null ? `€${item.unit_price.toFixed(2)}` : '—'}</td>
+                              <td className="px-4 py-2.5 text-right text-white font-medium">{item.total != null ? `€${item.total.toFixed(2)}` : '—'}</td>
+                              <td className="px-4 py-2.5 text-right text-slate-400">{item.vat_rate != null ? `${item.vat_rate}%` : '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="px-4 py-2.5 text-xs text-slate-500 bg-[#0B0B12]/20 border-t border-white/5">
+                      Line items will be used to update inventory automatically.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          <Button onClick={handleSubmit} disabled={!canSave} className="w-full h-11">
+            {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Expense'}
           </Button>
         </div>
       </DialogContent>

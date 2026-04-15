@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const CATEGORY_CODE_MAP = {
   food_beverage: 'FOOD_BEV',
@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { business_id, supplier_name, invoice_date, expense_category, line_items, invoice_total, vat_included } = await req.json();
+    const { business_id, supplier_name, invoice_date, expense_category, line_items, invoice_total, vat_included, vat_amount, net_amount } = await req.json();
 
     if (!business_id || !supplier_name) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
@@ -48,18 +48,18 @@ Deno.serve(async (req) => {
       results.supplier = newSupplier;
     }
 
-    // 2. Create LedgerEntry (unposted, for manual review)
+    // 2. Create LedgerEntry
     const grossAmount = invoice_total || 0;
-    const business = await base44.entities.Business.filter({ id: business_id });
-    const vatRate = business[0]?.vat_rate || 19;
+    const businesses = await base44.entities.Business.filter({ id: business_id });
+    const vatRate = businesses[0]?.vat_rate || 19;
 
-    let netAmount = grossAmount;
-    let vatAmount = 0;
+    let finalNetAmount = net_amount || grossAmount;
+    let finalVatAmount = vat_amount || 0;
 
-    if (vat_included && grossAmount > 0) {
-      // Back-calculate net and VAT from gross
-      netAmount = parseFloat((grossAmount / (1 + vatRate / 100)).toFixed(2));
-      vatAmount = parseFloat((grossAmount - netAmount).toFixed(2));
+    // If VAT amounts not provided but vat_included, back-calculate
+    if (!vat_amount && vat_included && grossAmount > 0) {
+      finalNetAmount = parseFloat((grossAmount / (1 + vatRate / 100)).toFixed(2));
+      finalVatAmount = parseFloat((grossAmount - finalNetAmount).toFixed(2));
     }
 
     const ledgerEntry = await base44.entities.LedgerEntry.create({
@@ -67,8 +67,8 @@ Deno.serve(async (req) => {
       date: invoice_date || new Date().toISOString().split('T')[0],
       entry_type: 'expense',
       category_code: CATEGORY_CODE_MAP[expense_category] || 'OPEX',
-      net_amount: netAmount,
-      vat_amount: vatAmount,
+      net_amount: finalNetAmount,
+      vat_amount: finalVatAmount,
       gross_amount: grossAmount,
       source: 'document',
       posted: false,
@@ -77,40 +77,28 @@ Deno.serve(async (req) => {
     });
     results.ledger_entry = ledgerEntry;
 
-    // 3. Create VATSummaryLine if VAT is present
-    if (vatAmount > 0) {
-      // Find open VAT period for this business
+    // 3. VATSummaryLine + update VAT period
+    if (finalVatAmount > 0) {
       const vatPeriods = await base44.entities.VATPeriod.filter({ business_id, status: 'open' });
       if (vatPeriods.length > 0) {
         const vatPeriod = vatPeriods[0];
         const vatLine = await base44.entities.VATSummaryLine.create({
           vat_period_id: vatPeriod.id,
           vat_rate_code: String(vatRate),
-          taxable_base: netAmount,
-          vat_amount: vatAmount,
+          taxable_base: finalNetAmount,
+          vat_amount: finalVatAmount,
           direction: 'input'
         });
         results.vat_line = vatLine;
 
-        // Update VAT period totals
         await base44.entities.VATPeriod.update(vatPeriod.id, {
-          input_vat: (vatPeriod.input_vat || 0) + vatAmount,
-          net_vat_payable: ((vatPeriod.output_vat || 0) - ((vatPeriod.input_vat || 0) + vatAmount))
+          input_vat: (vatPeriod.input_vat || 0) + finalVatAmount,
+          net_vat_payable: ((vatPeriod.output_vat || 0) - ((vatPeriod.input_vat || 0) + finalVatAmount))
         });
       }
     }
 
-    // 4. Update inventory for all line items
-    const CATEGORY_TO_INVENTORY = {
-      food_beverage: 'other',
-      staff_costs: 'other',
-      fixed_costs: 'other',
-      utilities: 'other',
-      operating_expenses: 'other',
-      other: 'other'
-    };
-
-    // Infer inventory category from supplier category
+    // 4. Update/create inventory items from line items
     const inferInventoryCategory = (expCat, description) => {
       const desc = (description || '').toLowerCase();
       if (expCat === 'food_beverage') {
@@ -131,12 +119,10 @@ Deno.serve(async (req) => {
 
       for (const item of line_items) {
         if (!item.description) continue;
-
         const descLower = item.description.toLowerCase().trim();
         const match = allInventory.find(inv =>
           inv.ingredient_name && inv.ingredient_name.toLowerCase().trim() === descLower
         );
-
         const qty = item.quantity || 1;
         const unitCost = item.unit_price || (item.total ? item.total / qty : 0);
 
@@ -144,7 +130,7 @@ Deno.serve(async (req) => {
           await base44.entities.InventoryItem.update(match.id, {
             current_stock: (match.current_stock || 0) + qty,
             unit_cost: unitCost || match.unit_cost,
-            supplier_name: supplier_name,
+            supplier_name,
             last_restocked_date: invoice_date || new Date().toISOString().split('T')[0]
           });
           results.inventory_updates.push(match.ingredient_name);
@@ -155,7 +141,7 @@ Deno.serve(async (req) => {
             unit: item.unit || 'kg',
             current_stock: qty,
             unit_cost: unitCost,
-            supplier_name: supplier_name,
+            supplier_name,
             last_restocked_date: invoice_date || new Date().toISOString().split('T')[0],
             category: inferInventoryCategory(expense_category, item.description)
           });
