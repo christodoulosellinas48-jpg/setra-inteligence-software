@@ -63,14 +63,14 @@ export default function Home() {
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#1a0f2e] via-[#0A0A14] to-[#0A0A14]" />
         {/* Particle stars */}
-        {[...Array(50)].map((_, i) => (
+        {Array.from({ length: 50 }, (_, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-purple-400 rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: Math.random() * 0.5 + 0.2
+              left: `${(i * 37 + 13) % 100}%`,
+              top: `${(i * 53 + 7) % 100}%`,
+              opacity: ((i % 5) * 0.1) + 0.2
             }}
           />
         ))}
