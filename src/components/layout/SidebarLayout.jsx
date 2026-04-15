@@ -20,7 +20,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Zap
+  Zap,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 
@@ -31,6 +32,7 @@ const ALL_NAV_ITEMS = [
   { label: 'Reports',     icon: BarChart3,        path: '/Reports',       permission: 'view_reports' },
   { label: 'Audit',       icon: ClipboardCheck,   path: '/Audit',         permission: 'view_reports' },
   { label: 'Bookkeeping', icon: Receipt,          path: '/Bookkeeping',   permission: 'manage_bookkeeping' },
+  { label: 'VAT',         icon: FileSpreadsheet,  path: '/VATModule',     permission: 'manage_vat' },
   { label: 'Inventory',   icon: Package,          path: '/Inventory',     permission: 'manage_inventory' },
   { label: 'Recipes',     icon: Boxes,            path: '/RecipeManager', permission: 'manage_inventory' },
 ];
