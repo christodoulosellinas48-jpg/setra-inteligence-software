@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -191,7 +190,7 @@ function DashboardContent() {
             action={
               <div className="flex flex-col items-center gap-3">
                 <Button
-                  onClick={() => navigate(createPageUrl('CreateBusiness'))}
+                  onClick={() => navigate('/CreateBusiness')}
                   className="px-8 py-6 text-lg w-full"
                 >
                   Create Your First Business
@@ -199,7 +198,7 @@ function DashboardContent() {
                 {pendingInvitations.length > 0 && (
                   <Button
                     variant="outline"
-                    onClick={() => navigate(createPageUrl('Invitations'))}
+                    onClick={() => navigate('/Invitations')}
                     className="w-full border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
                   >
                     <Mail className="w-4 h-4 mr-2" />
@@ -233,7 +232,7 @@ function DashboardContent() {
               {pendingInvitations.length > 0 && (
                 <Button 
                   variant="outline"
-                  onClick={() => navigate(createPageUrl('Invitations'))}
+                  onClick={() => navigate('/Invitations')}
                   variant="outline"
                   className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
                 >
