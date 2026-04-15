@@ -120,7 +120,7 @@ function VATSection({ business, hasPermission }) {
 export default function VATAndBookkeeping() {
   const navigate = useNavigate();
   const { currentBusiness, loading, hasPermission } = useBusiness();
-  const [activeTab, setActiveTab] = useState('inbox');
+  const [activeTab, setActiveTab] = useState('vat');
 
   if (loading) {
     return (
@@ -178,6 +178,10 @@ export default function VATAndBookkeeping() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-8 gap-2 bg-slate-900/50 p-2 rounded-xl">
+            <TabsTrigger value="vat" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
+              <Percent className="w-4 h-4 mr-2" />
+              VAT
+            </TabsTrigger>
             <TabsTrigger value="inbox" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
               <Inbox className="w-4 h-4 mr-2" />
               Inbox
@@ -185,10 +189,6 @@ export default function VATAndBookkeeping() {
             <TabsTrigger value="bank" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
               <CreditCard className="w-4 h-4 mr-2" />
               Bank
-            </TabsTrigger>
-            <TabsTrigger value="vat" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
-              <Percent className="w-4 h-4 mr-2" />
-              VAT
             </TabsTrigger>
             <TabsTrigger value="pl" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#7B3BFF] data-[state=active]:to-[#A855F7]">
               <TrendingUp className="w-4 h-4 mr-2" />
