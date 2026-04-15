@@ -5,7 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FileText, FileSpreadsheet, Download, BarChart3, TrendingUp, Receipt, Building2, Loader2 } from 'lucide-react';
+import { FileText, FileSpreadsheet, Download, BarChart3, TrendingUp, Receipt, Building2, Loader2, UtensilsCrossed, Truck } from 'lucide-react';
+import MenuProfitabilityReport from './MenuProfitabilityReport';
+import SupplierPerformanceReport from './SupplierPerformanceReport';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subMonths, subQuarters, subYears } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { calculateFinancials } from '@/components/dashboard/financialCalculations';
@@ -15,6 +17,8 @@ const REPORT_TYPES = [
   { value: 'cashflow', label: 'Cash Flow Summary', icon: BarChart3, desc: 'Operating cash inflows and outflows' },
   { value: 'vat', label: 'VAT Summary', icon: Receipt, desc: 'VAT collected vs reclaimable by period' },
   { value: 'expense', label: 'Expense Analysis', icon: Building2, desc: 'Detailed cost category breakdown' },
+  { value: 'menu_profit', label: 'Menu Profitability', icon: UtensilsCrossed, desc: 'Item-level margin from recipes & sales' },
+  { value: 'supplier_perf', label: 'Supplier Performance', icon: Truck, desc: 'Delivery, cost variance & quality score' },
 ];
 
 const PRESETS = [
@@ -355,7 +359,7 @@ export default function ReportBuilder({ business, snapshots, vatPeriods }) {
   return (
     <div className="space-y-6">
       {/* Report Type Selector */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {REPORT_TYPES.map(rt => {
           const Icon = rt.icon;
           const active = reportType === rt.value;
@@ -409,6 +413,8 @@ export default function ReportBuilder({ business, snapshots, vatPeriods }) {
       {reportType === 'pl' && <PLReport business={business} calculations={calculations} dateRange={dateRange} />}
       {reportType === 'expense' && <ExpenseReport business={business} />}
       {reportType === 'vat' && <VATReport vatPeriods={filteredVat} />}
+      {reportType === 'menu_profit' && <MenuProfitabilityReport business={business} />}
+      {reportType === 'supplier_perf' && <SupplierPerformanceReport business={business} />}
       {reportType === 'cashflow' && (
         <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl text-center">
           <BarChart3 className="w-8 h-8 text-slate-600 mx-auto mb-3" />
