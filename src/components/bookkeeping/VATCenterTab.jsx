@@ -5,9 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Percent, AlertCircle, Calendar, FileText } from 'lucide-react';
+import { Percent, AlertCircle, Calendar, FileText, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function VATCenterTab({ businessId, business }) {
+  const navigate = useNavigate();
   // Fetch VAT periods
   const { data: vatPeriods = [] } = useQuery({
     queryKey: ['vatPeriods', businessId],
@@ -24,6 +26,10 @@ export default function VATCenterTab({ businessId, business }) {
         <p className="text-slate-400 mb-6">
           Enable VAT registration in business settings to use VAT features.
         </p>
+        <Button onClick={() => navigate('/Settings')} variant="outline" className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
+          <Settings className="w-4 h-4 mr-2" />
+          Go to Business Settings
+        </Button>
       </Card>
     );
   }

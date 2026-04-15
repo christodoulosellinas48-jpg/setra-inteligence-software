@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut, FileSpreadsheet } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import TeamManagement from '@/components/business/TeamManagement';
 
@@ -29,7 +30,10 @@ function SettingsContent() {
   const [businessForm, setBusinessForm] = useState({
     name: currentBusiness?.name || '',
     currency: currentBusiness?.currency || 'EUR',
-    address: currentBusiness?.address || ''
+    address: currentBusiness?.address || '',
+    vat_registered: currentBusiness?.vat_registered || false,
+    vat_number: currentBusiness?.vat_number || '',
+    vat_quarter_group: currentBusiness?.vat_quarter_group || ''
   });
 
   const updateBusiness = useMutation({
@@ -180,6 +184,63 @@ function SettingsContent() {
                   Save Changes
                 </Button>
               )}
+            </div>
+          </Card>
+        )}
+
+        {/* VAT Settings */}
+        {currentBusiness && isOwner() && (
+          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <FileSpreadsheet className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">VAT Settings</h3>
+                <p className="text-sm text-slate-500">Configure VAT registration for this business</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl">
+                <div>
+                  <p className="text-white font-medium">VAT Registered</p>
+                  <p className="text-sm text-slate-500">Enable VAT tracking and reporting features</p>
+                </div>
+                <Switch
+                  checked={businessForm.vat_registered}
+                  onCheckedChange={(v) => setBusinessForm({ ...businessForm, vat_registered: v })}
+                />
+              </div>
+              {businessForm.vat_registered && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-slate-400 mb-2 block">VAT Number</Label>
+                    <Input
+                      value={businessForm.vat_number}
+                      onChange={(e) => setBusinessForm({ ...businessForm, vat_number: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="e.g. CY12345678X"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-slate-400 mb-2 block">VAT Quarter Group</Label>
+                    <Select value={businessForm.vat_quarter_group} onValueChange={(v) => setBusinessForm({ ...businessForm, vat_quarter_group: v })}>
+                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="A" className="text-white">Group A (Jan/Apr/Jul/Oct)</SelectItem>
+                        <SelectItem value="B" className="text-white">Group B (Feb/May/Aug/Nov)</SelectItem>
+                        <SelectItem value="C" className="text-white">Group C (Mar/Jun/Sep/Dec)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+              <Button onClick={handleSave} disabled={saving}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Save VAT Settings
+              </Button>
             </div>
           </Card>
         )}
