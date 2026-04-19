@@ -29,6 +29,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -49,8 +50,6 @@ const AuthenticatedApp = () => {
       return null;
     }
   }
-
-  const location = useLocation();
 
   // Render the main app
   return (
