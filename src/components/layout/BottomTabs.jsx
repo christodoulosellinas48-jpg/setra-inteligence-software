@@ -10,30 +10,53 @@ const TABS = [
   { label: 'VAT',       icon: Receipt,          path: '/VATAndBookkeeping' },
 ];
 
-// Track per-tab history stacks
+// Persistent per-tab navigation stacks (survive re-renders)
 const tabStacks = {};
 TABS.forEach(t => { tabStacks[t.path] = [t.path]; });
+
+// Returns which tab root owns the current pathname
+function getActiveTab(pathname) {
+  return TABS.find(t => pathname === t.path)
+    || TABS.find(t => pathname.startsWith(t.path + '/'))
+    || null;
+}
 
 export default function BottomTabs() {
   const navigate = useNavigate();
   const location = useLocation();
+  const prevTabRef = useRef(null);
 
-  // Determine which tab root is active (or nearest ancestor)
-  const activeTab = TABS.find(t => location.pathname === t.path)
-    || TABS.find(t => location.pathname.startsWith(t.path + '/'))
-    || null;
+  const activeTab = getActiveTab(location.pathname);
+
+  // Keep the active tab's stack in sync with the real pathname
+  React.useEffect(() => {
+    if (!activeTab) return;
+    const stack = tabStacks[activeTab.path];
+    const top = stack[stack.length - 1];
+    if (top !== location.pathname) {
+      if (stack.includes(location.pathname)) {
+        // popped back — trim stack
+        tabStacks[activeTab.path] = stack.slice(0, stack.lastIndexOf(location.pathname) + 1);
+      } else {
+        tabStacks[activeTab.path] = [...stack, location.pathname];
+      }
+    }
+    prevTabRef.current = activeTab.path;
+  }, [location.pathname, activeTab]);
 
   const handleTabPress = (tab) => {
     const isAlreadyOnTab = activeTab?.path === tab.path;
 
     if (isAlreadyOnTab) {
-      // Tap same tab → reset to root
+      // Tap same tab → pop back to root
       if (location.pathname !== tab.path) {
+        tabStacks[tab.path] = [tab.path];
         navigate(tab.path, { replace: true });
       }
     } else {
-      // Switch to another tab — push into history so browser back works
-      navigate(tab.path);
+      // Restore last position in that tab's stack
+      const savedPath = tabStacks[tab.path]?.[tabStacks[tab.path].length - 1] ?? tab.path;
+      navigate(savedPath);
     }
   };
 

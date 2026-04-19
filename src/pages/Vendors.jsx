@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
@@ -27,8 +29,17 @@ const STATUS_STYLES = {
 
 function VendorsContent() {
   const { currentBusiness } = useBusiness();
+  const qc = useQueryClient();
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness?.currency] || '€';
+
+  const { isRefreshing, pullDistance, containerRef } = usePullToRefresh(async () => {
+    await Promise.all([
+      qc.invalidateQueries(['suppliers', currentBusiness?.id]),
+      qc.invalidateQueries(['allExpenses', currentBusiness?.id]),
+      qc.invalidateQueries(['documents', currentBusiness?.id]),
+    ]);
+  });
 
   const { data: suppliers = [], isLoading: loadingSuppliers } = useQuery({
     queryKey: ['suppliers', currentBusiness?.id],
@@ -74,7 +85,8 @@ function VendorsContent() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div ref={containerRef} className="p-6 space-y-6">
+      <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
       <div>
         <h1 className="text-2xl font-bold text-white">Vendors & Suppliers</h1>
         <p className="text-slate-400 text-sm mt-1">Track supplier relationships and spending</p>

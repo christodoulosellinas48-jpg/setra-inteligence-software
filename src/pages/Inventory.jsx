@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,6 +40,10 @@ function InventoryContent() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [filter, setFilter] = useState('all');
+
+  const { isRefreshing, pullDistance, containerRef } = usePullToRefresh(async () => {
+    await qc.invalidateQueries(['inventory', currentBusiness?.id]);
+  });
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['inventory', currentBusiness?.id],
@@ -88,7 +94,8 @@ function InventoryContent() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0B0B12]">
+    <div ref={containerRef} className="min-h-screen bg-[#0B0B12]">
+      <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
