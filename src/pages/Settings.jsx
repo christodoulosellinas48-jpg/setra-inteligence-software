@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut, FileSpreadsheet } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut, FileSpreadsheet, UserX } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import TeamManagement from '@/components/business/TeamManagement';
 
@@ -53,7 +54,28 @@ function SettingsContent() {
     });
   };
 
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   const handleLogout = () => {
+    base44.auth.logout();
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    // Delete all businesses owned by this user and their related data
+    const ownedBusinesses = await base44.entities.Business.filter({ owner_email: user.email });
+    for (const biz of ownedBusinesses) {
+      const expenses = await base44.entities.ExpenseDocument.filter({ business_id: biz.id });
+      const budgets = await base44.entities.Budget.filter({ business_id: biz.id });
+      const snapshots = await base44.entities.FinancialSnapshot.filter({ business_id: biz.id });
+      const members = await base44.entities.BusinessMember.filter({ business_id: biz.id });
+      for (const e of expenses) await base44.entities.ExpenseDocument.delete(e.id);
+      for (const b of budgets) await base44.entities.Budget.delete(b.id);
+      for (const s of snapshots) await base44.entities.FinancialSnapshot.delete(s.id);
+      for (const m of members) await base44.entities.BusinessMember.delete(m.id);
+      await base44.entities.Business.delete(biz.id);
+    }
+    localStorage.clear();
     base44.auth.logout();
   };
 
@@ -252,23 +274,75 @@ function SettingsContent() {
         {/* Team Management */}
         {currentBusiness && <TeamManagement />}
 
-        {/* Danger Zone */}
+        {/* Danger Zone — Business */}
         {currentBusiness && isOwner() && (
           <Card className="bg-rose-500/5 border-rose-500/30 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold text-rose-400 mb-4">Danger Zone</h3>
             <p className="text-slate-400 text-sm mb-4">
               Deleting this business will permanently remove all its data including invoices, budgets, and reports.
             </p>
-            <Button 
-              variant="outline" 
-              onClick={handleDeleteBusiness}
-              className="border-rose-500/50 text-rose-400 hover:bg-rose-500/10"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Business
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="border-rose-500/50 text-rose-400 hover:bg-rose-500/10">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Business
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-[#0F0F1E] border-rose-500/30">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-white">Delete "{currentBusiness.name}"?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-slate-400">
+                    This will permanently delete all invoices, budgets, snapshots, and team members for this business. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-transparent border-white/10 text-slate-300 hover:bg-white/5">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteBusiness} className="bg-rose-600 hover:bg-rose-700 text-white">
+                    Yes, Delete Business
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </Card>
         )}
+
+        {/* Delete My Account */}
+        <Card className="bg-rose-500/5 border-rose-500/20 p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+              <UserX className="w-5 h-5 text-rose-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-rose-400">Delete My Account</h3>
+              <p className="text-xs text-slate-500">Permanently remove your account and all associated data</p>
+            </div>
+          </div>
+          <p className="text-slate-400 text-sm mb-4">
+            This will delete your account, all businesses you own, and every piece of data associated with your email. This cannot be reversed.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button className="bg-rose-600 hover:bg-rose-700 text-white" disabled={deletingAccount}>
+                {deletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserX className="w-4 h-4 mr-2" />}
+                {deletingAccount ? 'Deleting account...' : 'Delete My Account'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-[#0F0F1E] border-rose-500/30">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-white">Delete your account?</AlertDialogTitle>
+                <AlertDialogDescription className="text-slate-400">
+                  This will permanently delete your account ({user?.email}), all businesses you own, and all associated data. You will be logged out immediately. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-transparent border-white/10 text-slate-300 hover:bg-white/5">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAccount} className="bg-rose-600 hover:bg-rose-700 text-white">
+                  Yes, permanently delete my account
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Card>
       </main>
     </div>
   );

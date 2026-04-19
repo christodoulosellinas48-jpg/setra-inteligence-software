@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import useRealtimeSync from '@/hooks/useRealtimeSync';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import LogoLink from '@/components/ui/LogoLink';
 import BottomLogoLink from '@/components/ui/BottomLogoLink';
 import UserMenu from '@/components/ui/UserMenu';
+import BottomTabs from '@/components/layout/BottomTabs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -197,7 +197,7 @@ export default function SidebarLayout({ children }) {
         )}
       >
         {/* Top Header with User Menu */}
-        <header className="sticky top-0 z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
+        <header className="sticky z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]" style={{ top: 'env(safe-area-inset-top)' }}>
           {/* Mobile hamburger */}
           <button
             className="md:hidden text-slate-400 hover:text-white p-1"
@@ -211,8 +211,13 @@ export default function SidebarLayout({ children }) {
             <UserMenu />
           </div>
         </header>
-        {children}
+        <div className="pb-16 md:pb-0">
+          {children}
+        </div>
       </main>
+
+      {/* Mobile bottom tab bar */}
+      <BottomTabs />
     </div>
   );
 }
