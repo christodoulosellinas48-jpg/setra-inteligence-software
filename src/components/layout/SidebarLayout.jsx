@@ -56,6 +56,10 @@ export default function SidebarLayout({ children }) {
 
   const isActive = (path) => location.pathname === path;
 
+  // Determine if the current page is a top-level tab root (no Back button needed)
+  const TAB_ROOTS = ['/Dashboard', '/Expenses', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations'];
+  const isTopLevel = TAB_ROOTS.includes(location.pathname);
+
   return (
     <div className="min-h-screen bg-[#0B0B12] flex">
       {/* Mobile overlay backdrop */}
@@ -198,15 +202,28 @@ export default function SidebarLayout({ children }) {
       >
         {/* Top Header with User Menu */}
         <header className="sticky z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]" style={{ top: 'env(safe-area-inset-top)' }}>
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden text-slate-400 hover:text-white p-1"
-            onClick={() => setMobileOpen(o => !o)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Mobile hamburger — only shown on top-level pages */}
+            {isTopLevel ? (
+              <button
+                className="md:hidden text-slate-400 hover:text-white p-1"
+                onClick={() => setMobileOpen(o => !o)}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            ) : (
+              /* Back button for non-root pages on mobile */
+              <button
+                className="md:hidden flex items-center gap-1.5 text-slate-400 hover:text-white p-1 text-sm"
+                onClick={() => navigate(-1)}
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span>Back</span>
+              </button>
+            )}
+          </div>
           <div className="ml-auto">
             <UserMenu />
           </div>

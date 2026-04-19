@@ -43,6 +43,14 @@ function RecipeManagerContent() {
 
   const saveItemMutation = useMutation({
     mutationFn: (data) => base44.entities.Item.create({ ...data, business_id: currentBusiness.id, selling_price: parseFloat(data.selling_price) || 0 }),
+    onMutate: async (data) => {
+      await qc.cancelQueries(['items', currentBusiness?.id]);
+      const previous = qc.getQueryData(['items', currentBusiness?.id]);
+      const optimistic = { id: 'temp-' + Date.now(), ...data, business_id: currentBusiness.id, selling_price: parseFloat(data.selling_price) || 0 };
+      qc.setQueryData(['items', currentBusiness?.id], (old = []) => [...old, optimistic]);
+      return { previous };
+    },
+    onError: (_err, _data, context) => { if (context?.previous) qc.setQueryData(['items', currentBusiness?.id], context.previous); },
     onSuccess: () => { qc.invalidateQueries(['items', currentBusiness?.id]); setShowItemModal(false); setItemForm({ name: '', category: 'main', selling_price: '' }); }
   });
 
@@ -52,19 +60,45 @@ function RecipeManagerContent() {
       for (const r of toDelete) await base44.entities.Recipe.delete(r.id);
       await base44.entities.Item.delete(itemId);
     },
-    onSuccess: () => { qc.invalidateQueries(['items', currentBusiness?.id]); qc.invalidateQueries(['recipes', currentBusiness?.id]); if (selectedItem?.id === selectedItem?.id) setSelectedItem(null); }
+    onMutate: async (itemId) => {
+      await qc.cancelQueries(['items', currentBusiness?.id]);
+      const previous = qc.getQueryData(['items', currentBusiness?.id]);
+      qc.setQueryData(['items', currentBusiness?.id], (old = []) => old.filter(i => i.id !== itemId));
+      setSelectedItem(prev => prev?.id === itemId ? null : prev);
+      return { previous };
+    },
+    onError: (_err, _id, context) => { if (context?.previous) qc.setQueryData(['items', currentBusiness?.id], context.previous); },
+    onSuccess: () => { qc.invalidateQueries(['items', currentBusiness?.id]); qc.invalidateQueries(['recipes', currentBusiness?.id]); }
   });
 
   const saveIngredientMutation = useMutation({
     mutationFn: (data) => editingIngredient
       ? base44.entities.Recipe.update(editingIngredient.id, data)
       : base44.entities.Recipe.create(data),
+    onMutate: async (data) => {
+      await qc.cancelQueries(['recipes', currentBusiness?.id]);
+      const previous = qc.getQueryData(['recipes', currentBusiness?.id]);
+      if (editingIngredient) {
+        qc.setQueryData(['recipes', currentBusiness?.id], (old = []) => old.map(r => r.id === editingIngredient.id ? { ...r, ...data } : r));
+      } else {
+        qc.setQueryData(['recipes', currentBusiness?.id], (old = []) => [...old, { id: 'temp-' + Date.now(), ...data }]);
+      }
+      return { previous };
+    },
+    onError: (_err, _data, context) => { if (context?.previous) qc.setQueryData(['recipes', currentBusiness?.id], context.previous); },
     onSuccess: () => { qc.invalidateQueries(['recipes', currentBusiness?.id]); setShowIngredientModal(false); setEditingIngredient(null); setIngredientForm({ inventory_item_id: '', ingredient_name: '', qty: '', unit: 'kg', yield_pct: 100 }); }
   });
 
   const deleteIngredientMutation = useMutation({
     mutationFn: (id) => base44.entities.Recipe.delete(id),
-    onSuccess: () => qc.invalidateQueries(['recipes', currentBusiness?.id])
+    onMutate: async (id) => {
+      await qc.cancelQueries(['recipes', currentBusiness?.id]);
+      const previous = qc.getQueryData(['recipes', currentBusiness?.id]);
+      qc.setQueryData(['recipes', currentBusiness?.id], (old = []) => old.filter(r => r.id !== id));
+      return { previous };
+    },
+    onError: (_err, _id, context) => { if (context?.previous) qc.setQueryData(['recipes', currentBusiness?.id], context.previous); },
+    onSettled: () => qc.invalidateQueries(['recipes', currentBusiness?.id])
   });
 
   // Convert qty to the base unit of the inventory item's unit_cost

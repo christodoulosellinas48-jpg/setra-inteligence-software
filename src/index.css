@@ -3,40 +3,80 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light mode defaults (minimal — app is primarily dark themed) */
   :root {
-    --background: 240 20% 4%;
-    --foreground: 0 0% 100%;
-    --card: 240 15% 8.5%;
-    --card-foreground: 0 0% 100%;
-    --popover: 240 15% 8.5%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 264 93% 62%;
+    --background: 240 20% 96%;
+    --foreground: 240 20% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 20% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 20% 4%;
+    --primary: 264 93% 55%;
     --primary-foreground: 0 0% 100%;
     --secondary: 264 70% 75%;
     --secondary-foreground: 264 85% 5%;
-    --muted: 240 15% 12%;
-    --muted-foreground: 264 10% 60%;
-    --accent: 264 93% 62%;
+    --muted: 240 10% 90%;
+    --muted-foreground: 240 10% 40%;
+    --accent: 264 93% 55%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 20% 15%;
-    --input: 240 20% 15%;
-    --ring: 264 93% 62%;
-    --chart-1: 264 93% 62%;
-    --chart-2: 264 70% 75%;
-    --chart-3: 280 65% 82%;
-    --chart-4: 250 80% 70%;
-    --chart-5: 270 75% 65%;
+    --border: 240 10% 82%;
+    --input: 240 10% 82%;
+    --ring: 264 93% 55%;
+    --chart-1: 264 93% 55%;
+    --chart-2: 264 70% 65%;
+    --chart-3: 280 65% 72%;
+    --chart-4: 250 80% 60%;
+    --chart-5: 270 75% 55%;
     --radius: 0.875rem;
-    --sidebar-background: 240 20% 4%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 264 93% 62%;
+    --sidebar-background: 240 20% 96%;
+    --sidebar-foreground: 240 20% 4%;
+    --sidebar-primary: 264 93% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 15% 10%;
-    --sidebar-accent-foreground: 264 93% 62%;
-    --sidebar-border: 240 20% 15%;
-    --sidebar-ring: 264 93% 62%;
+    --sidebar-accent: 240 10% 90%;
+    --sidebar-accent-foreground: 264 93% 55%;
+    --sidebar-border: 240 10% 82%;
+    --sidebar-ring: 264 93% 55%;
+  }
+
+  /* Dark mode via system preference */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 240 20% 4%;
+      --foreground: 0 0% 100%;
+      --card: 240 15% 8.5%;
+      --card-foreground: 0 0% 100%;
+      --popover: 240 15% 8.5%;
+      --popover-foreground: 0 0% 100%;
+      --primary: 264 93% 62%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 264 70% 75%;
+      --secondary-foreground: 264 85% 5%;
+      --muted: 240 15% 12%;
+      --muted-foreground: 264 10% 60%;
+      --accent: 264 93% 62%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 240 20% 15%;
+      --input: 240 20% 15%;
+      --ring: 264 93% 62%;
+      --chart-1: 264 93% 62%;
+      --chart-2: 264 70% 75%;
+      --chart-3: 280 65% 82%;
+      --chart-4: 250 80% 70%;
+      --chart-5: 270 75% 65%;
+      --radius: 0.875rem;
+      --sidebar-background: 240 20% 4%;
+      --sidebar-foreground: 0 0% 100%;
+      --sidebar-primary: 264 93% 62%;
+      --sidebar-primary-foreground: 0 0% 100%;
+      --sidebar-accent: 240 15% 10%;
+      --sidebar-accent-foreground: 264 93% 62%;
+      --sidebar-border: 240 20% 15%;
+      --sidebar-ring: 264 93% 62%;
+    }
   }
 
   .dark {

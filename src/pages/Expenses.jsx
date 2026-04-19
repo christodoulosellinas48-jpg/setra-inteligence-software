@@ -13,6 +13,8 @@ import {
   CheckCircle2, Clock, AlertCircle, Loader2, XCircle, Sparkles
 } from 'lucide-react';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const STATUS_CONFIG = {
   pending:    { label: 'Pending',    color: 'bg-slate-500/15 text-slate-400 border-slate-500/30',   icon: Clock },
@@ -62,7 +64,20 @@ export default function Expenses() {
 
   const deleteExpense = useMutation({
     mutationFn: (id) => base44.entities.ExpenseDocument.delete(id),
-    onSuccess: () => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries(['expenses-full', currentBusiness?.id]);
+      const previous = queryClient.getQueryData(['expenses-full', currentBusiness?.id]);
+      queryClient.setQueryData(['expenses-full', currentBusiness?.id], (old = []) => old.filter(e => e.id !== id));
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) queryClient.setQueryData(['expenses-full', currentBusiness?.id], context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]),
+  });
+
+  const { isRefreshing, pullDistance, containerRef } = usePullToRefresh(async () => {
+    await queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]);
   });
 
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness?.currency] || '€';
@@ -86,7 +101,8 @@ export default function Expenses() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div ref={containerRef} className="p-6 max-w-7xl mx-auto space-y-6">
+      <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

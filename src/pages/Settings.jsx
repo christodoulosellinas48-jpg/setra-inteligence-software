@@ -39,6 +39,17 @@ function SettingsContent() {
 
   const updateBusiness = useMutation({
     mutationFn: (data) => base44.entities.Business.update(currentBusiness.id, data),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries(['businesses']);
+      const previous = queryClient.getQueryData(['businesses']);
+      queryClient.setQueryData(['businesses'], (old = []) =>
+        old.map(b => b.id === currentBusiness.id ? { ...b, ...data } : b)
+      );
+      return { previous };
+    },
+    onError: (_err, _data, context) => {
+      if (context?.previous) queryClient.setQueryData(['businesses'], context.previous);
+    },
     onSuccess: () => {
       refreshBusinesses();
       setSaving(false);

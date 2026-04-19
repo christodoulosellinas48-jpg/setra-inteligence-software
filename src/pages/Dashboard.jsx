@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import AICounselorChat from '@/components/AICounselorChat';
+import usePullToRefresh from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import IconContainer from '@/components/ui/IconContainer';
 import ThemedSpinner from '@/components/ui/ThemedSpinner';
 import EmptyState from '@/components/ui/EmptyState';
@@ -75,6 +77,15 @@ function DashboardContent() {
     revenue: 0,
     foodCost: 0,
     staffCost: 0
+  });
+
+  const { isRefreshing, pullDistance, containerRef } = usePullToRefresh(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries(['expenses', currentBusiness?.id]),
+      queryClient.invalidateQueries(['budgets', currentBusiness?.id]),
+      queryClient.invalidateQueries(['financialSnapshots', currentBusiness?.id]),
+      queryClient.invalidateQueries(['businesses']),
+    ]);
   });
 
   // Fetch pending invitations count - defer to avoid blocking render
@@ -249,7 +260,8 @@ function DashboardContent() {
     : financials?.overallStatus === 'warning' ? 'text-amber-400' : 'text-rose-400';
 
   return (
-    <div className="min-h-screen bg-[#0B0B12]">
+    <div ref={containerRef} className="min-h-screen bg-[#0B0B12]">
+      <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
       {/* Sticky Header */}
       <header className="border-b border-white/[0.06] backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95">
         <div className="max-w-7xl mx-auto px-6 py-3.5">
