@@ -53,6 +53,7 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   const [showLineItems, setShowLineItems] = useState(false);
   const [saving, setSaving] = useState(false);
   const [automationResult, setAutomationResult] = useState(null);
+  const [categorizing, setCategorizing] = useState(false);
 
   const [form, setForm] = useState({
     supplier_name: '',
@@ -68,6 +69,24 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   });
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleRecategorize = async () => {
+    if (!form.supplier_name) return;
+    setCategorizing(true);
+    try {
+      const catRes = await base44.functions.invoke('categorizeInvoice', {
+        business_id: businessId,
+        supplier_name: form.supplier_name,
+        line_items: aiData?.line_items || [],
+        gross_total: parseFloat(form.invoice_total) || 0
+      });
+      if (catRes?.data?.category) {
+        setField('expense_category', catRes.data.category);
+        setAiData(prev => ({ ...prev, category_suggestion: catRes.data }));
+      }
+    } catch (_) {}
+    setCategorizing(false);
+  };
 
   const analyzeWithAI = async (fileUrl, fileName) => {
     setStage('analyzing');
@@ -116,31 +135,17 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
 
       const data = extracted.output;
 
-      // Step 2: Use LLM to intelligently categorize and validate
-      const categoryResult = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an expert bookkeeper for hospitality businesses. Based on this invoice data, determine the best expense category.
-
-Supplier: ${data.supplier_name || 'Unknown'}
-Line items: ${(data.line_items || []).map(i => i.description).join(', ') || 'None listed'}
-Invoice total: ${data.gross_total || 0}
-
-Available categories:
-- food_beverage: Ingredients, beverages, produce, meat, dairy, dry goods for the business
-- staff_costs: Wages, payroll, recruitment, uniforms, staff agency fees
-- fixed_costs: Rent, insurance, equipment leases, licenses, subscriptions
-- utilities: Electricity, water, gas, internet, phone bills
-- operating_expenses: Cleaning supplies, packaging, maintenance, marketing, miscellaneous
-
-Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why", "confidence": 0.0-1.0}`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            category: { type: 'string' },
-            reason: { type: 'string' },
-            confidence: { type: 'number' }
-          }
-        }
-      });
+      // Step 2: Use backend AI categorizer (includes supplier history + rich LLM prompt)
+      let categoryResult = null;
+      try {
+        const catRes = await base44.functions.invoke('categorizeInvoice', {
+          business_id: businessId,
+          supplier_name: data.supplier_name,
+          line_items: data.line_items || [],
+          gross_total: data.gross_total
+        });
+        if (catRes?.data?.category) categoryResult = catRes.data;
+      } catch (_) {}
 
       const suggestedCategory = categoryResult?.category || inferCategory(data.supplier_name, data.line_items);
 
@@ -250,6 +255,7 @@ Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why",
     setAiData(null);
     setShowLineItems(false);
     setAutomationResult(null);
+    setCategorizing(false);
     setForm({ supplier_name: '', invoice_number: '', invoice_date: '', invoice_total: '', net_amount: '', vat_amount: '', vat_rate: '', vat_included: false, expense_category: '', notes: '' });
   };
 
@@ -399,7 +405,23 @@ Reply with ONLY a JSON object: {"category": "...", "reason": "one sentence why",
             </div>
 
             <div className="col-span-2">
-              <Label className="text-slate-400 mb-1.5 block text-sm">Expense Category *</Label>
+              <div className="flex items-center justify-between mb-1.5">
+                <Label className="text-slate-400 text-sm">Expense Category *</Label>
+                {stage === 'ready' && (
+                  <button
+                    type="button"
+                    onClick={handleRecategorize}
+                    disabled={categorizing || !form.supplier_name}
+                    className="flex items-center gap-1.5 text-xs text-[#C084FC] hover:text-white disabled:opacity-40 transition-colors"
+                  >
+                    {categorizing
+                      ? <Loader2 className="w-3 h-3 animate-spin" />
+                      : <Sparkles className="w-3 h-3" />
+                    }
+                    {categorizing ? 'Re-categorising...' : 'Re-categorise with AI'}
+                  </button>
+                )}
+              </div>
               <Select value={form.expense_category} onValueChange={v => setField('expense_category', v)}>
                 <SelectTrigger className="bg-[#151528] border-white/10 text-white">
                   <SelectValue placeholder="Select category" />

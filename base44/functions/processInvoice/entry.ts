@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       invoice_date,
       due_date,
       invoice_number,
-      expense_category,
+      expense_category: rawCategory,
       line_items,
       invoice_total,
       vat_included,
@@ -56,6 +56,29 @@ Deno.serve(async (req) => {
     // Mark document as processing
     if (expense_document_id) {
       await base44.entities.ExpenseDocument.update(expense_document_id, { status: 'processing' });
+    }
+
+    // Re-validate / improve the category via the dedicated AI categorizer
+    let expense_category = rawCategory;
+    try {
+      const catResponse = await base44.asServiceRole.functions.invoke('categorizeInvoice', {
+        business_id,
+        supplier_name,
+        line_items: line_items || [],
+        gross_total: invoice_total
+      });
+      if (catResponse?.category) {
+        expense_category = catResponse.category;
+        // Update the expense document with the AI-validated category
+        if (expense_document_id) {
+          await base44.entities.ExpenseDocument.update(expense_document_id, {
+            expense_category,
+            notes: catResponse.reason ? `AI category: ${catResponse.reason}` : undefined
+          });
+        }
+      }
+    } catch (_) {
+      // Use rawCategory as-is if categorizer fails
     }
 
     const results = {
