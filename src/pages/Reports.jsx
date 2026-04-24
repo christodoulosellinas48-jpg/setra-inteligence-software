@@ -5,8 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, RefreshCw, Save, Loader2, FileText, TrendingUp } from 'lucide-react';
+import { BarChart3, RefreshCw, Save, Loader2, FileText, TrendingUp, Activity } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import SpendingAnalyticsDashboard from '@/components/reports/SpendingAnalyticsDashboard';
 
 import HealthIndicator from '@/components/dashboard/HealthIndicator';
 import ReportBuilder from '@/components/reports/ReportBuilder';
@@ -27,6 +28,13 @@ function ReportsContent() {
   const { data: snapshots = [], refetch: refetchSnapshots } = useQuery({
     queryKey: ['financialSnapshots', currentBusiness?.id],
     queryFn: () => base44.entities.FinancialSnapshot.filter({ business_id: currentBusiness.id }, '-period_start', 50),
+    enabled: !!currentBusiness,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: budgets = [] } = useQuery({
+    queryKey: ['budgets', currentBusiness?.id],
+    queryFn: () => base44.entities.Budget.filter({ business_id: currentBusiness.id }, '-created_date', 1),
     enabled: !!currentBusiness,
     staleTime: 5 * 60 * 1000,
   });
@@ -102,6 +110,9 @@ function ReportsContent() {
             <TabsTrigger value="overview" className="data-[state=active]:bg-[#7B3BFF]/20 data-[state=active]:text-white rounded-lg">
               <TrendingUp className="w-4 h-4 mr-2" />Overview
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-[#7B3BFF]/20 data-[state=active]:text-white rounded-lg">
+              <Activity className="w-4 h-4 mr-2" />Spending Analytics
+            </TabsTrigger>
             <TabsTrigger value="custom" className="data-[state=active]:bg-[#7B3BFF]/20 data-[state=active]:text-white rounded-lg">
               <FileText className="w-4 h-4 mr-2" />Custom Reports
             </TabsTrigger>
@@ -168,6 +179,15 @@ function ReportsContent() {
                 </div>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Spending Analytics Tab */}
+          <TabsContent value="analytics">
+            <SpendingAnalyticsDashboard
+              snapshots={snapshots}
+              budget={budgets[0] || null}
+              business={currentBusiness}
+            />
           </TabsContent>
 
           {/* Custom Reports Tab */}
