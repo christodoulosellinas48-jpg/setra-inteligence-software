@@ -10,6 +10,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Wine, Users, Coffee, PartyPopper, Cake, Store, ShoppingBag, Hotel, UtensilsCrossed, ArrowRight, ArrowLeft, Building2, Loader2 } from 'lucide-react';
 
+// Cyprus VAT rates by industry group
+const INDUSTRY_VAT_RATES = {
+  bar: 9,
+  canteen: 9,
+  coffee_shop: 9,
+  catering_events: 9,
+  confectionery: 19,
+  deli_cava: 19,
+  food_to_go: 9,
+  hotels: 9,
+  restaurant: 9
+};
+
 const BUSINESS_TYPES = [
   { type: 'bar', icon: Wine, title: 'Bar', description: 'Pubs, cocktail bars, nightlife' },
   { type: 'canteen', icon: Users, title: 'Canteen', description: 'Staff cafeterias, institutional dining' },
@@ -60,6 +73,7 @@ export default function CreateBusiness() {
       
       const business = await base44.entities.Business.create({
         ...formData,
+        vat_rate: formData.vat_rate ?? INDUSTRY_VAT_RATES[formData.industry_group] ?? 19,
         owner_email: user.email,
         monthly_revenue: 0,
         rent_fixed_costs: 0,
@@ -141,7 +155,7 @@ export default function CreateBusiness() {
                   return (
                     <button
                       key={bt.type}
-                      onClick={() => setFormData({ ...formData, industry_group: bt.type })}
+                      onClick={() => setFormData({ ...formData, industry_group: bt.type, vat_rate: INDUSTRY_VAT_RATES[bt.type] ?? 19 })}
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSelected
                           ? 'bg-gradient-to-br from-[#7B3BFF]/10 to-[#A855F7]/10 border-[#7B3BFF]/50'
