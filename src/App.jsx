@@ -15,6 +15,7 @@ import OperationsHub from './pages/OperationsHub';
 import Vendors from './pages/Vendors';
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import Home from './pages/Home';
+import MenuHeatmap from './pages/MenuHeatmap';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import AboutUs from './pages/AboutUs';
@@ -102,6 +103,11 @@ const AuthenticatedApp = () => {
       <Route path="/Expenses" element={
         <LayoutWrapper currentPageName="Expenses">
           <Expenses />
+        </LayoutWrapper>
+      } />
+      <Route path="/MenuHeatmap" element={
+        <LayoutWrapper currentPageName="MenuHeatmap">
+          <MenuHeatmap />
         </LayoutWrapper>
       } />
       <Route path="*" element={<PageNotFound />} />
