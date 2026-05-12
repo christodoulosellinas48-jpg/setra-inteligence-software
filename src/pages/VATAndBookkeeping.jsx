@@ -22,7 +22,8 @@ import {
   ShieldAlert,
   BookOpen,
   Download,
-  CheckCircle2
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 
@@ -54,16 +55,35 @@ function VATSection({ business, hasPermission }) {
 
   if (!business.vat_registered) {
     return (
-      <Card className="bg-[#151528]/80 border-white/5 p-10 text-center max-w-md mx-auto mt-8">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-8 h-8 text-amber-400" />
+      <Card className="bg-[#151528]/80 border-white/5 p-8 max-w-lg mx-auto mt-8">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-5">
+          <AlertCircle className="w-7 h-7 text-amber-400" />
         </div>
         <h2 className="text-xl font-semibold text-white mb-2">VAT Not Registered</h2>
-        <p className="text-slate-400 mb-6">
-          Enable VAT registration in business settings to use VAT features.
+        <p className="text-slate-400 text-sm mb-5">
+          You haven't enabled VAT registration for this business. Turning it on unlocks:
         </p>
-        <Button onClick={() => navigate('/Settings')} variant="outline" className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10">
-          Go to Business Settings
+        <ul className="space-y-2 mb-6">
+          {[
+            'Automatic VAT period calculations (input vs output)',
+            'Filing-ready reports for the Cyprus tax authority',
+            'Audit-pack generation with full VAT trail',
+            'One-click VAT exports for your accountant',
+          ].map(item => (
+            <li key={item} className="flex items-start gap-2 text-sm text-slate-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-5 text-xs text-blue-300">
+          <strong>Not sure if you're VAT-registered?</strong> In Cyprus, businesses with turnover above{' '}
+          <strong>€15,600/year</strong> must register.{' '}
+          <a href="https://www.mof.gov.cy/mof/vat/vat.nsf/index_en/index_en" target="_blank" rel="noopener noreferrer"
+            className="underline hover:text-blue-200">Check Cyprus VAT thresholds →</a>
+        </div>
+        <Button onClick={() => navigate('/Settings')} className="w-full">
+          Enable VAT registration →
         </Button>
       </Card>
     );
@@ -123,7 +143,7 @@ function VATSection({ business, hasPermission }) {
 export default function VATAndBookkeeping() {
   const navigate = useNavigate();
   const { currentBusiness, loading, hasPermission } = useBusiness();
-  const [activeTab, setActiveTab] = useState('vat');
+  const [activeTab, setActiveTab] = useState('inbox');
 
   if (loading) {
     return (
@@ -153,13 +173,13 @@ export default function VATAndBookkeeping() {
   }
 
   const TAB_CONFIG = [
-    { value: 'vat',        icon: Percent,     label: 'VAT',         desc: 'Periods, calculator, reports' },
-    { value: 'inbox',      icon: Inbox,        label: 'Inbox',       desc: 'Review uploaded documents' },
-    { value: 'bank',       icon: CreditCard,   label: 'Bank',        desc: 'Reconcile transactions' },
+    { value: 'inbox',      icon: Inbox,        label: 'Inbox',       desc: 'Review & process uploaded documents' },
+    { value: 'bank',       icon: CreditCard,   label: 'Bank',        desc: 'Reconcile bank transactions' },
+    { value: 'vat',        icon: Percent,      label: 'VAT',         desc: 'Periods, calculator, filing reports' },
     { value: 'pl',         icon: TrendingUp,   label: 'P&L',         desc: 'Profit & loss statement' },
     { value: 'payroll',    icon: Users,        label: 'Payroll',     desc: 'Staff costs & shifts' },
-    { value: 'accountant', icon: UserCircle,   label: 'Accountant',  desc: 'Accountant portal' },
     { value: 'exports',    icon: Download,     label: 'Exports',     desc: 'Download reports & data' },
+    { value: 'accountant', icon: UserCircle,   label: 'Accountant',  desc: 'Multi-client portal for accountants' },
   ];
 
   return (
@@ -186,7 +206,7 @@ export default function VATAndBookkeeping() {
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">{currentBusiness.name} · Financial compliance & records</p>
+                <p className="text-xs text-slate-500 mt-0.5">{currentBusiness.name} · Financial compliance & bookkeeping</p>
               </div>
             </div>
             {currentBusiness.entity_type === 'ltd' && (
