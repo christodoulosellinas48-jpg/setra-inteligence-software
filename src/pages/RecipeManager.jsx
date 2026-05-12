@@ -9,18 +9,56 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
-import { ChefHat, Plus, Trash2, Edit2, RefreshCw, DollarSign, Percent, X } from 'lucide-react';
+import { ChefHat, Plus, Trash2, Edit2, RefreshCw, DollarSign, Percent, X, Upload, TrendingUp, TrendingDown } from 'lucide-react';
+import MenuImportModal from '@/components/recipes/MenuImportModal';
 
+const CATEGORIES = ['appetizer', 'main', 'dessert', 'beverage', 'side', 'other'];
+const CATEGORY_LABELS = {
+  appetizer: 'Starters', main: 'Mains', dessert: 'Desserts',
+  beverage: 'Drinks', side: 'Sides', other: 'Other'
+};
 const UNITS = ['kg', 'g', 'l', 'ml', 'pc', 'lb', 'oz'];
+
+function FoodCostDisplay({ pct, target }) {
+  if (pct === null) return null;
+  const diff = target ? pct - target : null;
+  const color = !target ? 'text-slate-300'
+    : pct <= target ? 'text-emerald-400'
+    : pct <= target + 5 ? 'text-amber-400'
+    : 'text-rose-400';
+  const bgColor = !target ? 'bg-[#151528]/80 border-white/5'
+    : pct <= target ? 'bg-emerald-500/10 border-emerald-500/25'
+    : pct <= target + 5 ? 'bg-amber-500/10 border-amber-500/25'
+    : 'bg-rose-500/10 border-rose-500/25';
+
+  return (
+    <div className={`rounded-2xl border p-5 ${bgColor}`}>
+      <div className="flex items-center gap-2 mb-1">
+        <Percent className="w-4 h-4 text-slate-400" />
+        <p className="text-slate-400 text-sm">Food Cost %</p>
+        {diff !== null && diff > 0 && <TrendingUp className="w-3.5 h-3.5 text-rose-400 ml-auto" />}
+        {diff !== null && diff <= 0 && <TrendingDown className="w-3.5 h-3.5 text-emerald-400 ml-auto" />}
+      </div>
+      <p className={`text-4xl font-bold tracking-tight ${color}`}>{pct.toFixed(1)}%</p>
+      {target && (
+        <p className="text-slate-500 text-xs mt-1.5">
+          Target ≤{target}% {diff !== null && diff > 0 ? `· ${diff.toFixed(1)}% over` : diff !== null ? '· on target' : ''}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function RecipeManagerContent() {
   const { currentBusiness, canEdit } = useBusiness();
   const qc = useQueryClient();
   const [selectedItem, setSelectedItem] = useState(null);
+  const [sectionFilter, setSectionFilter] = useState('all');
   const [showItemModal, setShowItemModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [showIngredientModal, setShowIngredientModal] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
-  const [itemForm, setItemForm] = useState({ name: '', category: 'main', selling_price: '' });
+  const [itemForm, setItemForm] = useState({ name: '', category: 'main', selling_price: '', notes: '', prep_time_min: '' });
   const [ingredientForm, setIngredientForm] = useState({ inventory_item_id: '', ingredient_name: '', qty: '', unit: 'kg', yield_pct: 100 });
 
   const { data: items = [], isLoading: loadingItems } = useQuery({
@@ -43,15 +81,22 @@ function RecipeManagerContent() {
 
   const saveItemMutation = useMutation({
     mutationFn: (data) => base44.entities.Item.create({ ...data, business_id: currentBusiness.id, selling_price: parseFloat(data.selling_price) || 0 }),
-    onMutate: async (data) => {
-      await qc.cancelQueries(['items', currentBusiness?.id]);
-      const previous = qc.getQueryData(['items', currentBusiness?.id]);
-      const optimistic = { id: 'temp-' + Date.now(), ...data, business_id: currentBusiness.id, selling_price: parseFloat(data.selling_price) || 0 };
-      qc.setQueryData(['items', currentBusiness?.id], (old = []) => [...old, optimistic]);
-      return { previous };
+    onSuccess: () => { qc.invalidateQueries(['items', currentBusiness?.id]); setShowItemModal(false); setItemForm({ name: '', category: 'main', selling_price: '', notes: '', prep_time_min: '' }); }
+  });
+
+  const bulkImportMutation = useMutation({
+    mutationFn: async (importedItems) => {
+      for (const item of importedItems) {
+        await base44.entities.Item.create({
+          business_id: currentBusiness.id,
+          name: item.name,
+          category: item.category || 'main',
+          selling_price: parseFloat(item.selling_price) || 0,
+          active: true
+        });
+      }
     },
-    onError: (_err, _data, context) => { if (context?.previous) qc.setQueryData(['items', currentBusiness?.id], context.previous); },
-    onSuccess: () => { qc.invalidateQueries(['items', currentBusiness?.id]); setShowItemModal(false); setItemForm({ name: '', category: 'main', selling_price: '' }); }
+    onSuccess: () => qc.invalidateQueries(['items', currentBusiness?.id])
   });
 
   const deleteItemMutation = useMutation({
@@ -60,58 +105,38 @@ function RecipeManagerContent() {
       for (const r of toDelete) await base44.entities.Recipe.delete(r.id);
       await base44.entities.Item.delete(itemId);
     },
-    onMutate: async (itemId) => {
-      await qc.cancelQueries(['items', currentBusiness?.id]);
-      const previous = qc.getQueryData(['items', currentBusiness?.id]);
-      qc.setQueryData(['items', currentBusiness?.id], (old = []) => old.filter(i => i.id !== itemId));
-      setSelectedItem(prev => prev?.id === itemId ? null : prev);
-      return { previous };
-    },
-    onError: (_err, _id, context) => { if (context?.previous) qc.setQueryData(['items', currentBusiness?.id], context.previous); },
-    onSuccess: () => { qc.invalidateQueries(['items', currentBusiness?.id]); qc.invalidateQueries(['recipes', currentBusiness?.id]); }
+    onSuccess: () => {
+      qc.invalidateQueries(['items', currentBusiness?.id]);
+      qc.invalidateQueries(['recipes', currentBusiness?.id]);
+      setSelectedItem(prev => prev?.id ? null : prev);
+    }
   });
 
   const saveIngredientMutation = useMutation({
     mutationFn: (data) => editingIngredient
       ? base44.entities.Recipe.update(editingIngredient.id, data)
       : base44.entities.Recipe.create(data),
-    onMutate: async (data) => {
-      await qc.cancelQueries(['recipes', currentBusiness?.id]);
-      const previous = qc.getQueryData(['recipes', currentBusiness?.id]);
-      if (editingIngredient) {
-        qc.setQueryData(['recipes', currentBusiness?.id], (old = []) => old.map(r => r.id === editingIngredient.id ? { ...r, ...data } : r));
-      } else {
-        qc.setQueryData(['recipes', currentBusiness?.id], (old = []) => [...old, { id: 'temp-' + Date.now(), ...data }]);
-      }
-      return { previous };
-    },
-    onError: (_err, _data, context) => { if (context?.previous) qc.setQueryData(['recipes', currentBusiness?.id], context.previous); },
-    onSuccess: () => { qc.invalidateQueries(['recipes', currentBusiness?.id]); setShowIngredientModal(false); setEditingIngredient(null); setIngredientForm({ inventory_item_id: '', ingredient_name: '', qty: '', unit: 'kg', yield_pct: 100 }); }
+    onSuccess: () => {
+      qc.invalidateQueries(['recipes', currentBusiness?.id]);
+      setShowIngredientModal(false);
+      setEditingIngredient(null);
+      setIngredientForm({ inventory_item_id: '', ingredient_name: '', qty: '', unit: 'kg', yield_pct: 100 });
+    }
   });
 
   const deleteIngredientMutation = useMutation({
     mutationFn: (id) => base44.entities.Recipe.delete(id),
-    onMutate: async (id) => {
-      await qc.cancelQueries(['recipes', currentBusiness?.id]);
-      const previous = qc.getQueryData(['recipes', currentBusiness?.id]);
-      qc.setQueryData(['recipes', currentBusiness?.id], (old = []) => old.filter(r => r.id !== id));
-      return { previous };
-    },
-    onError: (_err, _id, context) => { if (context?.previous) qc.setQueryData(['recipes', currentBusiness?.id], context.previous); },
     onSettled: () => qc.invalidateQueries(['recipes', currentBusiness?.id])
   });
 
-  // Convert qty to the base unit of the inventory item's unit_cost
   const convertToBaseUnit = (qty, fromUnit, toUnit) => {
     if (fromUnit === toUnit) return qty;
-    // Normalize everything to kg or l, then convert to target
     const toKgOrL = { kg: 1, g: 0.001, lb: 0.453592, oz: 0.028349, l: 1, ml: 0.001, pc: 1 };
     const fromFactor = toKgOrL[fromUnit] ?? 1;
     const toFactor = toKgOrL[toUnit] ?? 1;
     return qty * (fromFactor / toFactor);
   };
 
-  // Get real-time unit cost from inventory
   const getIngredientCost = (recipe) => {
     const invItem = inventoryItems.find(i => i.id === recipe.inventory_item_id || i.ingredient_name?.toLowerCase() === recipe.ingredient_name?.toLowerCase());
     const unitCost = invItem?.unit_cost ?? recipe.unit_cost ?? 0;
@@ -121,14 +146,23 @@ function RecipeManagerContent() {
     return unitCost * effectiveQty;
   };
 
-  const getDishCost = (itemId) => {
-    return recipes.filter(r => r.item_id === itemId).reduce((sum, r) => sum + getIngredientCost(r), 0);
-  };
+  const getDishCost = (itemId) => recipes.filter(r => r.item_id === itemId).reduce((sum, r) => sum + getIngredientCost(r), 0);
 
   const getDishFoodCostPct = (item) => {
     if (!item.selling_price || item.selling_price === 0) return null;
     return (getDishCost(item.id) / item.selling_price) * 100;
   };
+
+  // Section counts
+  const sectionCounts = useMemo(() => {
+    const counts = { all: items.length };
+    CATEGORIES.forEach(cat => {
+      counts[cat] = items.filter(i => i.category === cat).length;
+    });
+    return counts;
+  }, [items]);
+
+  const filteredItems = sectionFilter === 'all' ? items : items.filter(i => i.category === sectionFilter);
 
   const openAddIngredient = () => {
     setEditingIngredient(null);
@@ -165,11 +199,8 @@ function RecipeManagerContent() {
   const selectedRecipes = selectedItem ? recipes.filter(r => r.item_id === selectedItem.id) : [];
   const dishCost = selectedItem ? getDishCost(selectedItem.id) : 0;
   const foodCostPct = selectedItem ? getDishFoodCostPct(selectedItem) : null;
-
-  const fcpColor = foodCostPct === null ? 'text-slate-400'
-    : foodCostPct <= 28 ? 'text-emerald-400'
-    : foodCostPct <= 35 ? 'text-amber-400'
-    : 'text-rose-400';
+  const contributionMargin = selectedItem && foodCostPct !== null ? selectedItem.selling_price - dishCost : null;
+  const targetFcp = currentBusiness?.target_food_cost_pct || null;
 
   if (!currentBusiness) return (
     <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
@@ -189,27 +220,65 @@ function RecipeManagerContent() {
             <p className="text-slate-500 text-sm mt-1">Link inventory ingredients to menu items and track food cost %</p>
           </div>
           {canEdit() && (
-            <Button onClick={() => setShowItemModal(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Add Menu Item
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setShowImportModal(true)} className="gap-2">
+                <Upload className="w-4 h-4" /> Import Menu
+              </Button>
+              <Button onClick={() => setShowItemModal(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Add Menu Item
+              </Button>
+            </div>
           )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Menu Items List */}
-          <div className="space-y-2">
-            <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide px-1">Menu Items ({items.length})</h2>
+          {/* Left: Menu Items List */}
+          <div className="space-y-3">
+            {/* Section filter pills */}
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setSectionFilter('all')}
+                className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${sectionFilter === 'all' ? 'bg-[#7B3BFF] text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+              >
+                All ({sectionCounts.all})
+              </button>
+              {CATEGORIES.filter(c => sectionCounts[c] > 0).map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSectionFilter(cat)}
+                  className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${sectionFilter === cat ? 'bg-[#7B3BFF] text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+                >
+                  {CATEGORY_LABELS[cat]} ({sectionCounts[cat]})
+                </button>
+              ))}
+            </div>
+
+            <h2 className="text-xs font-medium text-slate-500 uppercase tracking-wider px-1">
+              Menu Items ({filteredItems.length})
+            </h2>
+
             {loadingItems ? (
               <div className="flex justify-center py-8"><RefreshCw className="w-5 h-5 text-[#7B3BFF] animate-spin" /></div>
-            ) : items.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
               <Card className="p-6 text-center bg-[#151528]/80 border-white/5">
                 <ChefHat className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                <p className="text-slate-500 text-sm">No menu items yet</p>
+                <p className="text-slate-500 text-sm">
+                  {items.length === 0 ? 'No menu items yet. Import your menu or add items one by one.' : 'No items in this section.'}
+                </p>
+                {items.length === 0 && canEdit() && (
+                  <Button size="sm" className="mt-3" onClick={() => setShowImportModal(true)}>
+                    <Upload className="w-3.5 h-3.5 mr-1.5" /> Import Menu
+                  </Button>
+                )}
               </Card>
             ) : (
-              items.map(item => {
+              filteredItems.map(item => {
                 const fcp = getDishFoodCostPct(item);
-                const fcpC = fcp === null ? 'text-slate-500' : fcp <= 28 ? 'text-emerald-400' : fcp <= 35 ? 'text-amber-400' : 'text-rose-400';
+                const fcpC = fcp === null ? 'text-slate-500'
+                  : !targetFcp ? 'text-slate-400'
+                  : fcp <= targetFcp ? 'text-emerald-400'
+                  : fcp <= targetFcp + 5 ? 'text-amber-400'
+                  : 'text-rose-400';
                 return (
                   <div
                     key={item.id}
@@ -219,21 +288,21 @@ function RecipeManagerContent() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-medium truncate">{item.name}</p>
-                        <p className="text-slate-500 text-xs capitalize mt-0.5">{item.category}</p>
+                        <p className="text-slate-500 text-xs capitalize mt-0.5">{CATEGORY_LABELS[item.category] || item.category}</p>
                       </div>
                       <div className="text-right ml-2 shrink-0">
                         <p className="text-white text-sm">€{item.selling_price?.toFixed(2)}</p>
                         {fcp !== null && (
-                          <p className={`text-xs font-medium ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
+                          <p className={`text-xs font-semibold ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
                         )}
                       </div>
                     </div>
                     {canEdit() && (
                       <button
                         onClick={e => { e.stopPropagation(); deleteItemMutation.mutate(item.id); }}
-                        className="mt-2 text-xs text-slate-600 hover:text-rose-400 transition-colors"
+                        className="mt-2 text-xs text-slate-700 hover:text-rose-400 transition-colors"
                       >
-                        Delete item
+                        Delete
                       </button>
                     )}
                   </div>
@@ -242,40 +311,47 @@ function RecipeManagerContent() {
             )}
           </div>
 
-          {/* Recipe Detail */}
+          {/* Right: Recipe Detail */}
           <div className="lg:col-span-2 space-y-4">
             {!selectedItem ? (
-              <Card className="p-12 text-center bg-[#151528]/80 border-white/5 h-full flex flex-col items-center justify-center">
+              <Card className="p-12 text-center bg-[#151528]/80 border-white/5 flex flex-col items-center justify-center min-h-64">
                 <ChefHat className="w-12 h-12 text-slate-700 mb-3" />
                 <p className="text-slate-400">Select a menu item to view its recipe</p>
               </Card>
             ) : (
               <>
-                {/* Dish Summary */}
-                <div className="grid grid-cols-3 gap-3">
+                {/* Dish name + category */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">{selectedItem.name}</h2>
+                    <p className="text-slate-500 text-sm capitalize">{CATEGORY_LABELS[selectedItem.category]}</p>
+                  </div>
+                </div>
+
+                {/* 4-metric summary — food cost % is the hero */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <Card className="p-4 bg-[#151528]/80 border-white/5">
-                    <p className="text-slate-400 text-xs mb-1">Selling Price</p>
-                    <p className="text-xl font-bold text-white">€{selectedItem.selling_price?.toFixed(2)}</p>
+                    <p className="text-slate-400 text-xs mb-1">Sell Price</p>
+                    <p className="text-2xl font-bold text-white">€{selectedItem.selling_price?.toFixed(2)}</p>
                   </Card>
                   <Card className="p-4 bg-[#151528]/80 border-white/5">
                     <div className="flex items-center gap-1 mb-1">
-                      <DollarSign className="w-3 h-3 text-amber-400" />
+                      <DollarSign className="w-3.5 h-3.5 text-amber-400" />
                       <p className="text-slate-400 text-xs">Ingredient Cost</p>
                     </div>
-                    <p className="text-xl font-bold text-amber-400">€{dishCost.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-amber-400">€{dishCost.toFixed(2)}</p>
                   </Card>
-                  <Card className={`p-4 border ${foodCostPct === null ? 'bg-[#151528]/80 border-white/5' : foodCostPct <= 28 ? 'bg-emerald-500/10 border-emerald-500/30' : foodCostPct <= 35 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-rose-500/10 border-rose-500/30'}`}>
-                    <div className="flex items-center gap-1 mb-1">
-                      <Percent className="w-3 h-3 text-slate-400" />
-                      <p className="text-slate-400 text-xs">Food Cost %</p>
-                    </div>
-                    <p className={`text-xl font-bold ${fcpColor}`}>
-                      {foodCostPct !== null ? `${foodCostPct.toFixed(1)}%` : 'N/A'}
+                  {/* Hero metric — food cost % */}
+                  <FoodCostDisplay pct={foodCostPct} target={selectedItem.ideal_food_cost_pct || targetFcp} />
+                  <Card className={`p-4 border ${contributionMargin === null ? 'bg-[#151528]/80 border-white/5' : contributionMargin >= 0 ? 'bg-emerald-500/8 border-emerald-500/20' : 'bg-rose-500/8 border-rose-500/20'}`}>
+                    <p className="text-slate-400 text-xs mb-1">Contribution</p>
+                    <p className={`text-2xl font-bold ${contributionMargin === null ? 'text-slate-400' : contributionMargin >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {contributionMargin !== null ? `€${contributionMargin.toFixed(2)}` : 'N/A'}
                     </p>
                   </Card>
                 </div>
 
-                {/* Ingredients */}
+                {/* Ingredients table */}
                 <Card className="bg-[#151528]/80 border-white/5">
                   <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
                     <h3 className="text-white font-semibold">Ingredients — {selectedItem.name}</h3>
@@ -287,12 +363,13 @@ function RecipeManagerContent() {
                   </div>
                   {selectedRecipes.length === 0 ? (
                     <div className="p-8 text-center">
-                      <p className="text-slate-500 text-sm">No ingredients linked yet. Add ingredients to calculate food cost.</p>
+                      <p className="text-slate-500 text-sm">No ingredients linked yet.</p>
+                      <p className="text-slate-600 text-xs mt-1">Add ingredients to calculate food cost. Link to Inventory for live pricing.</p>
                     </div>
                   ) : (
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-white/5">
+                        <tr className="border-b border-white/5 bg-[#0B0B12]/30">
                           {['Ingredient', 'Qty', 'Yield %', 'Unit Cost', 'Line Cost', ''].map(h => (
                             <th key={h} className="text-left px-4 py-2.5 text-xs text-slate-500 uppercase tracking-wide">{h}</th>
                           ))}
@@ -307,13 +384,16 @@ function RecipeManagerContent() {
                           return (
                             <tr key={r.id} className="border-b border-white/5 hover:bg-white/2">
                               <td className="px-4 py-3">
-                                <p className="text-white">{r.ingredient_name}</p>
-                                {isLive && <p className="text-xs text-emerald-500">● live price</p>}
+                                <p className="text-white text-sm">{r.ingredient_name}</p>
+                                {isLive
+                                  ? <p className="text-xs text-emerald-500">● live price</p>
+                                  : <p className="text-xs text-slate-600">no inventory link</p>
+                                }
                               </td>
-                              <td className="px-4 py-3 text-slate-300 font-mono">{r.qty} {r.unit}</td>
-                              <td className="px-4 py-3 text-slate-400">{r.yield_pct || 100}%</td>
-                              <td className="px-4 py-3 text-slate-300">€{liveUnitCost.toFixed(3)}</td>
-                              <td className="px-4 py-3 text-amber-400 font-medium">€{lineCost.toFixed(3)}</td>
+                              <td className="px-4 py-3 text-slate-300 font-mono text-sm">{r.qty} {r.unit}</td>
+                              <td className="px-4 py-3 text-slate-400 text-sm">{r.yield_pct || 100}%</td>
+                              <td className="px-4 py-3 text-slate-300 text-sm">€{liveUnitCost.toFixed(3)}</td>
+                              <td className="px-4 py-3 text-amber-400 font-medium text-sm">€{lineCost.toFixed(3)}</td>
                               <td className="px-4 py-3">
                                 {canEdit() && (
                                   <div className="flex gap-1">
@@ -329,6 +409,14 @@ function RecipeManagerContent() {
                             </tr>
                           );
                         })}
+                        {/* Cost bar */}
+                        {selectedRecipes.length > 0 && (
+                          <tr className="border-t border-white/10 bg-[#0B0B12]/20">
+                            <td colSpan={4} className="px-4 py-3 text-slate-400 text-sm font-medium">Total ingredient cost</td>
+                            <td className="px-4 py-3 text-amber-400 font-bold">€{dishCost.toFixed(3)}</td>
+                            <td />
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   )}
@@ -341,29 +429,33 @@ function RecipeManagerContent() {
 
       {/* Add Menu Item Modal */}
       <Dialog open={showItemModal} onOpenChange={setShowItemModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 max-w-md">
+        <DialogContent className="bg-[#0F0F1E] border-white/10 max-w-md">
           <DialogHeader><DialogTitle className="text-white">Add Menu Item</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <Label className="text-slate-400 mb-1.5 block">Item Name</Label>
-              <Input value={itemForm.name} onChange={e => setItemForm({ ...itemForm, name: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="e.g. Grilled Salmon" />
+              <Label className="text-slate-400 mb-1.5 block text-xs">Item Name *</Label>
+              <Input value={itemForm.name} onChange={e => setItemForm({ ...itemForm, name: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="e.g. Grilled Salmon" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-400 mb-1.5 block">Category</Label>
+                <Label className="text-slate-400 mb-1.5 block text-xs">Section</Label>
                 <Select value={itemForm.category} onValueChange={v => setItemForm({ ...itemForm, category: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {['appetizer', 'main', 'dessert', 'beverage', 'side', 'other'].map(c => (
-                      <SelectItem key={c} value={c} className="text-white capitalize">{c}</SelectItem>
+                  <SelectTrigger className="bg-[#151528] border-white/10 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-[#151528] border-white/10">
+                    {CATEGORIES.map(c => (
+                      <SelectItem key={c} value={c} className="text-white">{CATEGORY_LABELS[c]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-slate-400 mb-1.5 block">Selling Price (€)</Label>
-                <Input type="number" value={itemForm.selling_price} onChange={e => setItemForm({ ...itemForm, selling_price: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0.00" />
+                <Label className="text-slate-400 mb-1.5 block text-xs">Selling Price (€)</Label>
+                <Input type="number" value={itemForm.selling_price} onChange={e => setItemForm({ ...itemForm, selling_price: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="0.00" />
               </div>
+            </div>
+            <div>
+              <Label className="text-slate-400 mb-1.5 block text-xs">Chef notes (optional)</Label>
+              <Input value={itemForm.notes} onChange={e => setItemForm({ ...itemForm, notes: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="Prep method, plating notes..." />
             </div>
             <Button onClick={() => saveItemMutation.mutate(itemForm)} disabled={!itemForm.name || saveItemMutation.isPending} className="w-full">
               {saveItemMutation.isPending ? 'Saving...' : 'Add Item'}
@@ -374,42 +466,43 @@ function RecipeManagerContent() {
 
       {/* Add/Edit Ingredient Modal */}
       <Dialog open={showIngredientModal} onOpenChange={setShowIngredientModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 max-w-md">
+        <DialogContent className="bg-[#0F0F1E] border-white/10 max-w-md">
           <DialogHeader><DialogTitle className="text-white">{editingIngredient ? 'Edit Ingredient' : 'Add Ingredient'}</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <Label className="text-slate-400 mb-1.5 block">Link from Inventory (optional)</Label>
+              <Label className="text-slate-400 mb-1.5 block text-xs">Link from Inventory (recommended)</Label>
               <Select value={ingredientForm.inventory_item_id || ''} onValueChange={handleIngredientInventorySelect}>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue placeholder="Select inventory item for live pricing" /></SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectTrigger className="bg-[#151528] border-white/10 text-white"><SelectValue placeholder="Select inventory item for live pricing" /></SelectTrigger>
+                <SelectContent className="bg-[#151528] border-white/10">
                   {inventoryItems.map(i => (
-                    <SelectItem key={i.id} value={i.id} className="text-white">{i.ingredient_name} — €{i.unit_cost}/{i.unit}</SelectItem>
+                    <SelectItem key={i.id} value={i.id} className="text-white text-sm">{i.ingredient_name} — €{i.unit_cost}/{i.unit}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-slate-600 text-xs mt-1">Linked ingredients auto-update cost when inventory prices change.</p>
             </div>
             <div>
-              <Label className="text-slate-400 mb-1.5 block">Ingredient Name</Label>
-              <Input value={ingredientForm.ingredient_name} onChange={e => setIngredientForm({ ...ingredientForm, ingredient_name: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="e.g. Salmon fillet" />
+              <Label className="text-slate-400 mb-1.5 block text-xs">Ingredient Name</Label>
+              <Input value={ingredientForm.ingredient_name} onChange={e => setIngredientForm({ ...ingredientForm, ingredient_name: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="e.g. Salmon fillet" />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
-                <Label className="text-slate-400 mb-1.5 block">Quantity per dish</Label>
-                <Input type="number" value={ingredientForm.qty} onChange={e => setIngredientForm({ ...ingredientForm, qty: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0" />
+                <Label className="text-slate-400 mb-1.5 block text-xs">Quantity per portion</Label>
+                <Input type="number" value={ingredientForm.qty} onChange={e => setIngredientForm({ ...ingredientForm, qty: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="0" />
               </div>
               <div>
-                <Label className="text-slate-400 mb-1.5 block">Unit</Label>
+                <Label className="text-slate-400 mb-1.5 block text-xs">Unit</Label>
                 <Select value={ingredientForm.unit} onValueChange={v => setIngredientForm({ ...ingredientForm, unit: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectTrigger className="bg-[#151528] border-white/10 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-[#151528] border-white/10">
                     {UNITS.map(u => <SelectItem key={u} value={u} className="text-white">{u}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <Label className="text-slate-400 mb-1.5 block">Yield % (usable portion)</Label>
-              <Input type="number" value={ingredientForm.yield_pct} onChange={e => setIngredientForm({ ...ingredientForm, yield_pct: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="100" min="1" max="100" />
+              <Label className="text-slate-400 mb-1.5 block text-xs">Yield % (usable portion after prep waste)</Label>
+              <Input type="number" value={ingredientForm.yield_pct} onChange={e => setIngredientForm({ ...ingredientForm, yield_pct: e.target.value })} className="bg-[#151528] border-white/10 text-white" placeholder="100" min="1" max="100" />
             </div>
             <Button onClick={handleSaveIngredient} disabled={!ingredientForm.ingredient_name || !ingredientForm.qty || saveIngredientMutation.isPending} className="w-full">
               {saveIngredientMutation.isPending ? 'Saving...' : editingIngredient ? 'Update' : 'Add Ingredient'}
@@ -417,6 +510,16 @@ function RecipeManagerContent() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Photo Import Modal */}
+      <MenuImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={async (importedItems) => {
+          await bulkImportMutation.mutateAsync(importedItems);
+        }}
+        businessId={currentBusiness?.id}
+      />
     </div>
   );
 }

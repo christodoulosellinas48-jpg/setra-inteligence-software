@@ -1,0 +1,55 @@
+{
+  "name": "Item",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "name": {
+      "type": "string",
+      "description": "Menu item name"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "appetizer",
+        "main",
+        "dessert",
+        "beverage",
+        "side",
+        "other"
+      ],
+      "default": "main"
+    },
+    "selling_price": {
+      "type": "number",
+      "description": "Current selling price"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "ideal_food_cost_pct": {
+      "type": "number",
+      "description": "Optional per-item food cost target"
+    },
+    "portion_size_g": {
+      "type": "number",
+      "description": "Portion size in grams (for reference)"
+    },
+    "prep_time_min": {
+      "type": "number",
+      "description": "Estimated prep time in minutes"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Chef notes / prep method"
+    }
+  },
+  "required": [
+    "business_id",
+    "name",
+    "selling_price"
+  ]
+}
