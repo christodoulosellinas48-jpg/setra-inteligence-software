@@ -30,6 +30,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
+  const navigate = useNavigate();
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
 
@@ -39,6 +40,13 @@ const AuthenticatedApp = () => {
       navigateToLogin();
     }
   }, [isLoadingAuth, authError]);
+
+  // Redirect Dashboard (/) to OperationsHub after login
+  React.useEffect(() => {
+    if (!isLoadingAuth && !authError && location.pathname === '/') {
+      navigate('/OperationsHub', { replace: true });
+    }
+  }, [isLoadingAuth, authError, location.pathname, navigate]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {

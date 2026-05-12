@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useBusiness } from '@/components/business/BusinessContext';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -11,17 +12,18 @@ import {
   UtensilsCrossed, ShoppingCart, Store, Trash2, Users, ArrowRight,
   ChefHat, Package, TrendingUp, Percent, BarChart2, Brain,
   Receipt, BookOpen, DollarSign, FileText, Activity, Zap,
-  AlertTriangle, Target, CheckCircle2, Clock, Layers, PieChart
+  AlertTriangle, Target, CheckCircle2, Clock, Layers, PieChart,
+  Search, X
 } from 'lucide-react';
 
 const containerVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.05 } }
+  visible: { transition: { staggerChildren: 0.04 } }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } }
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }
 };
 
 const CATEGORIES = [
@@ -32,17 +34,28 @@ const CATEGORIES = [
     icon: TrendingUp,
     color: 'text-violet-400',
     borderColor: 'border-violet-500/20',
-    glowColor: 'shadow-violet-500/10',
     modules: [
       {
         id: 'menu', label: 'Menu Engineering', icon: UtensilsCrossed, path: '/MenuEngineering',
         description: 'Stars, plowhorses, puzzles & dogs. Identify your top-margin items.',
-        badge: 'Profitability', badgeColor: 'bg-violet-500/15 text-violet-300 border-violet-500/20'
+        badge: 'Profitability', badgeColor: 'bg-violet-500/15 text-violet-300 border-violet-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const items = await base44.entities.Item.filter({ business_id: biz.id });
+            return items.length > 0 ? `${items.length} dishes` : null;
+          } catch { return null; }
+        }
       },
       {
         id: 'recipes', label: 'Recipe Manager', icon: ChefHat, path: '/RecipeManager',
         description: 'Link ingredients to dishes and track real-time food cost per plate.',
-        badge: 'Food Cost', badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/20'
+        badge: 'Food Cost', badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const recipes = await base44.entities.Recipe.filter({ business_id: biz.id });
+            return recipes.length > 0 ? `${recipes.length} recipes` : null;
+          } catch { return null; }
+        }
       },
     ]
   },
@@ -53,22 +66,34 @@ const CATEGORIES = [
     icon: DollarSign,
     color: 'text-emerald-400',
     borderColor: 'border-emerald-500/20',
-    glowColor: 'shadow-emerald-500/10',
     modules: [
       {
         id: 'vendors', label: 'Vendors & Suppliers', icon: Store, path: '/Vendors',
         description: 'Supplier relationships, invoice history, and total spend per vendor.',
-        badge: 'Suppliers', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20'
+        badge: 'Suppliers', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const suppliers = await base44.entities.Supplier.filter({ business_id: biz.id });
+            return suppliers.length > 0 ? `${suppliers.length} suppliers` : null;
+          } catch { return null; }
+        }
       },
       {
         id: 'waste', label: 'Waste Management', icon: Trash2, path: '/WasteManagement',
         description: 'Log food waste, identify high-waste items, and reduce operational loss.',
-        badge: 'Waste', badgeColor: 'bg-orange-500/15 text-orange-300 border-orange-500/20'
+        badge: 'Waste', badgeColor: 'bg-orange-500/15 text-orange-300 border-orange-500/20',
+        fetchStat: async (biz) => null // Placeholder
       },
       {
         id: 'expenses', label: 'Expenses', icon: Receipt, path: '/Expenses',
         description: 'Upload invoices and receipts. AI extracts and categorises automatically.',
-        badge: 'Invoices', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20'
+        badge: 'Invoices', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const expenses = await base44.entities.ExpenseDocument.filter({ business_id: biz.id });
+            return expenses.length > 0 ? `${expenses.length} invoices` : null;
+          } catch { return null; }
+        }
       },
     ]
   },
@@ -79,17 +104,30 @@ const CATEGORIES = [
     icon: Package,
     color: 'text-cyan-400',
     borderColor: 'border-cyan-500/20',
-    glowColor: 'shadow-cyan-500/10',
     modules: [
       {
         id: 'inventory', label: 'Inventory', icon: Package, path: '/Inventory',
         description: 'Track stock levels, reorder thresholds, and ingredient unit costs.',
-        badge: 'Stock', badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20'
+        badge: 'Stock', badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const items = await base44.entities.InventoryItem.filter({ business_id: biz.id });
+            return items.length > 0 ? `${items.length} items` : null;
+          } catch { return null; }
+        }
       },
       {
         id: 'po', label: 'Purchase Orders', icon: ShoppingCart, path: '/PurchaseOrders',
         description: 'Create and send POs to suppliers. Track delivery and cost expectations.',
-        badge: 'Procurement', badgeColor: 'bg-teal-500/15 text-teal-300 border-teal-500/20'
+        badge: 'Procurement', badgeColor: 'bg-teal-500/15 text-teal-300 border-teal-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const pos = await base44.entities.PurchaseOrder.filter({ business_id: biz.id });
+            const sent = pos.filter(p => p.status === 'sent').length;
+            const received = pos.filter(p => p.status === 'received').length;
+            return pos.length > 0 ? `${sent} sent, ${received} received` : null;
+          } catch { return null; }
+        }
       },
     ]
   },
@@ -100,17 +138,23 @@ const CATEGORIES = [
     icon: BookOpen,
     color: 'text-blue-400',
     borderColor: 'border-blue-500/20',
-    glowColor: 'shadow-blue-500/10',
     modules: [
       {
         id: 'vat', label: 'VAT & Bookkeeping', icon: Percent, path: '/VATAndBookkeeping',
         description: 'Manage VAT periods, input/output VAT, P&L, payroll, and exports.',
-        badge: 'Compliance', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20'
+        badge: 'Compliance', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+        fetchStat: async (biz) => null // Would need VAT period calculation
       },
       {
-        id: 'payroll', label: 'Payroll & Staff', icon: Users, path: '/Payroll',
+        id: 'payroll', label: 'Payroll', icon: Users, path: '/Payroll',
         description: 'Manage shifts, log labour costs, and maintain employee contracts.',
-        badge: 'HR', badgeColor: 'bg-pink-500/15 text-pink-300 border-pink-500/20'
+        badge: 'HR', badgeColor: 'bg-pink-500/15 text-pink-300 border-pink-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const contracts = await base44.entities.EmployeeContract.filter({ business_id: biz.id, status: 'active' });
+            return contracts.length > 0 ? `${contracts.length} employees` : null;
+          } catch { return null; }
+        }
       },
     ]
   },
@@ -121,47 +165,68 @@ const CATEGORIES = [
     icon: Brain,
     color: 'text-amber-400',
     borderColor: 'border-amber-500/20',
-    glowColor: 'shadow-amber-500/10',
     modules: [
       {
         id: 'reports', label: 'Reports', icon: BarChart2, path: '/Reports',
         description: 'Revenue trends, expense breakdowns, and financial summary reports.',
-        badge: 'Analytics', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20'
+        badge: 'Analytics', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
+        fetchStat: async (biz) => null
       },
       {
         id: 'forecast', label: 'Forecasting', icon: Activity, path: '/Forecasting',
         description: 'Project revenue and costs with optimistic, baseline, and conservative scenarios.',
-        badge: 'Forecast', badgeColor: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20'
+        badge: 'Forecast', badgeColor: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20',
+        fetchStat: async (biz) => null
       },
       {
-        id: 'budget', label: 'Budgeting', icon: Target, path: '/Budgeting',
+        id: 'budget', label: 'Budget', icon: Target, path: '/Budgeting',
         description: 'Set monthly budgets and compare against actual financial performance.',
-        badge: 'Budget', badgeColor: 'bg-lime-500/15 text-lime-300 border-lime-500/20'
+        badge: 'Budget', badgeColor: 'bg-lime-500/15 text-lime-300 border-lime-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const budgets = await base44.entities.Budget.filter({ business_id: biz.id });
+            return budgets.length > 0 ? `${budgets.length} budgets` : null;
+          } catch { return null; }
+        }
       },
       {
-        id: 'audit', label: 'Audit & Profitability', icon: PieChart, path: '/Audit',
+        id: 'audit', label: 'Audit', icon: PieChart, path: '/Audit',
         description: 'Deep-dive audit findings: pricing, food cost, labour, waste, and menu.',
-        badge: 'Audit', badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/20'
+        badge: 'Audit', badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const audits = await base44.entities.AuditRun.filter({ business_id: biz.id });
+            return audits.length > 0 ? `${audits.length} audits` : null;
+          } catch { return null; }
+        }
+      },
+    ]
+  },
+  {
+    id: 'setup',
+    label: 'Setup & Integrations',
+    subtitle: 'Connect your tools and configure your workspace',
+    icon: Zap,
+    color: 'text-indigo-400',
+    borderColor: 'border-indigo-500/20',
+    modules: [
+      {
+        id: 'integrations', label: 'Setra Connect', icon: Zap, path: '/Integrations',
+        description: 'Connect your POS, accounting, banking, and delivery platforms.',
+        badge: 'Integrations', badgeColor: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20',
+        fetchStat: async (biz) => null
+      },
+      {
+        id: 'settings', label: 'Settings', icon: FileText, path: '/Settings',
+        description: 'Manage your business details, VAT, subscription, and team access.',
+        badge: 'Config', badgeColor: 'bg-slate-500/15 text-slate-300 border-slate-500/20',
+        fetchStat: async (biz) => null
       },
     ]
   },
 ];
 
-function QuickStatBadge({ value, label, status }) {
-  const color = status === 'ok' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-    : status === 'warn' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-    : 'text-slate-400 bg-white/5 border-white/10';
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border font-medium ${color}`}>
-      {status === 'ok' && <CheckCircle2 className="w-3 h-3" />}
-      {status === 'warn' && <AlertTriangle className="w-3 h-3" />}
-      {status === 'idle' && <Clock className="w-3 h-3" />}
-      {label}
-    </span>
-  );
-}
-
-function ModuleCard({ mod, delay = 0 }) {
+function ModuleCard({ mod, stat, delay = 0 }) {
   const navigate = useNavigate();
   const Icon = mod.icon;
 
@@ -187,8 +252,11 @@ function ModuleCard({ mod, delay = 0 }) {
           <p className="text-xs text-slate-500 leading-relaxed flex-1 mb-3">
             {mod.description}
           </p>
+          {stat && (
+            <p className="text-xs text-slate-400 font-medium mb-2">✓ {stat}</p>
+          )}
           <div className="flex items-center gap-1 text-[#7B3BFF] text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-[-4px] group-hover:translate-x-0">
-            Open module <ArrowRight className="w-3 h-3" />
+            Open <ArrowRight className="w-3 h-3" />
           </div>
         </div>
       </Card>
@@ -196,17 +264,16 @@ function ModuleCard({ mod, delay = 0 }) {
   );
 }
 
-function CategorySection({ category, index }) {
+function CategorySection({ category, index, stats }) {
   const Icon = category.icon;
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.4 }}
-      className="space-y-4"
+      transition={{ delay: index * 0.06, duration: 0.35 }}
+      className="space-y-3"
     >
-      {/* Category Header */}
       <div className="flex items-center gap-3">
         <div className={`w-8 h-8 rounded-lg bg-[#151528] border ${category.borderColor} flex items-center justify-center`}>
           <Icon className={`w-4 h-4 ${category.color}`} />
@@ -217,7 +284,6 @@ function CategorySection({ category, index }) {
         </div>
       </div>
 
-      {/* Module Cards */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -225,24 +291,137 @@ function CategorySection({ category, index }) {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
       >
         {category.modules.map((mod) => (
-          <ModuleCard key={mod.id} mod={mod} />
+          <ModuleCard key={mod.id} mod={mod} stat={stats[mod.id]} />
         ))}
       </motion.div>
     </motion.section>
   );
 }
 
+function SearchModal({ open, onClose }) {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+
+  const allModules = CATEGORIES.flatMap(c => c.modules);
+  const filtered = query.trim()
+    ? allModules.filter(m =>
+        m.label.toLowerCase().includes(query.toLowerCase()) ||
+        m.description.toLowerCase().includes(query.toLowerCase())
+      )
+    : [];
+
+  const handleSelect = (mod) => {
+    navigate(mod.path);
+    onClose();
+  };
+
+  return open ? (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-20">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="w-full max-w-md mx-4"
+      >
+        <Card className="bg-[#151528] border-white/10 overflow-hidden">
+          <div className="p-3 border-b border-white/5 flex items-center gap-2">
+            <Search className="w-4 h-4 text-slate-500" />
+            <Input
+              autoFocus
+              placeholder="Search modules, reports, recipes…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className="bg-transparent border-0 text-white placeholder-slate-500 text-sm"
+              onKeyDown={e => {
+                if (e.key === 'Escape') onClose();
+              }}
+            />
+            <button onClick={onClose} className="text-slate-500 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {query.trim() && (
+            <div className="max-h-64 overflow-y-auto">
+              {filtered.length > 0 ? (
+                <div className="py-2">
+                  {filtered.map(mod => (
+                    <button
+                      key={mod.id}
+                      onClick={() => handleSelect(mod)}
+                      className="w-full px-4 py-2.5 text-left hover:bg-white/5 transition-colors border-b border-white/[0.02] last:border-0"
+                    >
+                      <div className="flex items-center gap-2">
+                        <mod.icon className="w-4 h-4 text-slate-500" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white font-medium truncate">{mod.label}</p>
+                          <p className="text-xs text-slate-500 line-clamp-1">{mod.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4 py-8 text-center">
+                  <p className="text-slate-500 text-sm">No modules found</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!query.trim() && (
+            <div className="p-3 text-xs text-slate-500">
+              Type to search modules, reports, and features…
+            </div>
+          )}
+        </Card>
+      </motion.div>
+    </div>
+  ) : null;
+}
+
+
+
 export default function OperationsHub() {
   const navigate = useNavigate();
   const { currentBusiness } = useBusiness();
+  const [showSearch, setShowSearch] = useState(false);
+  const [stats, setStats] = useState({});
 
-  // Quick stats from inventory
-  const { data: inventoryItems = [] } = useQuery({
-    queryKey: ['inventory', currentBusiness?.id],
-    queryFn: () => base44.entities.InventoryItem.filter({ business_id: currentBusiness.id }),
-    enabled: !!currentBusiness,
-    staleTime: 5 * 60 * 1000
-  });
+  // Register ⌘K global search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(true);
+      }
+      if (e.key === 'Escape' && showSearch) {
+        setShowSearch(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showSearch]);
+
+  // Fetch stats for all modules
+  useEffect(() => {
+    if (!currentBusiness) return;
+    const fetchAllStats = async () => {
+      const newStats = {};
+      for (const category of CATEGORIES) {
+        for (const mod of category.modules) {
+          try {
+            const stat = await mod.fetchStat(currentBusiness);
+            if (stat) newStats[mod.id] = stat;
+          } catch (e) {
+            // Silent fail for stats
+          }
+        }
+      }
+      setStats(newStats);
+    };
+    fetchAllStats();
+  }, [currentBusiness]);
 
   const { data: pendingExpenses = [] } = useQuery({
     queryKey: ['pendingExpenses', currentBusiness?.id],
@@ -251,12 +430,19 @@ export default function OperationsHub() {
     staleTime: 2 * 60 * 1000
   });
 
+  const { data: inventoryItems = [] } = useQuery({
+    queryKey: ['inventory', currentBusiness?.id],
+    queryFn: () => base44.entities.InventoryItem.filter({ business_id: currentBusiness.id }),
+    enabled: !!currentBusiness,
+    staleTime: 5 * 60 * 1000
+  });
+
   const lowStockCount = inventoryItems.filter(i => i.current_stock <= i.reorder_threshold).length;
   const totalModules = CATEGORIES.reduce((sum, c) => sum + c.modules.length, 0);
 
   return (
     <div className="min-h-screen bg-[#0B0B12]">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
         {/* Page Header */}
         <motion.div
@@ -282,31 +468,33 @@ export default function OperationsHub() {
             {/* Quick status indicators */}
             <div className="flex flex-wrap items-center gap-2">
               {pendingExpenses.length > 0 && (
-                <QuickStatBadge
-                  status="warn"
-                  label={`${pendingExpenses.length} expense${pendingExpenses.length > 1 ? 's' : ''} pending`}
-                />
+                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 border text-xs gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  {pendingExpenses.length} pending
+                </Badge>
               )}
               {lowStockCount > 0 && (
-                <QuickStatBadge
-                  status="warn"
-                  label={`${lowStockCount} low stock alert${lowStockCount > 1 ? 's' : ''}`}
-                />
+                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 border text-xs gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  {lowStockCount} low stock
+                </Badge>
               )}
               {pendingExpenses.length === 0 && lowStockCount === 0 && (
-                <QuickStatBadge status="ok" label="All systems operational" />
+                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 border text-xs gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  All systems operational
+                </Badge>
               )}
             </div>
           </div>
 
           {/* Hero command banner */}
           <div className="relative overflow-hidden rounded-2xl border border-[#7B3BFF]/20 bg-gradient-to-br from-[#0F0B1E] via-[#10102A] to-[#0B0B12] p-6">
-            {/* Background glow */}
             <div className="absolute top-0 right-0 w-72 h-72 bg-[#7B3BFF]/8 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-20 w-48 h-48 bg-[#A855F7]/5 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="relative flex flex-wrap items-center justify-between gap-6">
-              <div className="flex-1 min-w-0">
+            <div className="relative flex flex-col gap-4">
+              <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Zap className="w-4 h-4 text-[#C084FC]" />
                   <span className="text-xs font-semibold text-[#C084FC] uppercase tracking-widest">Command Centre</span>
@@ -318,39 +506,19 @@ export default function OperationsHub() {
                   From ingredient costs to VAT compliance, menu engineering to supplier spend — Setra connects every part of your business into one intelligent operating system.
                 </p>
               </div>
-              <div className="flex flex-col gap-2 shrink-0">
-                <Button
-                  onClick={() => navigate('/Dashboard')}
-                  size="sm"
-                  className="text-sm"
-                >
-                  <Activity className="w-4 h-4 mr-2" />
-                  View Dashboard
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button size="sm" onClick={() => navigate('/Dashboard')} className="text-sm">
+                  <Activity className="w-4 h-4 mr-2" /> View Dashboard
                 </Button>
-                <Button
-                  onClick={() => navigate('/Reports')}
-                  variant="outline"
-                  size="sm"
-                  className="text-sm"
-                >
-                  <BarChart2 className="w-4 h-4 mr-2" />
-                  Open Reports
+                <Button size="sm" variant="outline" onClick={() => navigate('/Reports')} className="text-sm">
+                  <BarChart2 className="w-4 h-4 mr-2" /> Open Reports
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowSearch(true)} className="text-slate-400 gap-1.5">
+                  <Search className="w-4 h-4" />
+                  <kbd className="hidden sm:inline text-xs bg-white/10 px-1.5 py-0.5 rounded">⌘K</kbd>
                 </Button>
               </div>
-            </div>
-
-            {/* Module count strip */}
-            <div className="relative flex flex-wrap gap-3 mt-5 pt-5 border-t border-white/[0.06]">
-              {CATEGORIES.map(cat => {
-                const CatIcon = cat.icon;
-                return (
-                  <div key={cat.id} className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white/[0.04] border ${cat.borderColor}`}>
-                    <CatIcon className={`w-3 h-3 ${cat.color}`} />
-                    <span className="text-slate-400">{cat.label}</span>
-                    <span className={`font-bold ${cat.color}`}>{cat.modules.length}</span>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </motion.div>
@@ -359,9 +527,9 @@ export default function OperationsHub() {
         <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
         {/* Category Sections */}
-        <div className="space-y-10">
+        <div className="space-y-8">
           {CATEGORIES.map((category, index) => (
-            <CategorySection key={category.id} category={category} index={index} />
+            <CategorySection key={category.id} category={category} index={index} stats={stats} />
           ))}
         </div>
 
@@ -369,7 +537,7 @@ export default function OperationsHub() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.4 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
           className="rounded-2xl border border-white/[0.06] bg-[#0F0F1E]/60 p-6 flex flex-wrap items-center justify-between gap-4"
         >
           <div className="flex items-center gap-3">
@@ -381,13 +549,15 @@ export default function OperationsHub() {
               <p className="text-xs text-slate-500">Your AI Counselor analyses your business and suggests where to act next.</p>
             </div>
           </div>
-          <Button onClick={() => navigate('/Dashboard')} variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => navigate('/Dashboard')}>
             <Zap className="w-4 h-4 mr-2 text-[#C084FC]" />
             Open AI Counselor
           </Button>
         </motion.div>
 
       </div>
+
+      <SearchModal open={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   );
 }
