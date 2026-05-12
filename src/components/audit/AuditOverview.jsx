@@ -4,25 +4,21 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, subDays, subMonths } from 'date-fns';
 import { Calendar as CalendarIcon, Play, AlertCircle, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
 import { runFullAudit } from './auditCalculations';
 import { motion } from 'framer-motion';
+import AuditEmptyState from './AuditEmptyState';
+import AuditExplainerCard from './AuditExplainerCard';
+import AuditHistoryList from './AuditHistoryList';
 
-export default function AuditOverview({ businessId }) {
+export default function AuditOverview({ businessId, onAuditComplete, onViewHistoricalAudit }) {
   const queryClient = useQueryClient();
   const [periodStart, setPeriodStart] = useState(subMonths(new Date(), 1));
   const [periodEnd, setPeriodEnd] = useState(new Date());
-  const [auditConfig, setAuditConfig] = useState({
-    pricing: true,
-    foodcost: true,
-    menu: true,
-    labor: true,
-    waste: true
-  });
+  const [quickPeriod, setQuickPeriod] = useState('month');
 
   const { data: business } = useQuery({
     queryKey: ['business', businessId],
@@ -39,67 +35,53 @@ export default function AuditOverview({ businessId }) {
     }
   });
 
+  const { data: allAuditRuns } = useQuery({
+    queryKey: ['allAuditRuns', businessId],
+    queryFn: () => base44.entities.AuditRun.filter({ business_id: businessId }, '-created_date', 20)
+  });
+
   const runAuditMutation = useMutation({
-    mutationFn: async () => {
-      // Fetch all data
+    mutationFn: async ({ basicOnly } = {}) => {
       const [items, recipes, sales, purchases, inventoryAdj, laborShifts] = await Promise.all([
         base44.entities.Item.filter({ business_id: businessId }),
         base44.entities.Recipe.filter({ business_id: businessId }),
-        base44.entities.Sale.filter({
-          business_id: businessId,
-          date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') }
-        }),
-        base44.entities.Purchase.filter({
-          business_id: businessId,
-          date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') }
-        }),
-        base44.entities.InventoryAdjustment.filter({
-          business_id: businessId,
-          date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') }
-        }),
-        base44.entities.LaborShift.filter({
-          business_id: businessId,
-          date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') }
-        })
+        base44.entities.Sale.filter({ business_id: businessId, date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') } }),
+        base44.entities.Purchase.filter({ business_id: businessId, date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') } }),
+        base44.entities.InventoryAdjustment.filter({ business_id: businessId, date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') } }),
+        base44.entities.LaborShift.filter({ business_id: businessId, date: { $gte: format(periodStart, 'yyyy-MM-dd'), $lte: format(periodEnd, 'yyyy-MM-dd') } })
       ]);
 
-      // Run audit calculations
-      const findings = runFullAudit({
-        business,
-        items,
-        recipes,
-        sales,
-        purchases,
-        inventoryAdjustments: inventoryAdj,
-        laborShifts
-      });
+      const findings = runFullAudit({ business, items, recipes, sales, purchases, inventoryAdjustments: inventoryAdj, laborShifts });
 
-      // Create audit run
+      const totalImpact = findings.reduce((s, f) => s + (f.estimated_monthly_impact_eur || 0), 0);
+      const highCount = findings.filter(f => f.severity === 'high').length;
+
       const auditRun = await base44.entities.AuditRun.create({
         business_id: businessId,
         period_start: format(periodStart, 'yyyy-MM-dd'),
         period_end: format(periodEnd, 'yyyy-MM-dd'),
-        status: 'draft'
+        status: 'draft',
+        total_findings: findings.length,
+        high_findings: highCount,
+        total_impact_eur: totalImpact
       });
 
-      // Save findings
-      await Promise.all(
-        findings.map(finding =>
-          base44.entities.AuditFinding.create({
-            audit_run_id: auditRun.id,
-            ...finding
-          })
-        )
-      );
+      await Promise.all(findings.map(finding =>
+        base44.entities.AuditFinding.create({ audit_run_id: auditRun.id, ...finding })
+      ));
 
-      return auditRun;
+      return { auditRun, findings };
     },
-    onSuccess: () => {
+    onSuccess: ({ findings }) => {
       queryClient.invalidateQueries(['latestAudit', businessId]);
+      queryClient.invalidateQueries(['allAuditRuns', businessId]);
+      queryClient.invalidateQueries(['allFindings', businessId]);
+      if (onAuditComplete) onAuditComplete(findings);
     }
   });
 
-  const setQuickPeriod = (period) => {
+  const setQuickPeriodFn = (period) => {
+    setQuickPeriod(period);
     const end = new Date();
     let start;
     if (period === 'week') start = subDays(end, 7);
@@ -109,56 +91,63 @@ export default function AuditOverview({ businessId }) {
     setPeriodEnd(end);
   };
 
-  const totalImpact = latestAudit?.findings?.reduce(
-    (sum, f) => sum + (f.estimated_monthly_impact_eur || 0), 0
-  ) || 0;
+  const hasEnoughData = business && (
+    (business.monthly_revenue || 0) > 0 ||
+    business.purchases_food_bev > 0
+  );
 
+  const totalImpact = latestAudit?.findings?.reduce((sum, f) => sum + (f.estimated_monthly_impact_eur || 0), 0) || 0;
   const highSeverityCount = latestAudit?.findings?.filter(f => f.severity === 'high').length || 0;
   const mediumSeverityCount = latestAudit?.findings?.filter(f => f.severity === 'medium').length || 0;
 
+  const recentFindings = latestAudit?.findings || [];
+
   return (
     <div className="space-y-6">
-      <Card className="bg-slate-900/50 border-slate-800">
-        <CardHeader>
-          <CardTitle className="text-white">Audit Setup</CardTitle>
+      <AuditExplainerCard />
+
+      <AuditHistoryList auditRuns={allAuditRuns || []} onViewAudit={onViewHistoricalAudit} />
+
+      {/* Setup Card */}
+      <Card className="bg-[#151528]/80 border-white/5 rounded-2xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-base">Audit Setup</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-5">
           <div>
-            <Label className="text-slate-400 mb-3 block">Audit Period</Label>
-            <div className="flex flex-wrap gap-3 mb-4">
-              <Button variant="outline" onClick={() => setQuickPeriod('week')} className="text-slate-300">
-                Last 7 Days
-              </Button>
-              <Button variant="outline" onClick={() => setQuickPeriod('month')} className="text-slate-300">
-                Last 30 Days
-              </Button>
-              <Button variant="outline" onClick={() => setQuickPeriod('quarter')} className="text-slate-300">
-                Last Quarter
-              </Button>
+            <Label className="text-slate-400 mb-3 block text-xs uppercase tracking-wider">Audit Period</Label>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[{ key: 'week', label: 'Last 7 Days' }, { key: 'month', label: 'Last 30 Days' }, { key: 'quarter', label: 'Last Quarter' }].map(p => (
+                <Button
+                  key={p.key}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickPeriodFn(p.key)}
+                  className={quickPeriod === p.key ? 'border-[#7B3BFF]/60 bg-[#7B3BFF]/10 text-[#C084FC]' : 'text-slate-300'}
+                >
+                  {p.label}
+                </Button>
+              ))}
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-3">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="text-slate-300">
+                  <Button variant="outline" size="sm" className="text-slate-300">
                     <CalendarIcon className="w-4 h-4 mr-2" />
-                    {format(periodStart, 'PPP')}
+                    {format(periodStart, 'PP')}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent>
-                  <Calendar mode="single" selected={periodStart} onSelect={setPeriodStart} />
-                </PopoverContent>
+                <PopoverContent><Calendar mode="single" selected={periodStart} onSelect={d => { setPeriodStart(d); setQuickPeriod(null); }} /></PopoverContent>
               </Popover>
-              <span className="text-slate-500 self-center">to</span>
+              <span className="text-slate-500 self-center text-sm">to</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="text-slate-300">
+                  <Button variant="outline" size="sm" className="text-slate-300">
                     <CalendarIcon className="w-4 h-4 mr-2" />
-                    {format(periodEnd, 'PPP')}
+                    {format(periodEnd, 'PP')}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent>
-                  <Calendar mode="single" selected={periodEnd} onSelect={setPeriodEnd} />
-                </PopoverContent>
+                <PopoverContent><Calendar mode="single" selected={periodEnd} onSelect={d => { setPeriodEnd(d); setQuickPeriod(null); }} /></PopoverContent>
               </Popover>
             </div>
           </div>
@@ -166,107 +155,96 @@ export default function AuditOverview({ businessId }) {
           <Button
             onClick={() => runAuditMutation.mutate()}
             disabled={runAuditMutation.isPending}
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="w-full"
           >
             {runAuditMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Running Audit...
-              </>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Running Audit...</>
             ) : (
-              <>
-                <Play className="w-4 h-4 mr-2" />
-                Run New Audit
-              </>
+              <><Play className="w-4 h-4 mr-2" />Run New Audit</>
             )}
           </Button>
         </CardContent>
       </Card>
 
+      {/* Empty state after audit on no data */}
+      {runAuditMutation.isSuccess && !hasEnoughData && (
+        <AuditEmptyState
+          business={business}
+          onRunBasicCheck={() => runAuditMutation.mutate({ basicOnly: true })}
+        />
+      )}
+
+      {!hasEnoughData && !latestAudit && !runAuditMutation.isSuccess && (
+        <AuditEmptyState
+          business={business}
+          onRunBasicCheck={() => runAuditMutation.mutate({ basicOnly: true })}
+        />
+      )}
+
+      {/* Results */}
       {latestAudit && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">Total Impact</p>
-                      <p className="text-3xl font-bold text-white mt-1">
-                        €{totalImpact.toLocaleString()}
-                      </p>
+            {[
+              { label: 'Total Opportunity', value: `€${totalImpact.toLocaleString()}/mo`, icon: DollarSign, color: 'text-emerald-400' },
+              { label: 'High Priority', value: highSeverityCount, icon: AlertCircle, color: 'text-rose-400', delay: 0.1 },
+              { label: 'Medium Priority', value: mediumSeverityCount, icon: TrendingUp, color: 'text-amber-400', delay: 0.2 },
+            ].map((card, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: card.delay || 0 }}>
+                <Card className="bg-[#151528]/80 border-white/5">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-slate-400 text-xs">{card.label}</p>
+                        <p className={`text-2xl font-bold mt-1 ${card.color}`}>{card.value}</p>
+                      </div>
+                      <card.icon className={`w-9 h-9 ${card.color} opacity-60`} />
                     </div>
-                    <DollarSign className="w-10 h-10 text-emerald-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">High Priority</p>
-                      <p className="text-3xl font-bold text-white mt-1">{highSeverityCount}</p>
-                    </div>
-                    <AlertCircle className="w-10 h-10 text-red-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">Medium Priority</p>
-                      <p className="text-3xl font-bold text-white mt-1">{mediumSeverityCount}</p>
-                    </div>
-                    <TrendingUp className="w-10 h-10 text-yellow-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
 
-          <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Findings</CardTitle>
+          {/* Recent Findings */}
+          <Card className="bg-[#151528]/80 border-white/5 rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base">Recent Findings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {latestAudit.findings?.slice(0, 5).map((finding, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 bg-slate-800/50 rounded-lg border border-slate-700"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            finding.severity === 'high'
-                              ? 'bg-red-500/10 text-red-400'
-                              : finding.severity === 'medium'
-                              ? 'bg-yellow-500/10 text-yellow-400'
-                              : 'bg-blue-500/10 text-blue-400'
-                          }`}
-                        >
-                          {finding.severity.toUpperCase()}
+              {recentFindings.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-slate-500 text-sm">No findings yet. Run an audit on this period to surface profit leaks.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentFindings.slice(0, 5).map((finding, idx) => (
+                    <div key={idx} className="p-4 bg-[#0B0B12]/40 rounded-xl border border-white/5">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            finding.severity === 'high' ? 'bg-rose-500/10 text-rose-400' :
+                            finding.severity === 'medium' ? 'bg-amber-500/10 text-amber-400' :
+                            'bg-blue-500/10 text-blue-400'
+                          }`}>{finding.severity?.toUpperCase()}</span>
+                          <span className="text-slate-500 text-xs">{finding.type}</span>
+                        </div>
+                        <span className="text-emerald-400 font-semibold text-sm font-mono">
+                          €{(finding.estimated_monthly_impact_eur || 0).toFixed(0)}/mo
                         </span>
-                        <span className="text-slate-400 text-xs">{finding.type}</span>
                       </div>
-                      <span className="text-emerald-400 font-semibold">
-                        €{finding.estimated_monthly_impact_eur?.toFixed(0) || 0}
-                      </span>
+                      <h4 className="text-white font-medium text-sm mb-1">{finding.title}</h4>
+                      <p className="text-slate-400 text-xs mb-2">{finding.description}</p>
+                      <p className="text-slate-500 text-xs italic">{finding.recommendation}</p>
                     </div>
-                    <h4 className="text-white font-medium mb-1">{finding.title}</h4>
-                    <p className="text-slate-400 text-sm mb-2">{finding.description}</p>
-                    <p className="text-slate-500 text-xs italic">{finding.recommendation}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  {recentFindings.length > 5 && (
+                    <p className="text-center text-xs text-slate-500 pt-2">
+                      +{recentFindings.length - 5} more findings — check the Action Plan tab
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </>

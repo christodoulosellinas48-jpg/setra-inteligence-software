@@ -1,0 +1,49 @@
+{
+  "name": "AuditRun",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "final"
+      ],
+      "default": "draft"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "total_findings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of findings"
+    },
+    "high_findings": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of high severity findings"
+    },
+    "total_impact_eur": {
+      "type": "number",
+      "default": 0,
+      "description": "Total estimated monthly impact in EUR"
+    }
+  },
+  "required": [
+    "business_id",
+    "period_start",
+    "period_end"
+  ]
+}
