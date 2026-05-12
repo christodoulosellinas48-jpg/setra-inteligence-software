@@ -30,6 +30,7 @@ import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 import SensitivitySlider from '@/components/dashboard/SensitivitySlider';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
 import AddFromSystemButton from '@/components/dashboard/AddFromSystemButton';
+import AutofillControls from '@/components/dashboard/AutofillControls';
 import BudgetVsActualMini from '@/components/dashboard/BudgetVsActualMini';
 import CashFlowMiniChart from '@/components/dashboard/CashFlowMiniChart';
 import SetupChecklist from '@/components/onboarding/SetupChecklist';
@@ -412,16 +413,16 @@ function DashboardContent() {
               <div>
                 <h2 className="text-base font-semibold text-white">Monthly Figures</h2>
                 <p className="text-xs text-slate-500">
-                  {canEdit() ? 'Enter or auto-fill from your uploaded invoices' : 'View-only mode'}
+                  {canEdit() ? 'Auto-fill from historical data, payroll & invoices' : 'View-only mode'}
                 </p>
               </div>
             </div>
             {canEdit() && (
-              <AddFromSystemButton
+              <AutofillControls
                 businessId={currentBusiness?.id}
                 disabled={!currentBusiness}
-                onApply={(totals) => {
-                  Object.entries(totals).forEach(([key, value]) => {
+                onApplyData={(data) => {
+                  Object.entries(data).forEach(([key, value]) => {
                     handleInputChange(key, value);
                   });
                 }}
