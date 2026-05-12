@@ -134,7 +134,7 @@ export default function BudgetInsights({ budget, actual, historicalSnapshots }) 
   };
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+    <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
       <h3 className="text-lg font-semibold text-white mb-4">Budget Insights & Variance Analysis</h3>
       <div className="space-y-3">
         {insights.map((insight, idx) => {

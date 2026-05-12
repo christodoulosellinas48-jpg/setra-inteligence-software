@@ -99,9 +99,9 @@ function BudgetingContent() {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Wallet className="w-6 h-6 text-[#C084FC]" />
-            Cost Control
+            Budget
           </h1>
-          <p className="text-slate-500 text-sm mt-1">{currentBusiness.name} • {businessDisplayName}</p>
+          <p className="text-slate-500 text-sm mt-1">Plan your spending and track actuals · {currentBusiness.name} · {businessDisplayName}</p>
         </div>
         {canEdit() && (
           <BudgetForm
@@ -112,16 +112,17 @@ function BudgetingContent() {
             historicalData={currentBusiness}
             saving={saving}
             autoFilling={autoFilling}
+            industryGroup={currentBusiness.industry_group}
           />
         )}
 
         <Suspense fallback={
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
             </Card>
-            <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl h-80 flex items-center justify-center">
-              <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+            <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl h-80 flex items-center justify-center">
+              <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
             </Card>
           </div>
         }>
@@ -132,31 +133,47 @@ function BudgetingContent() {
         </Suspense>
 
         {budgets.length > 0 && (
-          <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
-            <h3 className="text-lg font-semibold text-white mb-4">Budget History</h3>
+          <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
+            <h3 className="text-base font-semibold text-white mb-4">Past Budgets</h3>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Period</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-400">Type</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-slate-400">Revenue Target</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-slate-400">Total Budget</th>
+                  <tr className="border-b border-white/5 bg-[#0B0B12]/40">
+                    {['Period', 'Type', 'Revenue Target', 'Actual Revenue', 'Variance', 'Status'].map(h => (
+                      <th key={h} className={`py-3 px-4 text-xs text-slate-500 font-medium ${h === 'Period' || h === 'Type' ? 'text-left' : 'text-right'}`}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {budgets.slice(0, 5).map((b) => {
-                    const total = (b.food_beverage_budget || 0) + (b.staff_costs_budget || 0) + 
-                                  (b.fixed_costs_budget || 0) + (b.utilities_budget || 0) + 
-                                  (b.operating_expenses_budget || 0);
+                  {budgets.slice(0, 8).map((b, idx) => {
+                    const isCurrent = idx === 0;
+                    const actual = currentBusiness.monthly_revenue || 0;
+                    const target = b.revenue_target || 0;
+                    const variance = target > 0 && actual > 0 ? ((actual - target) / target) * 100 : null;
                     return (
-                      <tr key={b.id} className="border-b border-slate-800 hover:bg-slate-800/30">
-                        <td className="py-3 px-4 text-white">
-                          {new Date(b.period_start).toLocaleDateString()} - {new Date(b.period_end).toLocaleDateString()}
+                      <tr key={b.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                        <td className="py-3 px-4 text-slate-300 text-xs">
+                          {new Date(b.period_start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </td>
-                        <td className="py-3 px-4 text-slate-400 capitalize">{b.period_type}</td>
-                        <td className="py-3 px-4 text-right text-cyan-400">€{(b.revenue_target || 0).toLocaleString()}</td>
-                        <td className="py-3 px-4 text-right text-slate-300">€{total.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-slate-500 capitalize text-xs">{b.period_type}</td>
+                        <td className="py-3 px-4 text-right text-slate-300 font-mono text-xs">€{target.toLocaleString()}</td>
+                        <td className="py-3 px-4 text-right text-slate-400 font-mono text-xs">
+                          {isCurrent && actual > 0 ? `€${actual.toLocaleString()}` : '—'}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-xs">
+                          {isCurrent && variance !== null ? (
+                            <span className={variance >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                              {variance >= 0 ? '+' : ''}{variance.toFixed(1)}%
+                            </span>
+                          ) : '—'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {isCurrent ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-[#7B3BFF]/20 text-[#C084FC]">Current</span>
+                          ) : (
+                            <span className="text-xs text-slate-600">Closed</span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}

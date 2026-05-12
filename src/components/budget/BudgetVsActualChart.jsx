@@ -29,7 +29,7 @@ export default function BudgetVsActualChart({ budget, actual }) {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-slate-800 border border-slate-700 rounded-lg p-3">
+        <div className="bg-[#151528] border border-white/10 rounded-lg p-3">
           <p className="text-white font-medium mb-2">{data.name}</p>
           <p className="text-slate-400">Budget: <span className="text-white">€{data.budget.toLocaleString()}</span></p>
           <p className="text-slate-400">Actual: <span className={data.status === 'over' ? 'text-rose-400' : 'text-emerald-400'}>€{data.actual.toLocaleString()}</span></p>
@@ -43,7 +43,7 @@ export default function BudgetVsActualChart({ budget, actual }) {
   };
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+    <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
       <h3 className="text-lg font-semibold text-white mb-4">Budget vs Actual Spending</h3>
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
