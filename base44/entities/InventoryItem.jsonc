@@ -1,0 +1,76 @@
+{
+  "name": "InventoryItem",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string"
+    },
+    "ingredient_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "produce",
+        "meat_fish",
+        "dairy",
+        "dry_goods",
+        "wine",
+        "spirits_beer",
+        "soft_drinks",
+        "cleaning",
+        "packaging",
+        "other"
+      ],
+      "default": "other"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "g",
+        "l",
+        "ml",
+        "pc",
+        "bottle",
+        "case",
+        "lb",
+        "oz"
+      ],
+      "default": "kg"
+    },
+    "current_stock": {
+      "type": "number",
+      "default": 0
+    },
+    "reorder_threshold": {
+      "type": "number",
+      "default": 0,
+      "description": "Alert when stock drops below this (par level)"
+    },
+    "unit_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "last_restocked_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "track_expiry": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to track use-by dates for this perishable item"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "ingredient_name",
+    "unit"
+  ]
+}
