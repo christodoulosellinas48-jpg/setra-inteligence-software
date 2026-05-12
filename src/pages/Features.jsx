@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -14,7 +14,13 @@ import {
 
 export default function Features() {
   const navigate = useNavigate();
-  const [showMore, setShowMore] = React.useState({ basic: false, pro: false, premium: false });
+  const [showMore, setShowMore] = useState({ basic: false, pro: false, premium: false });
+
+  const STARS = useMemo(() => Array.from({ length: 30 }, (_, i) => ({
+    left: `${(i * 43 + 7) % 100}%`,
+    top: `${(i * 61 + 11) % 100}%`,
+    opacity: ((i % 5) * 0.06) + 0.1,
+  })), []);
 
   const tierConfig = {
     basic: { label: 'BASIC', color: 'from-[#7B3BFF] to-[#A855F7]' },
@@ -112,8 +118,8 @@ export default function Features() {
       title: "Setra Connect",
       description: "Connect your POS, accounting, and business tools seamlessly",
       details: [
-        "POS system integrations",
-        "Accounting software sync",
+        "POS integrations: Square, Toast, Lightspeed, Epos Now (more coming)",
+        "Accounting sync: Xero, QuickBooks, Sage",
         "Bank feed connections",
         "Payroll system links",
         "API access for custom integrations"
@@ -130,7 +136,7 @@ export default function Features() {
         "Automated invoice and receipt parsing",
         "Bank reconciliation with smart matching",
         "VAT tracking and compliance reporting",
-        "Export-ready accounting packages"
+        "Export-ready for Xero, QuickBooks, Sage, and CSV"
       ],
       gradient: "from-[#A855F7] to-[#C084FC]",
       tier: "premium"
@@ -282,16 +288,8 @@ export default function Features() {
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#1a0f2e] via-[#0A0A14] to-[#0A0A14]" />
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-purple-400 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: Math.random() * 0.3 + 0.1
-            }}
-          />
+        {STARS.map((star, i) => (
+          <div key={i} className="absolute w-1 h-1 bg-purple-400 rounded-full" style={star} />
         ))}
       </div>
 
@@ -307,14 +305,13 @@ export default function Features() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6">
-              Everything You Need to{' '}
+              From menu margin to VAT return —{' '}
               <span className="bg-gradient-to-r from-[#7B3BFF] to-[#C084FC] bg-clip-text text-transparent">
-                Run Your Business
+                one platform for the whole back office.
               </span>
             </h1>
             <p className="text-base sm:text-xl text-slate-400 max-w-3xl mx-auto px-4">
-              SETRA combines powerful financial tools, AI-driven insights, and automation 
-              to give you complete control over your hospitality business operations
+              Connect your POS, invoices, and payroll. Setra turns the chaos into clear, daily answers — from dish-level margins to VAT-ready ledgers.
             </p>
           </motion.div>
         </div>
@@ -324,9 +321,9 @@ export default function Features() {
       <section className="relative py-8 sm:py-12 px-4 sm:px-6 pb-20 sm:pb-32">
         <div className="max-w-7xl mx-auto space-y-16">
           {[
-            { key: 'basic', label: 'Basic', color: 'from-[#7B3BFF] to-[#A855F7]', desc: 'Everything you need to get started and stay in control.' },
-            { key: 'pro', label: 'Pro', color: 'from-[#A855F7] to-[#C084FC]', desc: 'Advanced tools for growing hospitality businesses.' },
-            { key: 'premium', label: 'Premium', color: 'from-[#C084FC] to-[#E9D5FF]', desc: 'Full suite with AI automation and compliance infrastructure.' }
+            { key: 'basic', label: 'Basic', color: 'from-[#7B3BFF] to-[#A855F7]', desc: 'Best for: a single café or bar just getting numbers under control.' },
+            { key: 'pro', label: 'Pro', color: 'from-[#A855F7] to-[#C084FC]', desc: 'Best for: growing operators who want to plan, forecast, and dig into margins.' },
+            { key: 'premium', label: 'Premium', color: 'from-[#C084FC] to-[#E9D5FF]', desc: 'Best for: multi-venue groups or operators wanting full bookkeeping automation and compliance.' }
           ].map(tier => {
             const tierFeatures = features.filter(f => f.tier === tier.key);
             const visible = showMore[tier.key] ? tierFeatures : tierFeatures.slice(0, 3);
@@ -401,25 +398,25 @@ export default function Features() {
             viewport={{ once: true }}
           >
             <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
-              Ready to Transform Your Business?
+              Join the early access cohort
             </h2>
-            <p className="text-base sm:text-lg text-slate-400 mb-6 sm:mb-8 px-4">
-              Join hundreds of hospitality businesses already using SETRA
+            <p className="text-base sm:text-lg text-slate-400 mb-6 sm:mb-8 px-4 max-w-xl mx-auto">
+              Setra is currently onboarding a small group of independent operators across Cyprus and Europe. Be among the first.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4">
               <Button 
-                onClick={() => navigate(createPageUrl('Onboarding'))}
-                className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg"
+                onClick={() => navigate('/Dashboard')}
+                className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] hover:shadow-[0_0_30px_rgba(123,59,255,0.5)] transition-all"
               >
-                Start Free Trial
+                Get early access
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button 
                 variant="outline"
-                onClick={() => navigate(createPageUrl('Dashboard'))}
+                onClick={() => navigate('/Dashboard')}
                 className="w-full sm:w-auto px-8 py-6 text-base sm:text-lg"
               >
-                Client Login
+                Client login
               </Button>
             </div>
           </motion.div>
