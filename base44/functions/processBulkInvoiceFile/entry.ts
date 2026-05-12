@@ -16,12 +16,19 @@ Deno.serve(async (req) => {
     }
 
     // Get business details for currency and tax info
-    const business = await base44.entities.Business.get(business_id);
+    let business;
+    try {
+      business = await base44.entities.Business.get(business_id);
+    } catch {
+      business = { vat_rate: 19 }; // Default VAT rate
+    }
 
     // Extract all invoices from the file using LLM with vision
-    const extractionResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are an invoice extraction specialist. Analyze this document which may contain ONE OR MULTIPLE invoices.
-      
+    let extractionResult;
+    try {
+      extractionResult = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an invoice extraction specialist. Analyze this document which may contain ONE OR MULTIPLE invoices.
+        
 Extract ALL invoices found in the document. For each invoice, extract:
 1. Supplier name
 2. Invoice number (if visible)
@@ -38,34 +45,41 @@ Return a JSON array where each object represents one invoice. If you find a mult
 If amounts are unclear, use your best judgment. If VAT is not shown separately, calculate it or set to null.
 
 Important: Return ONLY valid JSON array, no other text.`,
-      file_urls: [file_url],
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          invoices: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                supplier_name: { type: 'string' },
-                invoice_number: { type: 'string' },
-                invoice_date: { type: 'string' },
-                due_date: { type: 'string' },
-                net_amount: { type: 'number' },
-                vat_amount: { type: 'number' },
-                gross_total: { type: 'number' },
-                vat_rate: { type: 'number' },
-                category: { type: 'string' },
-                description: { type: 'string' }
-              },
-              required: ['supplier_name', 'gross_total', 'category']
+        file_urls: [file_url],
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            invoices: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  supplier_name: { type: 'string' },
+                  invoice_number: { type: 'string' },
+                  invoice_date: { type: 'string' },
+                  due_date: { type: 'string' },
+                  net_amount: { type: 'number' },
+                  vat_amount: { type: 'number' },
+                  gross_total: { type: 'number' },
+                  vat_rate: { type: 'number' },
+                  category: { type: 'string' },
+                  description: { type: 'string' }
+                },
+                required: ['supplier_name', 'gross_total', 'category']
+              }
             }
-          }
+          },
+          required: ['invoices']
         },
-        required: ['invoices']
-      },
-      model: 'gemini_3_1_pro'
-    });
+        model: 'gemini_3_1_pro'
+      });
+    } catch (err) {
+      return Response.json({
+        error: `Failed to extract invoices from document: ${err.message}`,
+        processed: [],
+        failed: 0
+      }, { status: 400 });
+    }
 
     if (!extractionResult.invoices || extractionResult.invoices.length === 0) {
       return Response.json({ 

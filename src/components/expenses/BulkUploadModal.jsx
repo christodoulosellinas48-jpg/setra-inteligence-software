@@ -78,7 +78,8 @@ export default function BulkUploadModal({ open, onOpenChange, onSave, businessId
             }
           }));
         } catch (err) {
-          setUploadProgress(prev => ({ ...prev, [i]: { status: 'failed', error: err.message } }));
+          const errorMsg = err.response?.data?.error || err.message || 'Unknown error';
+          setUploadProgress(prev => ({ ...prev, [i]: { status: 'failed', error: errorMsg } }));
         }
       }
 
@@ -183,7 +184,12 @@ export default function BulkUploadModal({ open, onOpenChange, onSave, businessId
                         </div>
                       )}
                       {isFailed && (
-                        <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" title={progress.error} />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <AlertCircle className="w-4 h-4 text-rose-500" />
+                          <span className="text-xs text-rose-500 max-w-xs truncate" title={progress.error}>
+                            {progress.error}
+                          </span>
+                        </div>
                       )}
 
                       {!isUploading && !isSuccess && !isFailed && (
