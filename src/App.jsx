@@ -16,6 +16,7 @@ import Vendors from './pages/Vendors';
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import Home from './pages/Home';
 import MenuHeatmap from './pages/MenuHeatmap';
+import Payroll from './pages/Payroll';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import AboutUs from './pages/AboutUs';
@@ -108,6 +109,11 @@ const AuthenticatedApp = () => {
       <Route path="/MenuHeatmap" element={
         <LayoutWrapper currentPageName="MenuHeatmap">
           <MenuHeatmap />
+        </LayoutWrapper>
+      } />
+      <Route path="/Payroll" element={
+        <LayoutWrapper currentPageName="Payroll">
+          <Payroll />
         </LayoutWrapper>
       } />
       <Route path="*" element={<PageNotFound />} />

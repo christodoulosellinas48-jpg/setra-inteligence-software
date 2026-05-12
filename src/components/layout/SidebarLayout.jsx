@@ -59,7 +59,7 @@ export default function SidebarLayout({ children }) {
   const isActive = (path) => location.pathname === path;
 
   // Determine if the current page is a top-level tab root (no Back button needed)
-  const TAB_ROOTS = ['/Dashboard', '/Expenses', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap'];
+  const TAB_ROOTS = ['/Dashboard', '/Expenses', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll'];
   const isTopLevel = TAB_ROOTS.includes(location.pathname);
 
   return (

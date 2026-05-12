@@ -3,16 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
-import { Users, Plus, Trash2, Edit2, FileText, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Plus, Trash2, Edit2, FileText, RefreshCw, ChevronLeft, ChevronRight, ExternalLink, Sparkles } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
+import PayrollCycleWidget from '@/components/payroll/PayrollCycleWidget';
+import CyprusTaxBreakdown from '@/components/payroll/CyprusTaxBreakdown';
+import AddEmployeeModal from '@/components/payroll/AddEmployeeModal';
+import { motion } from 'framer-motion';
 
-const ROLES = ['chef', 'waiter', 'bartender', 'manager', 'cleaner', 'other'];
 const CONTRACT_TYPES = [
   { value: 'hourly', label: 'Hourly' },
   { value: 'monthly', label: 'Monthly Salary' },
@@ -20,9 +19,10 @@ const CONTRACT_TYPES = [
 ];
 
 const EMPTY_FORM = {
-  employee_name: '', role: 'waiter', contract_type: 'hourly',
-  hourly_rate: '', monthly_salary: '', start_date: '', end_date: '',
-  email: '', phone: '', notes: '', status: 'active'
+  employee_name: '', role: 'waiter', contract_type: 'monthly',
+  hourly_rate: '', monthly_salary: '', start_date: '',
+  email: '', phone: '', notes: '', status: 'active',
+  marital_status: 'single', dependents: 0, working_pattern: 'full_time', holiday_days: 20, iban: ''
 };
 
 function PayrollContent() {
@@ -59,7 +59,7 @@ function PayrollContent() {
   });
 
   const openAdd = () => { setEditing(null); setForm(EMPTY_FORM); setShowModal(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ ...c }); setShowModal(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ ...EMPTY_FORM, ...c }); setShowModal(true); };
   const closeModal = () => { setShowModal(false); setEditing(null); setForm(EMPTY_FORM); };
 
   const handleSubmit = () => {
@@ -71,7 +71,6 @@ function PayrollContent() {
     });
   };
 
-  // Payroll report: group shifts by staff name in the selected month
   const monthStart = startOfMonth(reportMonth);
   const monthEnd = endOfMonth(reportMonth);
 
@@ -92,8 +91,8 @@ function PayrollContent() {
 
   const totalPayroll = payrollReport.reduce((s, r) => s + r.total, 0);
   const totalHours = payrollReport.reduce((s, r) => s + r.hours, 0);
-
   const activeContracts = contracts.filter(c => c.status === 'active');
+  const totalMonthlySalaries = activeContracts.filter(c => c.contract_type === 'monthly').reduce((s, c) => s + (c.monthly_salary || 0), 0);
 
   if (!currentBusiness) return (
     <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
@@ -104,17 +103,64 @@ function PayrollContent() {
   return (
     <div className="min-h-screen bg-[#0B0B12]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-3">
               <Users className="w-6 h-6 text-[#C084FC]" /> Payroll
             </h1>
-            <p className="text-slate-500 text-sm mt-1">Manage employee contracts and payroll reports</p>
+            <p className="text-slate-500 text-sm mt-1">{currentBusiness.name} · Employee contracts & payroll overview</p>
           </div>
           {tab === 'employees' && canEdit() && (
             <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" /> Add Employee</Button>
           )}
+        </div>
+
+        {/* Cyprus Payroll Partner Notice */}
+        <div className="flex items-start gap-3 p-4 bg-blue-500/8 border border-blue-500/20 rounded-xl">
+          <Sparkles className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="text-sm flex-1">
+            <p className="text-slate-300 font-medium">Estimated calculations — verify with a payroll specialist</p>
+            <p className="text-slate-500 mt-0.5 text-xs">
+              Setra shows estimated Cyprus Social Insurance, GHS, and PAYE breakdowns to help you understand your labor costs. 
+              For statutory payroll processing, Social Insurance submissions, and tax filings, use a licensed Cyprus payroll provider.
+              Rates reflect 2025 law — verify before filing.
+            </p>
+          </div>
+          <a href="https://www.sid.gov.cy" target="_blank" rel="noopener noreferrer"
+            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 flex-shrink-0 mt-0.5">
+            SID Cyprus <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Payroll Cycle Widget */}
+        <PayrollCycleWidget
+          contracts={activeContracts}
+          onRunPayroll={() => {}}
+        />
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-5 bg-[#151528]/80 border-white/5">
+            <p className="text-slate-400 text-sm mb-1">Active Employees</p>
+            <p className="text-3xl font-bold text-white">{activeContracts.length}</p>
+            <p className="text-xs text-slate-600 mt-1">
+              {activeContracts.filter(c => c.contract_type === 'monthly').length} salaried · {activeContracts.filter(c => c.contract_type !== 'monthly').length} hourly
+            </p>
+          </Card>
+          <Card className="p-5 bg-[#151528]/80 border-white/5">
+            <p className="text-slate-400 text-sm mb-1">Monthly Salaries</p>
+            <p className="text-3xl font-bold text-emerald-400">€{totalMonthlySalaries.toLocaleString()}</p>
+            <p className="text-xs text-slate-600 mt-1">Gross · employer costs are higher</p>
+          </Card>
+          <Card className="p-5 bg-[#151528]/80 border-white/5">
+            <p className="text-slate-400 text-sm mb-1">Est. Total Employer Cost</p>
+            <p className="text-3xl font-bold text-amber-400">
+              €{Math.round(totalMonthlySalaries * 1.127).toLocaleString()}
+            </p>
+            <p className="text-xs text-slate-600 mt-1">Gross + SI + GHS + Cohesion + ITF</p>
+          </Card>
         </div>
 
         {/* Tabs */}
@@ -133,82 +179,62 @@ function PayrollContent() {
         {/* Employees Tab */}
         {tab === 'employees' && (
           <>
-            {/* Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card className="p-5 bg-[#151528]/80 border-white/5">
-                <p className="text-slate-400 text-sm mb-1">Active Employees</p>
-                <p className="text-3xl font-bold text-white">{activeContracts.length}</p>
-              </Card>
-              <Card className="p-5 bg-[#151528]/80 border-white/5">
-                <p className="text-slate-400 text-sm mb-1">Hourly Contracts</p>
-                <p className="text-3xl font-bold text-white">{activeContracts.filter(c => c.contract_type === 'hourly').length}</p>
-              </Card>
-              <Card className="p-5 bg-[#151528]/80 border-white/5">
-                <p className="text-slate-400 text-sm mb-1">Monthly Salaries</p>
-                <p className="text-3xl font-bold text-emerald-400">
-                  €{activeContracts.filter(c => c.contract_type === 'monthly').reduce((s, c) => s + (c.monthly_salary || 0), 0).toLocaleString()}
-                </p>
-              </Card>
-            </div>
-
             {loadingContracts ? (
               <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 text-[#7B3BFF] animate-spin" /></div>
             ) : contracts.length === 0 ? (
               <Card className="p-12 text-center bg-[#151528]/80 border-white/5">
                 <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-400">No employees yet. Add your first employee contract.</p>
+                <p className="text-slate-300 font-medium mb-1">No employees yet</p>
+                <p className="text-slate-500 text-sm mb-4">Add your first employee to start tracking payroll costs and generate estimated payslips.</p>
+                {canEdit() && <Button onClick={openAdd}><Plus className="w-4 h-4 mr-2" />Add Employee</Button>}
               </Card>
             ) : (
-              <Card className="bg-[#151528]/80 border-white/5 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-white/5">
-                        {['Employee', 'Role', 'Contract', 'Rate', 'Start Date', 'Status', ''].map(h => (
-                          <th key={h} className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wide">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {contracts.map(c => (
-                        <tr key={c.id} className="border-b border-white/5 hover:bg-white/2 transition-colors">
-                          <td className="px-4 py-3">
+              <div className="space-y-3">
+                {contracts.map((c, idx) => (
+                  <motion.div key={c.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}>
+                    <Card className="bg-[#151528]/80 border-white/5 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-[#7B3BFF]/15 flex items-center justify-center flex-shrink-0">
+                            <Users className="w-4 h-4 text-[#C084FC]" />
+                          </div>
+                          <div>
                             <p className="text-white font-medium">{c.employee_name}</p>
-                            {c.email && <p className="text-xs text-slate-500">{c.email}</p>}
-                          </td>
-                          <td className="px-4 py-3 text-slate-400 capitalize">{c.role}</td>
-                          <td className="px-4 py-3">
-                            <Badge className="bg-[#7B3BFF]/20 text-[#C084FC] border-[#7B3BFF]/30 capitalize">
-                              {CONTRACT_TYPES.find(t => t.value === c.contract_type)?.label || c.contract_type}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-3 text-white font-mono">
-                            {c.contract_type === 'monthly' ? `€${c.monthly_salary}/mo` : `€${c.hourly_rate}/hr`}
-                          </td>
-                          <td className="px-4 py-3 text-slate-400">{c.start_date || '—'}</td>
-                          <td className="px-4 py-3">
-                            <Badge className={c.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'}>
-                              {c.status}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-3">
-                            {canEdit() && (
-                              <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => openEdit(c)} className="h-8 w-8 text-slate-400 hover:text-white">
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(c.id)} className="h-8 w-8 text-slate-400 hover:text-rose-400">
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
+                            <div className="flex items-center gap-2 flex-wrap mt-1">
+                              <span className="text-slate-400 text-xs capitalize">{c.role}</span>
+                              <Badge className="bg-[#7B3BFF]/20 text-[#C084FC] border-[#7B3BFF]/30 text-xs capitalize">
+                                {CONTRACT_TYPES.find(t => t.value === c.contract_type)?.label || c.contract_type}
+                              </Badge>
+                              <span className="text-white text-xs font-mono">
+                                {c.contract_type === 'monthly' ? `€${(c.monthly_salary || 0).toLocaleString()}/mo` : `€${c.hourly_rate}/hr`}
+                              </span>
+                              {c.start_date && <span className="text-slate-600 text-xs">Since {c.start_date}</span>}
+                            </div>
+                            {c.email && <p className="text-xs text-slate-600 mt-1">{c.email}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={c.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs' : 'bg-slate-500/20 text-slate-400 border-slate-500/30 text-xs'}>
+                            {c.status}
+                          </Badge>
+                          {canEdit() && (
+                            <>
+                              <Button variant="ghost" size="icon" onClick={() => openEdit(c)} className="h-8 w-8 text-slate-400 hover:text-white">
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(c.id)} className="h-8 w-8 text-slate-400 hover:text-rose-400">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {/* Cyprus Tax Breakdown toggle */}
+                      <CyprusTaxBreakdown contract={c} />
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
             )}
           </>
         )}
@@ -216,7 +242,6 @@ function PayrollContent() {
         {/* Report Tab */}
         {tab === 'report' && (
           <>
-            {/* Month Selector */}
             <div className="flex items-center gap-4">
               <Button variant="outline" size="icon" onClick={() => setReportMonth(subMonths(reportMonth, 1))}>
                 <ChevronLeft className="w-4 h-4" />
@@ -229,10 +254,9 @@ function PayrollContent() {
               </Button>
             </div>
 
-            {/* Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="p-5 bg-[#151528]/80 border-white/5">
-                <p className="text-slate-400 text-sm mb-1">Total Payroll</p>
+                <p className="text-slate-400 text-sm mb-1">Total Payroll (shifts)</p>
                 <p className="text-3xl font-bold text-white">€{totalPayroll.toLocaleString('en', { maximumFractionDigits: 0 })}</p>
               </Card>
               <Card className="p-5 bg-[#151528]/80 border-white/5">
@@ -250,8 +274,8 @@ function PayrollContent() {
             ) : payrollReport.length === 0 ? (
               <Card className="p-12 text-center bg-[#151528]/80 border-white/5">
                 <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-400">No shifts recorded for {format(reportMonth, 'MMMM yyyy')}.</p>
-                <p className="text-slate-500 text-sm mt-1">Record staff shifts in the Bookkeeping → Payroll section to generate reports.</p>
+                <p className="text-slate-300 font-medium mb-1">No shifts recorded for {format(reportMonth, 'MMMM yyyy')}</p>
+                <p className="text-slate-500 text-sm">Log staff shifts in the Expenses or Operations Hub to generate payroll reports.</p>
               </Card>
             ) : (
               <Card className="bg-[#151528]/80 border-white/5 overflow-hidden">
@@ -261,15 +285,15 @@ function PayrollContent() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-white/5">
-                        {['Employee', 'Role', 'Hours', 'Total Cost', 'Avg Rate/hr'].map(h => (
+                      <tr className="border-b border-white/5 bg-[#0B0B12]/40">
+                        {['Employee', 'Role', 'Hours', 'Gross Cost', 'Avg Rate/hr'].map(h => (
                           <th key={h} className="text-left px-4 py-3 text-xs text-slate-500 uppercase tracking-wide">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {payrollReport.map((r, idx) => (
-                        <tr key={idx} className="border-b border-white/5 hover:bg-white/2">
+                        <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02]">
                           <td className="px-4 py-3 text-white font-medium">{r.name}</td>
                           <td className="px-4 py-3 text-slate-400 capitalize">{r.role}</td>
                           <td className="px-4 py-3 text-white font-mono">{r.hours.toFixed(1)}h</td>
@@ -279,7 +303,7 @@ function PayrollContent() {
                       ))}
                     </tbody>
                     <tfoot>
-                      <tr className="border-t-2 border-white/10 bg-white/2">
+                      <tr className="border-t-2 border-white/10 bg-white/[0.02]">
                         <td colSpan={2} className="px-4 py-3 text-white font-semibold">TOTAL</td>
                         <td className="px-4 py-3 text-white font-mono font-semibold">{totalHours.toFixed(1)}h</td>
                         <td className="px-4 py-3 text-emerald-400 font-bold">€{totalPayroll.toFixed(2)}</td>
@@ -294,75 +318,15 @@ function PayrollContent() {
         )}
       </div>
 
-      {/* Add/Edit Modal */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-white">{editing ? 'Edit Employee' : 'Add Employee'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <Label className="text-slate-400 mb-1.5 block">Employee Name</Label>
-                <Input value={form.employee_name} onChange={e => setForm({ ...form, employee_name: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="Full name" />
-              </div>
-              <div>
-                <Label className="text-slate-400 mb-1.5 block">Role</Label>
-                <Select value={form.role} onValueChange={v => setForm({ ...form, role: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {ROLES.map(r => <SelectItem key={r} value={r} className="text-white capitalize">{r}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-slate-400 mb-1.5 block">Contract Type</Label>
-                <Select value={form.contract_type} onValueChange={v => setForm({ ...form, contract_type: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {CONTRACT_TYPES.map(t => <SelectItem key={t.value} value={t.value} className="text-white">{t.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              {form.contract_type === 'monthly' ? (
-                <div className="col-span-2">
-                  <Label className="text-slate-400 mb-1.5 block">Monthly Salary (€)</Label>
-                  <Input type="number" value={form.monthly_salary} onChange={e => setForm({ ...form, monthly_salary: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0.00" />
-                </div>
-              ) : (
-                <div className="col-span-2">
-                  <Label className="text-slate-400 mb-1.5 block">Hourly Rate (€/hr)</Label>
-                  <Input type="number" value={form.hourly_rate} onChange={e => setForm({ ...form, hourly_rate: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="0.00" />
-                </div>
-              )}
-              <div>
-                <Label className="text-slate-400 mb-1.5 block">Start Date</Label>
-                <Input type="date" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
-              </div>
-              <div>
-                <Label className="text-slate-400 mb-1.5 block">Status</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    {['active', 'inactive', 'terminated'].map(s => <SelectItem key={s} value={s} className="text-white capitalize">{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-slate-400 mb-1.5 block">Email</Label>
-                <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="email@example.com" />
-              </div>
-              <div>
-                <Label className="text-slate-400 mb-1.5 block">Phone</Label>
-                <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="+357..." />
-              </div>
-            </div>
-            <Button onClick={handleSubmit} disabled={!form.employee_name || saveMutation.isPending} className="w-full">
-              {saveMutation.isPending ? 'Saving...' : editing ? 'Update Employee' : 'Add Employee'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AddEmployeeModal
+        open={showModal}
+        onClose={closeModal}
+        form={form}
+        setForm={setForm}
+        editing={editing}
+        onSubmit={handleSubmit}
+        isPending={saveMutation.isPending}
+      />
     </div>
   );
 }
