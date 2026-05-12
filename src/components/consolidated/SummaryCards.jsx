@@ -2,27 +2,35 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, BarChart3, Building2 } from 'lucide-react';
 
+function fmtEur(val) {
+  return '€' + Math.round(val).toLocaleString('en-EU');
+}
+
 export default function SummaryCards({ metrics }) {
+  const healthScoreDisplay = metrics.avgHealthScore !== null
+    ? metrics.avgHealthScore.toFixed(0)
+    : '—';
+
   const cards = [
     {
       icon: DollarSign,
-      label: 'Total Monthly Revenue',
-      value: `€${metrics.totalRevenue.toLocaleString()}`,
-      sub: 'Across all entities',
+      label: 'Total Revenue',
+      value: fmtEur(metrics.totalRevenue),
+      sub: metrics.dateRangeLabel,
       valueClass: 'text-white'
     },
     {
       icon: TrendingUp,
       label: 'Combined Net Profit',
-      value: `€${metrics.totalProfit.toLocaleString()}`,
-      sub: `${metrics.avgMargin.toFixed(1)}% avg margin`,
+      value: metrics.totalRevenue > 0 ? fmtEur(metrics.totalProfit) : '—',
+      sub: metrics.totalRevenue > 0 ? `${metrics.avgMargin.toFixed(1)}% avg margin` : 'Enter revenue data to calculate',
       valueClass: metrics.totalProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
     },
     {
       icon: BarChart3,
-      label: 'Portfolio Health Score',
-      value: metrics.avgHealthScore.toFixed(0),
-      sub: 'Average across businesses',
+      label: 'Portfolio Health',
+      value: healthScoreDisplay,
+      sub: metrics.avgHealthScore !== null ? 'Average across active venues' : 'No venues with data yet',
       valueClass: 'text-white'
     },
     {
