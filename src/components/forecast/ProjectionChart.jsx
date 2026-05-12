@@ -13,7 +13,7 @@ export default function ProjectionChart({ projections, scenario }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-800 border border-slate-700 rounded-lg p-3">
+        <div className="bg-[#151528] border border-white/10 rounded-lg p-3">
           <p className="text-slate-400 text-sm mb-2">{label}</p>
           {payload.map((p, i) => (
             <p key={i} style={{ color: p.color }} className="font-medium">
@@ -28,8 +28,8 @@ export default function ProjectionChart({ projections, scenario }) {
 
   if (!projections || projections.length === 0) {
     return (
-      <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
-        <h3 className="text-lg font-semibold text-white mb-4">Financial Projections</h3>
+      <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
+        <h3 className="text-lg font-semibold text-white mb-4">6-Month Forecast</h3>
         <div className="h-72 flex items-center justify-center text-slate-500">
           Not enough historical data for projections. Save more financial snapshots.
         </div>
@@ -38,9 +38,9 @@ export default function ProjectionChart({ projections, scenario }) {
   }
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
+    <Card className="bg-[#151528]/80 border-white/5 p-6 rounded-2xl">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">6-Month Financial Projection</h3>
+        <h3 className="text-lg font-semibold text-white">6-Month Forecast</h3>
         <span className="text-sm text-slate-400 capitalize">{scenario} Scenario</span>
       </div>
       <div className="h-72">
