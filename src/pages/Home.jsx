@@ -21,8 +21,8 @@ export default function Home() {
   const [typedText1, setTypedText1] = useState('');
   const [typedText2, setTypedText2] = useState('');
   const [breathCount, setBreathCount] = useState(0);
-  const text1 = 'Transforming Financial Chaos';
-  const text2 = 'into Strategic Control';
+  const text1 = 'The financial OS for';
+  const text2 = 'independent restaurants.';
 
   useEffect(() => {
     let index = 0;
@@ -94,15 +94,15 @@ export default function Home() {
                 <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
                   <div className="flex items-center gap-2 text-[#C084FC]">
                     <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-sm font-medium">Analyze Costs</span>
+                    <span className="text-xs sm:text-sm font-medium">See which dishes actually make you money</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#C084FC]">
                     <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-sm font-medium">Automate Workflows</span>
+                    <span className="text-xs sm:text-sm font-medium">Hit VAT and bookkeeping deadlines automatically</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#C084FC]">
                     <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-sm font-medium">Power Intelligent Operations</span>
+                    <span className="text-xs sm:text-sm font-medium">Forecast cashflow before it's a problem</span>
                   </div>
                 </div>
               </motion.div>
@@ -179,8 +179,27 @@ export default function Home() {
               </span>
             </motion.h1>
             <p className="text-sm sm:text-lg text-slate-400 max-w-2xl mx-auto px-4">
-              Fine-tuned AI engine to optimize and automate your business processes
+              See your real profitability, fix what's bleeding, and grow with confidence — without hiring a CFO.
             </p>
+            <motion.div
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 sm:mt-8 px-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1 }}
+            >
+              <button
+                onClick={() => navigate('/Dashboard')}
+                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white font-semibold text-sm hover:shadow-[0_0_30px_rgba(123,59,255,0.6)] transition-all duration-200 hover:scale-105"
+              >
+                Start free — no credit card
+              </button>
+              <button
+                onClick={() => navigate('/Features')}
+                className="w-full sm:w-auto px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-medium text-sm hover:border-[#7B3BFF]/50 hover:text-white transition-all duration-200"
+              >
+                See how it works →
+              </button>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -229,7 +248,7 @@ export default function Home() {
               <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-4 sm:p-6 h-full">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="text-xs sm:text-sm text-slate-400">Cost Analysis</h3>
-                  <span className="text-[10px] sm:text-xs text-emerald-400">+82% ON TARGET</span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 italic">Sample data</span>
                 </div>
                 <div className="mb-2">
                   <div className="text-2xl sm:text-3xl font-bold text-white">€524,800</div>
@@ -253,7 +272,7 @@ export default function Home() {
               <Card className="bg-[#151528]/60 backdrop-blur-xl border-[#7B3BFF]/30 p-4 sm:p-6 h-full">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <h3 className="text-xs sm:text-sm text-slate-400">Automation</h3>
-                  <span className="text-[10px] sm:text-xs text-emerald-400">+55% ON TARGET</span>
+                  <span className="text-[10px] sm:text-xs text-slate-500 italic">Sample data</span>
                 </div>
                 <div className="mb-2">
                   <div className="text-2xl sm:text-3xl font-bold text-white">€ 130,620 <span className="text-xs sm:text-sm text-slate-500">/ year</span></div>
@@ -276,11 +295,15 @@ export default function Home() {
       {/* Integration Logos Footer */}
       <section className="relative py-8 sm:py-12 px-4 sm:px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 opacity-40">
-            <span className="text-slate-500 text-sm">AWS</span>
-            <span className="text-slate-500 text-sm">Slack</span>
-            <span className="text-slate-500 text-sm">Shopify</span>
-            <span className="text-slate-500 text-sm">Notion</span>
+          <p className="text-center text-xs text-slate-600 uppercase tracking-widest mb-4 sm:mb-6">Connects with the tools you already use</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:gap-x-10">
+            <span className="text-slate-500 text-sm font-medium">Square</span>
+            <span className="text-slate-500 text-sm font-medium">Toast</span>
+            <span className="text-slate-500 text-sm font-medium">Lightspeed</span>
+            <span className="text-slate-500 text-sm font-medium">Xero</span>
+            <span className="text-slate-500 text-sm font-medium">QuickBooks</span>
+            <span className="text-slate-500 text-sm font-medium">Stripe</span>
+            <span className="text-slate-400 text-xs border border-white/10 rounded-full px-2 py-0.5">+ more coming soon</span>
           </div>
         </div>
       </section>
