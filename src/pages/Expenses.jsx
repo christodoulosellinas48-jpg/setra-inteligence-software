@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -10,27 +10,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import {
   Upload, Search, FileText, Trash2, ExternalLink,
-  CheckCircle2, Clock, AlertCircle, Loader2, XCircle, Sparkles
+  CheckCircle2, Clock, AlertCircle, Loader2, XCircle, Sparkles,
+  PlusCircle, Download, Square, CheckSquare, Tag, X
 } from 'lucide-react';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
+import ManualExpenseModal from '@/components/expenses/ManualExpenseModal';
+import EmailIngestBanner from '@/components/expenses/EmailIngestBanner';
+import DateRangeFilter from '@/components/expenses/DateRangeFilter';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+import { isWithinInterval, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 
 const STATUS_CONFIG = {
-  pending:    { label: 'Pending',    color: 'bg-slate-500/15 text-slate-400 border-slate-500/30',   icon: Clock },
-  processing: { label: 'Processing', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30',       icon: Loader2 },
-  posted:     { label: 'Posted',     color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', icon: CheckCircle2 },
-  failed:     { label: 'Failed',     color: 'bg-rose-500/15 text-rose-400 border-rose-500/30',       icon: XCircle },
-  needs_review: { label: 'Review',  color: 'bg-amber-500/15 text-amber-400 border-amber-500/30',    icon: AlertCircle },
+  pending:      { label: 'Pending',    color: 'bg-slate-500/15 text-slate-400 border-slate-500/30',      icon: Clock },
+  processing:   { label: 'Processing', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30',          icon: Loader2 },
+  posted:       { label: 'Posted',     color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', icon: CheckCircle2 },
+  failed:       { label: 'Failed',     color: 'bg-rose-500/15 text-rose-400 border-rose-500/30',          icon: XCircle },
+  needs_review: { label: 'Needs Review', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30',    icon: AlertCircle },
 };
 
 const CATEGORY_LABELS = {
-  food_beverage: 'Food & Beverage',
-  staff_costs: 'Staff Costs',
-  fixed_costs: 'Fixed Costs',
-  utilities: 'Utilities',
+  food_beverage:      'Food & Beverage',
+  staff_costs:        'Staff Costs',
+  fixed_costs:        'Fixed Costs',
+  utilities:          'Utilities',
   operating_expenses: 'Operating',
-  one_off_expenses: 'One-Off',
+  one_off_expenses:   'One-Off',
 };
 
 function StatusBadge({ status }) {
@@ -44,20 +49,47 @@ function StatusBadge({ status }) {
   );
 }
 
+function exportToCSV(expenses, currencySymbol) {
+  const headers = ['Supplier', 'Invoice #', 'Date', 'Category', 'Net', 'VAT', 'Gross', 'Status', 'AI Confidence'];
+  const rows = expenses.map(e => [
+    e.supplier_name,
+    e.invoice_number || '',
+    e.invoice_date || '',
+    CATEGORY_LABELS[e.expense_category] || e.expense_category || '',
+    e.net_amount || 0,
+    e.vat_amount || 0,
+    e.invoice_total || 0,
+    e.status || '',
+    e.confidence_score ? `${Math.round(e.confidence_score * 100)}%` : '',
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `expenses-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function Expenses() {
   const { currentBusiness, user, canEdit } = useBusiness();
   const queryClient = useQueryClient();
+
   const [showUpload, setShowUpload] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [dateRange, setDateRange] = useState({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
+  const [selected, setSelected] = useState(new Set());
 
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ['expenses-full', currentBusiness?.id],
     queryFn: () => base44.entities.ExpenseDocument.filter(
       { business_id: currentBusiness.id },
       '-created_date',
-      200
+      500
     ),
     enabled: !!currentBusiness,
   });
@@ -70,11 +102,23 @@ export default function Expenses() {
       queryClient.setQueryData(['expenses-full', currentBusiness?.id], (old = []) => old.filter(e => e.id !== id));
       return { previous };
     },
-    onError: (_err, _id, context) => {
-      if (context?.previous) queryClient.setQueryData(['expenses-full', currentBusiness?.id], context.previous);
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['expenses-full', currentBusiness?.id], ctx.previous);
     },
     onSettled: () => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]),
   });
+
+  const bulkDelete = async () => {
+    for (const id of selected) await base44.entities.ExpenseDocument.delete(id);
+    setSelected(new Set());
+    queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]);
+  };
+
+  const bulkMarkPosted = async () => {
+    for (const id of selected) await base44.entities.ExpenseDocument.update(id, { status: 'posted' });
+    setSelected(new Set());
+    queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]);
+  };
 
   const { isRefreshing, pullDistance, containerRef } = usePullToRefresh(async () => {
     await queryClient.invalidateQueries(['expenses-full', currentBusiness?.id]);
@@ -82,15 +126,41 @@ export default function Expenses() {
 
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness?.currency] || '€';
 
-  const filtered = expenses.filter(e => {
+  const needsReviewCount = useMemo(() =>
+    expenses.filter(e => e.status === 'needs_review' || (e.confidence_score > 0 && e.confidence_score < 0.6)).length,
+    [expenses]
+  );
+
+  const filtered = useMemo(() => expenses.filter(e => {
     const matchSearch = !search || e.supplier_name?.toLowerCase().includes(search.toLowerCase()) || e.invoice_number?.toLowerCase().includes(search.toLowerCase());
     const matchCat = filterCategory === 'all' || e.expense_category === filterCategory;
     const matchStatus = filterStatus === 'all' || e.status === filterStatus;
-    return matchSearch && matchCat && matchStatus;
-  });
+    const matchDate = (!dateRange.from && !dateRange.to) || (() => {
+      if (!e.invoice_date) return true;
+      try {
+        return isWithinInterval(parseISO(e.invoice_date), { start: dateRange.from, end: dateRange.to });
+      } catch { return true; }
+    })();
+    return matchSearch && matchCat && matchStatus && matchDate;
+  }), [expenses, search, filterCategory, filterStatus, dateRange]);
 
   const totalGross = filtered.reduce((s, e) => s + (e.invoice_total || 0), 0);
-  const totalVAT = filtered.reduce((s, e) => s + (e.vat_amount || 0), 0);
+  const totalVAT   = filtered.reduce((s, e) => s + (e.vat_amount || 0), 0);
+  const postedCount = expenses.filter(e => e.status === 'posted').length;
+
+  const toggleSelect = (id) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const toggleSelectAll = () => {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map(e => e.id)));
+    }
+  };
 
   if (!currentBusiness) {
     return (
@@ -103,31 +173,56 @@ export default function Expenses() {
   return (
     <div ref={containerRef} className="p-6 max-w-7xl mx-auto space-y-6">
       <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Expenses</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white">Expenses</h1>
+            {needsReviewCount > 0 && (
+              <button
+                onClick={() => setFilterStatus('needs_review')}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-medium hover:bg-amber-500/25 transition-colors"
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                {needsReviewCount} need{needsReviewCount === 1 ? 's' : ''} review
+              </button>
+            )}
+          </div>
           <p className="text-slate-500 text-sm mt-0.5">All uploaded invoices & receipts</p>
         </div>
         {canEdit() && (
-          <Button onClick={() => setShowUpload(true)}>
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Invoice
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => exportToCSV(filtered, currencySymbol)} className="gap-2">
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+            <Button variant="outline" onClick={() => setShowManual(true)} className="gap-2">
+              <PlusCircle className="w-4 h-4" />
+              Add manually
+            </Button>
+            <Button onClick={() => setShowUpload(true)} className="gap-2">
+              <Upload className="w-4 h-4" />
+              Upload Invoice
+            </Button>
+          </div>
         )}
       </div>
 
-      {/* Summary Cards */}
+      {/* Email Ingest Banner */}
+      <EmailIngestBanner business={currentBusiness} />
+
+      {/* Summary KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Documents', value: filtered.length, suffix: '' },
-          { label: 'Gross Total', value: `${currencySymbol}${totalGross.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, suffix: '' },
-          { label: 'Total VAT (Input)', value: `${currencySymbol}${totalVAT.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, suffix: '' },
-          { label: 'Posted', value: expenses.filter(e => e.status === 'posted').length, suffix: `/ ${expenses.length}` },
+          { label: 'Total Documents', value: filtered.length },
+          { label: 'Gross Total', value: `${currencySymbol}${totalGross.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
+          { label: 'Total VAT (Input)', value: `${currencySymbol}${totalVAT.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
+          { label: 'Posted', value: postedCount, suffix: `/ ${expenses.length}`, tooltip: `${postedCount} of ${expenses.length} invoices have been posted to your accounting system` },
         ].map((s, i) => (
-          <Card key={i} className="p-4">
+          <Card key={i} className="p-4" title={s.tooltip || ''}>
             <p className="text-slate-500 text-xs mb-1">{s.label}</p>
-            <p className="text-white font-bold text-xl">{s.value}<span className="text-slate-500 text-sm ml-1">{s.suffix}</span></p>
+            <p className="text-white font-bold text-xl">{s.value}<span className="text-slate-500 text-sm ml-1">{s.suffix || ''}</span></p>
           </Card>
         ))}
       </div>
@@ -143,9 +238,10 @@ export default function Expenses() {
             className="bg-[#151528] border-white/10 text-white pl-9"
           />
         </div>
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <Select value={filterCategory} onValueChange={setFilterCategory}>
           <SelectTrigger className="w-44 bg-[#151528] border-white/10 text-white">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent className="bg-[#151528] border-white/10">
             <SelectItem value="all" className="text-white">All Categories</SelectItem>
@@ -155,8 +251,8 @@ export default function Expenses() {
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-36 bg-[#151528] border-white/10 text-white">
-            <SelectValue placeholder="Status" />
+          <SelectTrigger className="w-40 bg-[#151528] border-white/10 text-white">
+            <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent className="bg-[#151528] border-white/10">
             <SelectItem value="all" className="text-white">All Status</SelectItem>
@@ -165,7 +261,43 @@ export default function Expenses() {
             ))}
           </SelectContent>
         </Select>
+        {(filterStatus !== 'all' || filterCategory !== 'all') && (
+          <button
+            onClick={() => { setFilterStatus('all'); setFilterCategory('all'); }}
+            className="flex items-center gap-1 text-xs text-slate-500 hover:text-white px-2 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" /> Clear filters
+          </button>
+        )}
       </div>
+
+      {/* Batch Action Bar */}
+      <AnimatePresence>
+        {selected.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="flex items-center gap-3 px-4 py-3 bg-[#7B3BFF]/15 border border-[#7B3BFF]/30 rounded-xl text-sm"
+          >
+            <span className="text-[#C084FC] font-medium">{selected.size} selected</span>
+            <div className="flex items-center gap-2 ml-2">
+              <Button size="sm" variant="outline" onClick={bulkMarkPosted} className="h-8 gap-1.5 text-xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Mark posted
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => exportToCSV(filtered.filter(e => selected.has(e.id)), currencySymbol)} className="h-8 gap-1.5 text-xs">
+                <Download className="w-3.5 h-3.5" /> Export
+              </Button>
+              <Button size="sm" variant="outline" onClick={bulkDelete} className="h-8 gap-1.5 text-xs text-rose-400 hover:text-rose-300 border-rose-500/30 hover:border-rose-500/50">
+                <Trash2 className="w-3.5 h-3.5" /> Delete
+              </Button>
+            </div>
+            <button onClick={() => setSelected(new Set())} className="ml-auto text-slate-500 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Table */}
       <Card className="overflow-hidden">
@@ -177,10 +309,16 @@ export default function Expenses() {
           <div className="py-16 text-center">
             <FileText className="w-10 h-10 text-slate-600 mx-auto mb-3" />
             <p className="text-slate-500">No expenses found.</p>
-            {canEdit() && (
+            {canEdit() && expenses.length === 0 && (
               <Button variant="outline" onClick={() => setShowUpload(true)} className="mt-4">
                 <Upload className="w-4 h-4 mr-2" /> Upload First Invoice
               </Button>
+            )}
+            {expenses.length > 0 && (
+              <button onClick={() => { setFilterStatus('all'); setFilterCategory('all'); setDateRange({ from: null, to: null }); setSearch(''); }}
+                className="mt-3 text-sm text-[#C084FC] hover:text-white transition-colors">
+                Clear all filters
+              </button>
             )}
           </div>
         ) : (
@@ -188,7 +326,15 @@ export default function Expenses() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/5 bg-[#0B0B12]/40">
-                  <th className="text-left px-5 py-3 text-slate-500 font-medium">Supplier</th>
+                  <th className="px-4 py-3">
+                    <button onClick={toggleSelectAll} className="text-slate-500 hover:text-white transition-colors">
+                      {selected.size === filtered.length && filtered.length > 0
+                        ? <CheckSquare className="w-4 h-4 text-[#C084FC]" />
+                        : <Square className="w-4 h-4" />
+                      }
+                    </button>
+                  </th>
+                  <th className="text-left px-4 py-3 text-slate-500 font-medium">Supplier</th>
                   <th className="text-left px-4 py-3 text-slate-500 font-medium">Date</th>
                   <th className="text-left px-4 py-3 text-slate-500 font-medium">Category</th>
                   <th className="text-right px-4 py-3 text-slate-500 font-medium">Net</th>
@@ -196,71 +342,82 @@ export default function Expenses() {
                   <th className="text-right px-4 py-3 text-slate-500 font-medium">Gross</th>
                   <th className="text-center px-4 py-3 text-slate-500 font-medium">Status</th>
                   <th className="text-center px-4 py-3 text-slate-500 font-medium">AI</th>
-                  <th className="px-4 py-3"></th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
                 <AnimatePresence>
-                  {filtered.map((exp, i) => (
-                    <motion.tr
-                      key={exp.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="border-b border-white/5 hover:bg-white/[0.02] group transition-colors"
-                    >
-                      <td className="px-5 py-3.5">
-                        <p className="text-white font-medium">{exp.supplier_name}</p>
-                        {exp.invoice_number && <p className="text-slate-500 text-xs">{exp.invoice_number}</p>}
-                      </td>
-                      <td className="px-4 py-3.5 text-slate-400">{exp.invoice_date || '—'}</td>
-                      <td className="px-4 py-3.5">
-                        <span className="text-slate-300 text-xs">{CATEGORY_LABELS[exp.expense_category] || exp.expense_category || '—'}</span>
-                      </td>
-                      <td className="px-4 py-3.5 text-right text-slate-300">
-                        {exp.net_amount ? `${currencySymbol}${exp.net_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
-                      </td>
-                      <td className="px-4 py-3.5 text-right text-slate-400 text-xs">
-                        {exp.vat_amount ? `${currencySymbol}${exp.vat_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
-                      </td>
-                      <td className="px-4 py-3.5 text-right text-white font-semibold">
-                        {exp.invoice_total ? `${currencySymbol}${exp.invoice_total.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <StatusBadge status={exp.status} />
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        {exp.confidence_score > 0 && (
-                          <span className={`text-xs flex items-center justify-center gap-1 ${exp.confidence_score >= 0.85 ? 'text-emerald-400' : exp.confidence_score >= 0.6 ? 'text-amber-400' : 'text-rose-400'}`}>
-                            <Sparkles className="w-3 h-3" />
-                            {Math.round(exp.confidence_score * 100)}%
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {exp.document_url && (
-                            <Button variant="ghost" size="icon" asChild className="h-7 w-7 text-slate-400 hover:text-white">
-                              <a href={exp.document_url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            </Button>
+                  {filtered.map((exp, i) => {
+                    const isSelected = selected.has(exp.id);
+                    return (
+                      <motion.tr
+                        key={exp.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                        className={`border-b border-white/5 group transition-colors ${isSelected ? 'bg-[#7B3BFF]/8' : 'hover:bg-white/[0.02]'}`}
+                      >
+                        <td className="px-4 py-3.5">
+                          <button onClick={() => toggleSelect(exp.id)} className="text-slate-500 hover:text-white transition-colors">
+                            {isSelected
+                              ? <CheckSquare className="w-4 h-4 text-[#C084FC]" />
+                              : <Square className="w-4 h-4" />
+                            }
+                          </button>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <p className="text-white font-medium">{exp.supplier_name}</p>
+                          {exp.invoice_number && <p className="text-slate-500 text-xs">{exp.invoice_number}</p>}
+                        </td>
+                        <td className="px-4 py-3.5 text-slate-400 whitespace-nowrap">{exp.invoice_date || '—'}</td>
+                        <td className="px-4 py-3.5">
+                          <span className="text-slate-300 text-xs">{CATEGORY_LABELS[exp.expense_category] || exp.expense_category || '—'}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right text-slate-300">
+                          {exp.net_amount ? `${currencySymbol}${exp.net_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
+                        </td>
+                        <td className="px-4 py-3.5 text-right text-slate-400 text-xs">
+                          {exp.vat_amount ? `${currencySymbol}${exp.vat_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
+                        </td>
+                        <td className="px-4 py-3.5 text-right text-white font-semibold">
+                          {exp.invoice_total ? `${currencySymbol}${exp.invoice_total.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          <StatusBadge status={exp.status} />
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          {exp.confidence_score > 0 && (
+                            <span className={`text-xs flex items-center justify-center gap-1 ${exp.confidence_score >= 0.85 ? 'text-emerald-400' : exp.confidence_score >= 0.6 ? 'text-amber-400' : 'text-rose-400'}`}>
+                              <Sparkles className="w-3 h-3" />
+                              {Math.round(exp.confidence_score * 100)}%
+                            </span>
                           )}
-                          {canEdit() && (
-                            <Button
-                              variant="ghost" size="icon"
-                              className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
-                              onClick={() => deleteExpense.mutate(exp.id)}
-                              disabled={deleteExpense.isPending}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {exp.document_url && (
+                              <Button variant="ghost" size="icon" asChild className="h-7 w-7 text-slate-400 hover:text-white">
+                                <a href={exp.document_url} target="_blank" rel="noopener noreferrer">
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              </Button>
+                            )}
+                            {canEdit() && (
+                              <Button
+                                variant="ghost" size="icon"
+                                className="h-7 w-7 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                                onClick={() => deleteExpense.mutate(exp.id)}
+                                disabled={deleteExpense.isPending}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
                 </AnimatePresence>
               </tbody>
             </table>
@@ -268,14 +425,24 @@ export default function Expenses() {
         )}
       </Card>
 
+      {/* Modals */}
       {canEdit() && (
-        <ExpenseUploadModal
-          open={showUpload}
-          onOpenChange={setShowUpload}
-          onSave={() => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id])}
-          businessId={currentBusiness?.id}
-          userEmail={user?.email}
-        />
+        <>
+          <ExpenseUploadModal
+            open={showUpload}
+            onOpenChange={setShowUpload}
+            onSave={() => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id])}
+            businessId={currentBusiness?.id}
+            userEmail={user?.email}
+          />
+          <ManualExpenseModal
+            open={showManual}
+            onOpenChange={setShowManual}
+            onSave={() => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id])}
+            businessId={currentBusiness?.id}
+            userEmail={user?.email}
+          />
+        </>
       )}
     </div>
   );
