@@ -18,18 +18,22 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingAuth(true);
       setAuthError(null);
-      const currentUser = await base44.auth.me();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('auth_timeout')), 10000)
+      );
+      const currentUser = await Promise.race([base44.auth.me(), timeoutPromise]);
       setUser(currentUser);
       setIsAuthenticated(true);
     } catch (error) {
       setIsAuthenticated(false);
       setUser(null);
-      if (error?.status === 403 && error?.data?.extra_data?.reason === 'user_not_registered') {
+      if (error?.message === 'auth_timeout') {
+        setAuthError({ type: 'auth_required', message: 'Authentication required' });
+      } else if (error?.status === 403 && error?.data?.extra_data?.reason === 'user_not_registered') {
         setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
       } else if (error?.status === 401 || error?.status === 403) {
         setAuthError({ type: 'auth_required', message: 'Authentication required' });
       }
-      // If no auth error (e.g. public app), just leave authError null
     } finally {
       setIsLoadingAuth(false);
     }
