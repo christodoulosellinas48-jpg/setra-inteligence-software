@@ -32,7 +32,7 @@ const ALL_NAV_ITEMS = [
   { label: 'Audit',       icon: ClipboardCheck,   path: '/Audit',         permission: 'view_reports' },
   { label: 'Expenses',          icon: FileStack,   path: '/Expenses',          permission: 'upload_expenses' },
   { label: 'VAT & Bookkeeping', icon: Receipt,     path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
-  { label: 'Menu Heatmap',     icon: LayoutGrid,  path: '/MenuHeatmap',       permission: 'view_reports' },
+  { label: 'Menu Engineering', icon: LayoutGrid,  path: '/MenuEngineering',   permission: 'view_reports' },
 ];
 
 export default function SidebarLayout({ children }) {

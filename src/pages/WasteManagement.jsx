@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 import {
   Trash2, Plus, RefreshCw, AlertTriangle, DollarSign,
   TrendingDown, Package, Search, Lightbulb, Calendar,
@@ -571,5 +571,5 @@ function WasteManagementContent() {
 }
 
 export default function WasteManagement() {
-  return <BusinessProvider><WasteManagementContent /></BusinessProvider>;
+  return <WasteManagementContent />;
 }

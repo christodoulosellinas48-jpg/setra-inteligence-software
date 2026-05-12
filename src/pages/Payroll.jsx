@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness } from '@/components/business/BusinessContext';
 import { Users, Plus, Trash2, Edit2, FileText, RefreshCw, ChevronLeft, ChevronRight, ExternalLink, Sparkles } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import PayrollCycleWidget from '@/components/payroll/PayrollCycleWidget';
@@ -332,5 +332,5 @@ function PayrollContent() {
 }
 
 export default function Payroll() {
-  return <BusinessProvider><PayrollContent /></BusinessProvider>;
+  return <PayrollContent />;
 }
