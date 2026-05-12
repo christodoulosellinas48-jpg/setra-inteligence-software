@@ -11,7 +11,8 @@ export default function MetricCard({
   status = 'neutral', 
   benchmark,
   icon: Icon,
-  delay = 0 
+  delay = 0,
+  noData = false
 }) {
   const statusColors = {
     healthy: 'text-[#C084FC] bg-[#7B3BFF]/10 border-[#7B3BFF]/30 shadow-lg shadow-[#7B3BFF]/10',
@@ -48,7 +49,7 @@ export default function MetricCard({
           )}
           <span className="text-sm font-medium text-slate-400 uppercase tracking-wide">{title}</span>
         </div>
-        {status !== 'neutral' && (
+        {status !== 'neutral' && !noData && (
           <div className={cn(
             "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
             status === 'healthy' && "bg-[#7B3BFF]/20 text-[#C084FC]",
@@ -61,13 +62,15 @@ export default function MetricCard({
         )}
       </div>
       
-      <div className="text-3xl font-bold text-white mb-2">
-        {prefix}{typeof value === 'number' ? value.toLocaleString('en-US', { maximumFractionDigits: 1 }) : value}{suffix}
+      <div className={cn("text-3xl font-bold mb-2", noData ? "text-slate-700" : "text-white")}>
+        {noData ? '—' : `${prefix}${typeof value === 'number' ? value.toLocaleString('en-US', { maximumFractionDigits: 1 }) : value}${suffix}`}
       </div>
       
-      {benchmark && (
+      {noData ? (
+        <div className="text-xs text-slate-700">Add data to see this metric</div>
+      ) : benchmark && (
         <div className="text-xs text-slate-500">
-          Industry benchmark: {benchmark}
+          Benchmark: {benchmark}
         </div>
       )}
     </motion.div>

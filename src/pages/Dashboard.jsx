@@ -169,7 +169,7 @@ function DashboardContent() {
   // Calculate financials using local data for immediate updates
   const financials = useMemo(() => {
     if (!localBusinessData) return null;
-    return calculateFinancials(localBusinessData, localBusinessData.business_type);
+    return calculateFinancials(localBusinessData, localBusinessData.industry_group || localBusinessData.business_type);
   }, [localBusinessData]);
 
   // Calculate simulated financials only if user changed values
@@ -178,7 +178,7 @@ function DashboardContent() {
     if (!localBusinessData || !hasSimulationChanges) return null;
     return simulateChanges(
       localBusinessData,
-      localBusinessData.business_type,
+      localBusinessData.industry_group || localBusinessData.business_type,
       simulationValues.revenue,
       simulationValues.foodCost,
       simulationValues.staffCost
@@ -187,8 +187,7 @@ function DashboardContent() {
 
   // Generate insights
   const insights = useMemo(() => {
-    if (!financials || !localBusinessData) return [];
-    return generateInsights(financials, localBusinessData.business_type);
+    return generateInsights(financials, localBusinessData?.industry_group || localBusinessData?.business_type);
   }, [financials, localBusinessData]);
 
   const handleInputChange = (key, value) => {
@@ -254,7 +253,7 @@ function DashboardContent() {
     );
   }
 
-  const businessDisplayName = BENCHMARKS[currentBusiness.business_type]?.displayName || 'Business';
+  const businessDisplayName = BENCHMARKS[currentBusiness.industry_group || currentBusiness.business_type]?.displayName || 'Business';
   const currencySymbol = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[currentBusiness.currency] || '€';
 
   const healthStatusColor = financials?.overallStatus === 'healthy' ? 'text-emerald-400'
@@ -276,13 +275,17 @@ function DashboardContent() {
                   <span className="capitalize text-slate-500">{userRole}</span>
                 </p>
               </div>
-              {financials && (
+              {financials ? (
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
                   financials.overallStatus === 'healthy' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                   : financials.overallStatus === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                   : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
                 } capitalize`}>
                   {financials.overallStatus}
+                </span>
+              ) : (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full border border-white/10 text-slate-600">
+                  No data
                 </span>
               )}
             </div>
@@ -362,35 +365,37 @@ function DashboardContent() {
           />
         )}
 
-        {/* Health + Key Profit metrics at the top */}
-        {financials && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Health panel - spans 1 col */}
-            <div className="lg:col-span-1">
-              <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />
-            </div>
-            {/* Top 2 financial KPIs */}
-            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-              <MetricCard
-                title="Net Profit"
-                value={financials.netProfit}
-                prefix={currencySymbol}
-                status={financials.netProfit >= 0 ? 'healthy' : 'risk'}
-                icon={DollarSign}
-                delay={0}
-              />
-              <MetricCard
-                title="Profit Margin"
-                value={financials.profitMargin}
-                suffix="%"
-                status={financials.profitMarginStatus}
-                benchmark={`Target: ${financials.benchmarks.profitMargin.healthy}%+`}
-                icon={Percent}
-                delay={0.1}
-              />
-            </div>
+        {/* Health + Key Profit metrics at the top — always shown, empty state when no data */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+            <HealthIndicator
+              status={financials?.overallStatus}
+              score={financials?.healthScore}
+              noData={!financials}
+            />
           </div>
-        )}
+          <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+            <MetricCard
+              title="Net Profit"
+              value={financials?.netProfit ?? 0}
+              prefix={currencySymbol}
+              status={financials ? (financials.netProfit >= 0 ? 'healthy' : 'risk') : 'neutral'}
+              icon={DollarSign}
+              delay={0}
+              noData={!financials}
+            />
+            <MetricCard
+              title="Profit Margin"
+              value={financials?.profitMargin ?? 0}
+              suffix="%"
+              status={financials?.profitMarginStatus ?? 'neutral'}
+              benchmark={financials ? `Target: ${financials.benchmarks.profitMargin.healthy}%+` : undefined}
+              icon={Percent}
+              delay={0.1}
+              noData={!financials}
+            />
+          </div>
+        </div>
 
         {/* Section Divider */}
         <div className="flex items-center gap-3">
@@ -438,55 +443,58 @@ function DashboardContent() {
           <div className="h-px flex-1 bg-white/[0.05]" />
         </div>
 
-        {/* Full Metrics Grid */}
-        {financials && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <MetricCard
-              title="Tax Amount"
-              value={financials.taxAmount}
-              prefix={currencySymbol}
-              status="neutral"
-              benchmark={`Rate: ${financials.taxRate}%`}
-              icon={DollarSign}
-              delay={0}
-            />
-            <MetricCard
-              title="Break-even"
-              value={financials.breakEvenRevenue}
-              prefix={currencySymbol}
-              status="neutral"
-              icon={Target}
-              delay={0.05}
-            />
-            <MetricCard
-              title="Food Cost"
-              value={financials.foodCostRatio}
-              suffix="%"
-              status={financials.foodCostStatus}
-              benchmark={`<${financials.benchmarks.foodCostRatio.healthy}%`}
-              icon={TrendingUp}
-              delay={0.1}
-            />
-            <MetricCard
-              title="Staff Cost"
-              value={financials.staffCostRatio}
-              suffix="%"
-              status={financials.staffCostStatus}
-              benchmark={`<${financials.benchmarks.staffCostRatio.healthy}%`}
-              icon={TrendingUp}
-              delay={0.15}
-            />
-            <MetricCard
-              title="Fixed Cost"
-              value={financials.fixedCostRatio}
-              suffix="%"
-              status={financials.fixedCostStatus}
-              benchmark={`<${financials.benchmarks.fixedCostRatio.healthy}%`}
-              icon={TrendingUp}
-              delay={0.2}
-            />
-          </div>
-        )}
+        {/* Full Metrics Grid — always rendered, empty state when no data */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <MetricCard
+            title="Tax Amount"
+            value={financials?.taxAmount ?? 0}
+            prefix={currencySymbol}
+            status="neutral"
+            benchmark={financials ? `Rate: ${financials.taxRate}%` : undefined}
+            icon={DollarSign}
+            delay={0}
+            noData={!financials}
+          />
+          <MetricCard
+            title="Break-even"
+            value={financials?.breakEvenRevenue ?? 0}
+            prefix={currencySymbol}
+            status="neutral"
+            icon={Target}
+            delay={0.05}
+            noData={!financials}
+          />
+          <MetricCard
+            title="Food Cost"
+            value={financials?.foodCostRatio ?? 0}
+            suffix="%"
+            status={financials?.foodCostStatus ?? 'neutral'}
+            benchmark={financials ? `<${financials.benchmarks.foodCostRatio.healthy}%` : undefined}
+            icon={TrendingUp}
+            delay={0.1}
+            noData={!financials}
+          />
+          <MetricCard
+            title="Staff Cost"
+            value={financials?.staffCostRatio ?? 0}
+            suffix="%"
+            status={financials?.staffCostStatus ?? 'neutral'}
+            benchmark={financials ? `<${financials.benchmarks.staffCostRatio.healthy}%` : undefined}
+            icon={TrendingUp}
+            delay={0.15}
+            noData={!financials}
+          />
+          <MetricCard
+            title="Fixed Cost"
+            value={financials?.fixedCostRatio ?? 0}
+            suffix="%"
+            status={financials?.fixedCostStatus ?? 'neutral'}
+            benchmark={financials ? `<${financials.benchmarks.fixedCostRatio.healthy}%` : undefined}
+            icon={TrendingUp}
+            delay={0.2}
+            noData={!financials}
+          />
+        </div>
 
         {/* Budget & Cash Flow Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -515,11 +523,9 @@ function DashboardContent() {
               </div>
             </div>
             <div className="space-y-3">
-              {insights.length > 0 ? insights.map((insight, idx) => (
+              {insights.map((insight, idx) => (
                 <InsightCard key={idx} {...insight} delay={idx * 0.1} />
-              )) : (
-                <p className="text-sm text-slate-500 py-4 text-center">Enter your financial figures above to see personalised insights.</p>
-              )}
+              ))}
             </div>
           </Card>
 
@@ -551,7 +557,12 @@ function DashboardContent() {
               />
             </div>
 
-            {hasSimulationChanges && simulatedFinancials ? (
+            {!financials && (
+              <div className="bg-[#0B0B12]/40 border border-dashed border-white/[0.06] rounded-xl p-5 text-center">
+                <p className="text-xs text-slate-600">Enter your monthly figures above to unlock the simulator</p>
+              </div>
+            )}
+            {financials && hasSimulationChanges && simulatedFinancials ? (
               <div className="bg-[#0B0B12]/60 border border-white/[0.06] rounded-xl p-4 space-y-3">
                 <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-3">Projected Impact</p>
                 <div className="flex items-center justify-between">
@@ -579,11 +590,11 @@ function DashboardContent() {
                   </span>
                 </div>
               </div>
-            ) : (
+            ) : financials ? (
               <div className="bg-[#0B0B12]/40 border border-dashed border-white/[0.06] rounded-xl p-5 text-center">
                 <p className="text-xs text-slate-600">Adjust the sliders above to model different scenarios</p>
               </div>
-            )}
+            ) : null}
           </Card>
         </div>
 

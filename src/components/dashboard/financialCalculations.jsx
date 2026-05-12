@@ -65,7 +65,18 @@ export const BENCHMARKS = {
   }
 };
 
+// Returns null when there is no meaningful data to calculate from
+export function hasData(data) {
+  return (data?.monthly_revenue || 0) > 0 ||
+    (data?.purchases_food_bev || 0) > 0 ||
+    (data?.staff_costs || 0) > 0 ||
+    (data?.rent_fixed_costs || 0) > 0;
+}
+
 export function calculateFinancials(data, businessType) {
+  // Guard: don't calculate when there's nothing to work with
+  if (!hasData(data)) return null;
+
   const benchmarks = BENCHMARKS[businessType] || BENCHMARKS.coffee_shop;
   
   const revenue = data.monthly_revenue || 0;
@@ -139,6 +150,12 @@ export function calculateFinancials(data, businessType) {
 }
 
 export function generateInsights(calculations, businessType) {
+  if (!calculations) {
+    return [{
+      type: 'tip',
+      message: "Once your financial data is in, I'll surface what's worth your attention here — cost pressures, pricing gaps, and margin opportunities specific to your venue."
+    }];
+  }
   const insights = [];
   const { netProfit, profitMargin, foodCostRatio, staffCostRatio, fixedCostRatio, benchmarks } = calculations;
   
