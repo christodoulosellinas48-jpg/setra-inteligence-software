@@ -62,18 +62,21 @@ export default function BulkUploadModal({ open, onOpenChange, onSave, businessId
           // Upload file
           const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-          // Create expense document
-          await base44.entities.ExpenseDocument.create({
+          // Process file with AI to extract all invoices
+          const result = await base44.functions.invoke('processBulkInvoiceFile', {
             business_id: businessId,
-            supplier_name: file.name.replace(/\.[^/.]+$/, ''),
-            invoice_total: 0,
-            expense_category: 'operating_expenses',
-            document_url: file_url,
-            status: 'pending',
-            uploaded_by: userEmail
+            file_url
           });
 
-          setUploadProgress(prev => ({ ...prev, [i]: { status: 'success' } }));
+          setUploadProgress(prev => ({
+            ...prev,
+            [i]: {
+              status: 'success',
+              processed: result.success,
+              total: result.total,
+              message: result.message
+            }
+          }));
         } catch (err) {
           setUploadProgress(prev => ({ ...prev, [i]: { status: 'failed', error: err.message } }));
         }
@@ -172,7 +175,12 @@ export default function BulkUploadModal({ open, onOpenChange, onSave, businessId
                         <Loader2 className="w-4 h-4 text-[#C084FC] animate-spin flex-shrink-0" />
                       )}
                       {isSuccess && (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <span className="text-xs text-emerald-500">
+                            {progress.processed}/{progress.total}
+                          </span>
+                        </div>
                       )}
                       {isFailed && (
                         <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" title={progress.error} />
@@ -194,7 +202,15 @@ export default function BulkUploadModal({ open, onOpenChange, onSave, businessId
               {uploading && (
                 <div className="text-center py-2">
                   <p className="text-xs text-slate-400">
-                    Uploaded {successCount} of {files.length}
+                    Processing {successCount} of {files.length} file{files.length !== 1 ? 's' : ''}...
+                  </p>
+                </div>
+              )}
+
+              {Object.values(uploadProgress).some(p => p.status === 'success') && (
+                <div className="text-center py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2">
+                  <p className="text-xs text-emerald-400">
+                    ✓ Extracted and created {Object.values(uploadProgress).reduce((sum, p) => sum + (p.processed || 0), 0)} invoices
                   </p>
                 </div>
               )}
