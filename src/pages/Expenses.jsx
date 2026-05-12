@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
 import ManualExpenseModal from '@/components/expenses/ManualExpenseModal';
+import BulkUploadModal from '@/components/expenses/BulkUploadModal';
 import EmailIngestBanner from '@/components/expenses/EmailIngestBanner';
 import DateRangeFilter from '@/components/expenses/DateRangeFilter';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
@@ -77,6 +78,7 @@ export default function Expenses() {
   const queryClient = useQueryClient();
 
   const [showUpload, setShowUpload] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -200,6 +202,10 @@ export default function Expenses() {
             <Button variant="outline" onClick={() => setShowManual(true)} className="gap-2">
               <PlusCircle className="w-4 h-4" />
               Add manually
+            </Button>
+            <Button variant="outline" onClick={() => setShowBulkUpload(true)} className="gap-2">
+              <Upload className="w-4 h-4" />
+              Bulk Upload
             </Button>
             <Button onClick={() => setShowUpload(true)} className="gap-2">
               <Upload className="w-4 h-4" />
@@ -431,6 +437,13 @@ export default function Expenses() {
           <ExpenseUploadModal
             open={showUpload}
             onOpenChange={setShowUpload}
+            onSave={() => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id])}
+            businessId={currentBusiness?.id}
+            userEmail={user?.email}
+          />
+          <BulkUploadModal
+            open={showBulkUpload}
+            onOpenChange={setShowBulkUpload}
             onSave={() => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id])}
             businessId={currentBusiness?.id}
             userEmail={user?.email}
