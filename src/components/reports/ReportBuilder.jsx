@@ -5,12 +5,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FileText, FileSpreadsheet, Download, BarChart3, TrendingUp, Receipt, Building2, Loader2, UtensilsCrossed, Truck } from 'lucide-react';
+import { FileText, FileSpreadsheet, Download, BarChart3, TrendingUp, Receipt, Building2, Loader2, UtensilsCrossed, Truck, Lock } from 'lucide-react';
 import MenuProfitabilityReport from './MenuProfitabilityReport';
 import SupplierPerformanceReport from './SupplierPerformanceReport';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subMonths, subQuarters, subYears } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { calculateFinancials } from '@/components/dashboard/financialCalculations';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const REPORT_TYPES = [
   { value: 'pl', label: 'Profit & Loss', icon: TrendingUp, desc: 'Revenue, costs, and net profit breakdown' },
@@ -33,27 +35,40 @@ const PRESETS = [
 const COLORS = ['#7B3BFF', '#A855F7', '#C084FC', '#E879F9', '#F0ABFC', '#DDD6FE'];
 const TT_STYLE = { backgroundColor: '#151528', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#fff' };
 
-function PLReport({ business, calculations, dateRange }) {
+function PLReport({ business, calculations, dateRange, comparisonData }) {
   const currency = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[business.currency] || '€';
   const totalExpenses = (business.purchases_food_bev || 0) + (business.staff_costs || 0) +
     (business.rent_fixed_costs || 0) + (business.utilities || 0) + (business.other_operating || 0);
+  const compCalc = comparisonData ? calculateFinancials(comparisonData, business.industry_group) : null;
+  const compTotalExpenses = comparisonData
+    ? (comparisonData.purchases_food_bev || 0) + (comparisonData.staff_costs || 0) +
+      (comparisonData.rent_fixed_costs || 0) + (comparisonData.utilities || 0) + (comparisonData.other_operating || 0)
+    : null;
+
+  const fmt = v => v != null ? `${v < 0 ? '-' : ''}${currency}${Math.abs(v).toLocaleString('en', { minimumFractionDigits: 2 })}` : '';
+  const delta = (curr, prev) => {
+    if (prev == null || curr == null) return null;
+    const d = curr - prev;
+    const pct = prev !== 0 ? ((d / Math.abs(prev)) * 100).toFixed(1) : null;
+    return { d, pct };
+  };
 
   const rows = [
-    { label: 'Revenue', value: business.monthly_revenue || 0, type: 'revenue' },
+    { label: 'Revenue', value: business.monthly_revenue || 0, comp: comparisonData?.monthly_revenue, type: 'revenue' },
     { label: '', value: null, type: 'spacer' },
     { label: 'COST OF GOODS SOLD', value: null, type: 'header' },
-    { label: 'Food & Beverage Purchases', value: business.purchases_food_bev || 0, type: 'expense' },
+    { label: 'Food & Beverage Purchases', value: business.purchases_food_bev || 0, comp: comparisonData?.purchases_food_bev, type: 'expense' },
     { label: '', value: null, type: 'spacer' },
     { label: 'OPERATING EXPENSES', value: null, type: 'header' },
-    { label: 'Staff Costs', value: business.staff_costs || 0, type: 'expense' },
-    { label: 'Rent & Fixed Costs', value: business.rent_fixed_costs || 0, type: 'expense' },
-    { label: 'Utilities', value: business.utilities || 0, type: 'expense' },
-    { label: 'Other Operating', value: business.other_operating || 0, type: 'expense' },
+    { label: 'Staff Costs', value: business.staff_costs || 0, comp: comparisonData?.staff_costs, type: 'expense' },
+    { label: 'Rent & Fixed Costs', value: business.rent_fixed_costs || 0, comp: comparisonData?.rent_fixed_costs, type: 'expense' },
+    { label: 'Utilities', value: business.utilities || 0, comp: comparisonData?.utilities, type: 'expense' },
+    { label: 'Other Operating', value: business.other_operating || 0, comp: comparisonData?.other_operating, type: 'expense' },
     { label: '', value: null, type: 'spacer' },
-    { label: 'Total Expenses', value: totalExpenses, type: 'subtotal' },
-    { label: 'Net Profit (Before Tax)', value: calculations.netProfitBeforeTax, type: 'subtotal' },
-    { label: `Tax (${calculations.taxRate}%)`, value: -calculations.taxAmount, type: 'expense' },
-    { label: 'Net Profit After Tax', value: calculations.netProfit, type: 'total' },
+    { label: 'Total Expenses', value: totalExpenses, comp: compTotalExpenses, type: 'subtotal' },
+    { label: 'Net Profit (Before Tax)', value: calculations.netProfitBeforeTax, comp: compCalc?.netProfitBeforeTax, type: 'subtotal' },
+    { label: `Tax (${calculations.taxRate}%)`, value: -calculations.taxAmount, comp: compCalc ? -compCalc.taxAmount : null, type: 'expense' },
+    { label: 'Net Profit After Tax', value: calculations.netProfit, comp: compCalc?.netProfit, type: 'total' },
   ];
 
   const barData = [
@@ -74,17 +89,22 @@ function PLReport({ business, calculations, dateRange }) {
             <thead>
               <tr className="border-b border-white/5 bg-[#0B0B12]/40">
                 <th className="text-left px-5 py-3 text-xs text-slate-500 font-medium uppercase">Account</th>
-                <th className="text-right px-5 py-3 text-xs text-slate-500 font-medium uppercase">Amount ({currency})</th>
+                <th className="text-right px-5 py-3 text-xs text-slate-500 font-medium uppercase">This Period</th>
+                {comparisonData && <th className="text-right px-5 py-3 text-xs text-slate-500 font-medium uppercase">{comparisonData.label}</th>}
+                {comparisonData && <th className="text-right px-5 py-3 text-xs text-slate-500 font-medium uppercase">Δ</th>}
               </tr>
             </thead>
             <tbody>
               {rows.map((row, i) => {
-                if (row.type === 'spacer') return <tr key={i}><td colSpan={2} className="py-1" /></tr>;
+                const colSpan = comparisonData ? 4 : 2;
+                if (row.type === 'spacer') return <tr key={i}><td colSpan={colSpan} className="py-1" /></tr>;
                 if (row.type === 'header') return (
                   <tr key={i} className="bg-[#0B0B12]/20">
-                    <td colSpan={2} className="px-5 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">{row.label}</td>
+                    <td colSpan={colSpan} className="px-5 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">{row.label}</td>
                   </tr>
                 );
+                const d = comparisonData ? delta(row.value, row.comp) : null;
+                const isPositiveDelta = d ? (row.type === 'expense' ? d.d < 0 : d.d > 0) : false;
                 return (
                   <tr key={i} className={`border-b border-white/5 ${row.type === 'total' ? 'bg-[#7B3BFF]/10' : ''}`}>
                     <td className={`px-5 py-3 ${row.type === 'total' ? 'font-bold text-white' : row.type === 'subtotal' ? 'font-semibold text-white' : 'text-slate-300'}`}>
@@ -95,8 +115,18 @@ function PLReport({ business, calculations, dateRange }) {
                       row.type === 'revenue' ? 'text-emerald-400' :
                       row.type === 'expense' ? 'text-rose-400' : 'text-white font-semibold'
                     }`}>
-                      {row.value != null ? `${row.value < 0 ? '-' : ''}${currency}${Math.abs(row.value).toLocaleString('en', { minimumFractionDigits: 2 })}` : ''}
+                      {row.value != null ? fmt(row.value) : ''}
                     </td>
+                    {comparisonData && (
+                      <td className="px-5 py-3 text-right font-mono text-slate-500">
+                        {row.comp != null ? fmt(row.comp) : '—'}
+                      </td>
+                    )}
+                    {comparisonData && (
+                      <td className={`px-5 py-3 text-right font-mono text-xs ${d ? (isPositiveDelta ? 'text-emerald-400' : 'text-rose-400') : 'text-slate-600'}`}>
+                        {d ? `${d.d >= 0 ? '+' : ''}${fmt(d.d)}${d.pct ? ` (${d.d >= 0 ? '+' : ''}${d.pct}%)` : ''}` : '—'}
+                      </td>
+                    )}
                   </tr>
                 );
               })}
@@ -123,20 +153,35 @@ function PLReport({ business, calculations, dateRange }) {
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
+      {(() => {
+        const hasData = (business.monthly_revenue || 0) > 0;
+        const kpis = hasData ? [
           { label: 'Profit Margin', value: `${calculations.profitMargin.toFixed(1)}%`, status: calculations.profitMarginStatus },
           { label: 'Food Cost %', value: `${calculations.foodCostRatio.toFixed(1)}%`, status: calculations.foodCostStatus },
           { label: 'Staff Cost %', value: `${calculations.staffCostRatio.toFixed(1)}%`, status: calculations.staffCostStatus },
           { label: 'Health Score', value: `${calculations.healthScore}/100`, status: calculations.overallStatus },
-        ].map(kpi => (
-          <Card key={kpi.label} className="bg-[#151528]/80 border-white/5 p-4">
-            <p className="text-xs text-slate-500 mb-1">{kpi.label}</p>
-            <p className="text-xl font-bold text-white">{kpi.value}</p>
-            <Badge className={`mt-1 text-xs capitalize ${kpi.status === 'healthy' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : kpi.status === 'warning' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'}`}>{kpi.status}</Badge>
-          </Card>
-        ))}
-      </div>
+        ] : [
+          { label: 'Profit Margin', value: '—' },
+          { label: 'Food Cost %', value: '—' },
+          { label: 'Staff Cost %', value: '—' },
+          { label: 'Health Score', value: '—' },
+        ];
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {kpis.map(kpi => (
+              <Card key={kpi.label} className="bg-[#151528]/80 border-white/5 p-4">
+                <p className="text-xs text-slate-500 mb-1">{kpi.label}</p>
+                <p className={`text-xl font-bold ${hasData ? 'text-white' : 'text-slate-600'}`}>{kpi.value}</p>
+                {hasData && kpi.status ? (
+                  <Badge className={`mt-1 text-xs capitalize ${kpi.status === 'healthy' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : kpi.status === 'warning' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'}`}>{kpi.status}</Badge>
+                ) : hasData ? null : (
+                  <p className="mt-1 text-xs text-slate-600">No data yet</p>
+                )}
+              </Card>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -246,12 +291,58 @@ function VATReport({ vatPeriods }) {
 export default function ReportBuilder({ business, snapshots, vatPeriods }) {
   const [reportType, setReportType] = useState('pl');
   const [dateRange, setDateRange] = useState({ from: format(startOfMonth(new Date()), 'yyyy-MM-dd'), to: format(endOfMonth(new Date()), 'yyyy-MM-dd') });
+  const [compareTo, setCompareTo] = useState('none');
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
   const [exportingXlsx, setExportingXlsx] = useState(false);
 
+  // Check prerequisites for gated reports
+  const { data: recipes = [] } = useQuery({
+    queryKey: ['recipes_check', business?.id],
+    queryFn: () => base44.entities.Recipe.filter({ business_id: business.id }),
+    enabled: !!business?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers_check', business?.id],
+    queryFn: () => base44.entities.Supplier.filter({ business_id: business.id }),
+    enabled: !!business?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const lockedReports = {
+    vat: !business?.vat_registered ? 'VAT registration required. Set this up in Settings → Tax & VAT.' : null,
+    menu_profit: recipes.length === 0 ? 'Add recipes in Recipe Manager to enable this report.' : null,
+    supplier_perf: suppliers.length === 0 ? 'Add suppliers in Vendors to enable this report.' : null,
+  };
+
   const calculations = useMemo(() => business ? calculateFinancials(business, business.industry_group) : null, [business]);
   const currency = { EUR: '€', USD: '$', GBP: '£', CHF: 'Fr', AUD: '$', CAD: '$' }[business?.currency] || '€';
+
+  // Build comparison period business-like object from snapshots
+  const comparisonData = useMemo(() => {
+    if (compareTo === 'none' || snapshots.length === 0) return null;
+    // Use the most recent snapshot as a proxy for the comparison period
+    const sortedSnaps = [...snapshots].sort((a, b) => b.period_start.localeCompare(a.period_start));
+    // prev period = second most recent; same period last year = snapshot ~12m ago
+    let snap = null;
+    if (compareTo === 'prev_period') snap = sortedSnaps[1] || null;
+    if (compareTo === 'last_year') {
+      const targetYear = new Date(dateRange.from).getFullYear() - 1;
+      snap = sortedSnaps.find(s => new Date(s.period_start).getFullYear() === targetYear) || null;
+    }
+    if (!snap) return null;
+    return {
+      monthly_revenue: snap.monthly_revenue || 0,
+      purchases_food_bev: snap.purchases_food_bev || 0,
+      staff_costs: snap.staff_costs || 0,
+      rent_fixed_costs: snap.rent_fixed_costs || 0,
+      utilities: snap.utilities || 0,
+      other_operating: snap.other_operating || 0,
+      net_profit: snap.net_profit || 0,
+      label: `${snap.period_start}`,
+    };
+  }, [compareTo, snapshots, dateRange]);
 
   const filteredVat = vatPeriods.filter(p => {
     if (!dateRange.from || !dateRange.to) return true;
@@ -363,13 +454,31 @@ export default function ReportBuilder({ business, snapshots, vatPeriods }) {
         {REPORT_TYPES.map(rt => {
           const Icon = rt.icon;
           const active = reportType === rt.value;
+          const lockMsg = lockedReports[rt.value];
+          const isLocked = !!lockMsg;
           return (
-            <button key={rt.value} onClick={() => setReportType(rt.value)}
-              className={`p-4 rounded-xl border text-left transition-all ${active ? 'bg-[#7B3BFF]/15 border-[#7B3BFF]/50 shadow-[0_0_20px_rgba(123,59,255,0.2)]' : 'bg-[#151528]/80 border-white/5 hover:border-white/20'}`}>
-              <Icon className={`w-5 h-5 mb-2 ${active ? 'text-[#C084FC]' : 'text-slate-500'}`} />
-              <p className={`text-sm font-semibold ${active ? 'text-white' : 'text-slate-400'}`}>{rt.label}</p>
-              <p className="text-xs text-slate-600 mt-0.5">{rt.desc}</p>
-            </button>
+            <div key={rt.value} className="relative group">
+              <button
+                onClick={() => !isLocked && setReportType(rt.value)}
+                disabled={isLocked}
+                className={`w-full p-4 rounded-xl border text-left transition-all ${
+                  isLocked ? 'bg-[#151528]/40 border-white/5 opacity-50 cursor-not-allowed' :
+                  active ? 'bg-[#7B3BFF]/15 border-[#7B3BFF]/50 shadow-[0_0_20px_rgba(123,59,255,0.2)]' :
+                  'bg-[#151528]/80 border-white/5 hover:border-white/20'
+                }`}>
+                <div className="flex items-start justify-between mb-2">
+                  <Icon className={`w-5 h-5 ${isLocked ? 'text-slate-600' : active ? 'text-[#C084FC]' : 'text-slate-500'}`} />
+                  {isLocked && <Lock className="w-3.5 h-3.5 text-slate-600" />}
+                </div>
+                <p className={`text-sm font-semibold ${isLocked ? 'text-slate-600' : active ? 'text-white' : 'text-slate-400'}`}>{rt.label}</p>
+                <p className="text-xs text-slate-600 mt-0.5">{rt.desc}</p>
+              </button>
+              {isLocked && (
+                <div className="absolute bottom-full left-0 mb-2 w-56 bg-[#1a1a2e] border border-white/10 rounded-xl p-3 text-xs text-slate-400 shadow-xl z-10 hidden group-hover:block">
+                  {lockMsg}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
@@ -395,6 +504,21 @@ export default function ReportBuilder({ business, snapshots, vatPeriods }) {
               </button>
             ))}
           </div>
+          <div className="flex items-end gap-3">
+            <div>
+              <Label className="text-slate-400 text-sm mb-1.5 block">Compare to</Label>
+              <Select value={compareTo} onValueChange={setCompareTo}>
+                <SelectTrigger className="bg-[#0B0B12] border-white/10 text-white w-44 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No comparison</SelectItem>
+                  <SelectItem value="prev_period">Previous period</SelectItem>
+                  <SelectItem value="last_year">Same period last year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="ml-auto flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={exportCSV} disabled={exportingCsv}>
               {exportingCsv ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Download className="w-3.5 h-3.5 mr-1.5" />} CSV
@@ -410,7 +534,7 @@ export default function ReportBuilder({ business, snapshots, vatPeriods }) {
       </Card>
 
       {/* Report Content */}
-      {reportType === 'pl' && <PLReport business={business} calculations={calculations} dateRange={dateRange} />}
+      {reportType === 'pl' && <PLReport business={business} calculations={calculations} dateRange={dateRange} comparisonData={comparisonData} />}
       {reportType === 'expense' && <ExpenseReport business={business} />}
       {reportType === 'vat' && <VATReport vatPeriods={filteredVat} />}
       {reportType === 'menu_profit' && <MenuProfitabilityReport business={business} />}

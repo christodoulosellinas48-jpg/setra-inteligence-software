@@ -9,7 +9,6 @@ import { BarChart3, RefreshCw, Save, Loader2, FileText, TrendingUp, Activity } f
 import { startOfMonth, endOfMonth } from 'date-fns';
 import SpendingAnalyticsDashboard from '@/components/reports/SpendingAnalyticsDashboard';
 
-import HealthIndicator from '@/components/dashboard/HealthIndicator';
 import ReportBuilder from '@/components/reports/ReportBuilder';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
 import { useBusiness } from '@/components/business/BusinessContext';
@@ -73,13 +72,15 @@ function ReportsContent() {
     setSaving(false);
   };
 
-  if (businessLoading || !currentBusiness || !financials) {
+  if (businessLoading || !currentBusiness) {
     return (
       <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
       </div>
     );
   }
+
+  const hasData = currentBusiness.monthly_revenue > 0;
 
   const businessDisplayName = BENCHMARKS[currentBusiness.industry_group]?.displayName || 'Business';
 
@@ -100,9 +101,6 @@ function ReportsContent() {
             Save Snapshot
           </Button>
         </div>
-
-        {/* Health Summary */}
-        <HealthIndicator status={financials.overallStatus} score={financials.healthScore} />
 
         {/* Tabs */}
         <Tabs defaultValue="overview">
@@ -140,7 +138,7 @@ function ReportsContent() {
                 <RefreshCw className="w-8 h-8 text-[#7B3BFF] animate-spin" />
               </Card>
             }>
-              <FinancialSummaryTable data={currentBusiness} calculations={financials} />
+              {financials && <FinancialSummaryTable data={currentBusiness} calculations={financials} />}
             </Suspense>
 
             {/* Saved Snapshots */}
@@ -183,6 +181,20 @@ function ReportsContent() {
 
           {/* Spending Analytics Tab */}
           <TabsContent value="analytics">
+            {snapshots.length < 2 && (
+              <Card className="bg-[#7B3BFF]/10 border-[#7B3BFF]/30 p-5 rounded-2xl mb-6 flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-white font-semibold text-sm">You need 2+ snapshots to see trends</p>
+                  <p className="text-slate-400 text-xs mt-0.5">
+                    {snapshots.length === 0 ? 'Save your first snapshot to start tracking performance over time.' : 'Save one more snapshot to unlock trend charts.'}
+                  </p>
+                </div>
+                <Button onClick={saveSnapshot} disabled={saving} size="sm">
+                  {saving ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1.5" />}
+                  Save Snapshot Now
+                </Button>
+              </Card>
+            )}
             <SpendingAnalyticsDashboard
               snapshots={snapshots}
               budget={budgets[0] || null}
