@@ -32,6 +32,7 @@ import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
 import AddFromSystemButton from '@/components/dashboard/AddFromSystemButton';
 import BudgetVsActualMini from '@/components/dashboard/BudgetVsActualMini';
 import CashFlowMiniChart from '@/components/dashboard/CashFlowMiniChart';
+import SetupChecklist from '@/components/onboarding/SetupChecklist';
 
 import { 
   calculateFinancials, 
@@ -347,6 +348,19 @@ function DashboardContent() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
+        {/* Setup checklist — shown to owner until complete */}
+        {userRole === 'owner' && (
+          <SetupChecklist
+            completed={{
+              business: !!currentBusiness,
+              pos: false,
+              accounting: false,
+              invoice: expenses.length > 0,
+              team: false,
+            }}
+          />
+        )}
 
         {/* Health + Key Profit metrics at the top */}
         {financials && (
