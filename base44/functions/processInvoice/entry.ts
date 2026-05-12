@@ -282,6 +282,7 @@ Deno.serve(async (req) => {
           business_id,
           period_start: monthStart,
           period_end: monthEnd,
+          period_type: 'monthly',
           [snapshotField]: grossAmount,
           total_expenses: grossAmount
         });
