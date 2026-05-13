@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut, FileSpreadsheet,
-  UserX, Lock, Bell, Download, User, ChevronDown, AlertTriangle, Check, CreditCard, Eye, EyeOff
+  UserX, Lock, Bell, Download, User, ChevronDown, AlertTriangle, Check, CreditCard, Eye, EyeOff,
+  Layers, Plus, X
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import TeamManagement from '@/components/business/TeamManagement';
@@ -46,6 +47,55 @@ function SettingsContent() {
   const [deleteBusinessConfirm, setDeleteBusinessConfirm] = useState('');
   const [deleteAccountConfirm, setDeleteAccountConfirm] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // Group state
+  const [groups, setGroups] = useState([]);
+  const [groupMode, setGroupMode] = useState('none'); // 'none' | 'existing' | 'new'
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [newGroupName, setNewGroupName] = useState('');
+  const [savingGroup, setSavingGroup] = useState(false);
+  const [groupSaved, setGroupSaved] = useState(false);
+
+  // Load groups and pre-select current group
+  useEffect(() => {
+    if (!user) return;
+    base44.entities.BusinessGroup.filter({ owner_email: user.email })
+      .then(g => {
+        setGroups(g || []);
+        if (currentBusiness?.group_id) {
+          const match = (g || []).find(gr => gr.id === currentBusiness.group_id);
+          if (match) {
+            setGroupMode('existing');
+            setSelectedGroupId(currentBusiness.group_id);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [user, currentBusiness?.id]);
+
+  const handleSaveGroup = async () => {
+    if (!currentBusiness) return;
+    setSavingGroup(true);
+    try {
+      let groupId = '';
+      if (groupMode === 'new' && newGroupName.trim()) {
+        const g = await base44.entities.BusinessGroup.create({ name: newGroupName.trim(), owner_email: user.email });
+        groupId = g.id;
+        setGroups(prev => [...prev, g]);
+        setSelectedGroupId(g.id);
+        setGroupMode('existing');
+        setNewGroupName('');
+      } else if (groupMode === 'existing' && selectedGroupId) {
+        groupId = selectedGroupId;
+      }
+      await base44.entities.Business.update(currentBusiness.id, { group_id: groupId || null });
+      await refreshBusinesses();
+      setGroupSaved(true);
+      setTimeout(() => setGroupSaved(false), 2500);
+    } finally {
+      setSavingGroup(false);
+    }
+  };
 
   const [businessForm, setBusinessForm] = useState({
     name: currentBusiness?.name || '',
@@ -252,6 +302,104 @@ function SettingsContent() {
                 <Button onClick={handleSave} disabled={saving} className="mt-2">
                   {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Save Changes
+                </Button>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Group Assignment */}
+        {currentBusiness && isOwner() && (
+          <Card className="bg-[#151528]/80 border-white/5 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                <Layers className="w-5 h-5 text-violet-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Business Group</h3>
+                <p className="text-xs text-slate-500">Assign this venue to a group for consolidated reporting</p>
+              </div>
+            </div>
+
+            {currentBusiness.group_id && (
+              <div className="mb-4 p-3 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-violet-300">
+                  <Layers className="w-4 h-4" />
+                  Currently in: <strong>{groups.find(g => g.id === currentBusiness.group_id)?.name || 'a group'}</strong>
+                </div>
+                <button
+                  onClick={async () => {
+                    await base44.entities.Business.update(currentBusiness.id, { group_id: null });
+                    setSelectedGroupId('');
+                    setGroupMode('none');
+                    await refreshBusinesses();
+                  }}
+                  className="text-xs text-slate-500 hover:text-rose-400 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { v: 'none', l: 'No group' },
+                  { v: 'existing', l: 'Existing group', hide: groups.length === 0 },
+                  { v: 'new', l: 'Create new group' },
+                ].filter(o => !o.hide).map(opt => (
+                  <button
+                    key={opt.v}
+                    onClick={() => setGroupMode(opt.v)}
+                    className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all text-center ${
+                      groupMode === opt.v
+                        ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/50 text-white'
+                        : 'bg-[#0B0B12] border-white/10 text-slate-400 hover:border-white/20'
+                    }`}
+                  >
+                    {opt.l}
+                  </button>
+                ))}
+              </div>
+
+              {groupMode === 'existing' && groups.length > 0 && (
+                <div className="space-y-1.5">
+                  {groups.map(g => (
+                    <button
+                      key={g.id}
+                      onClick={() => setSelectedGroupId(g.id)}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-all ${
+                        selectedGroupId === g.id
+                          ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/50 text-white'
+                          : 'bg-[#0B0B12] border-white/10 text-slate-300 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Layers className="w-3.5 h-3.5 text-slate-500" />
+                        {g.name}
+                      </span>
+                      {selectedGroupId === g.id && <Check className="w-4 h-4 text-[#C084FC]" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {groupMode === 'new' && (
+                <div>
+                  <Label className="text-slate-400 mb-1.5 block text-sm">New group name</Label>
+                  <Input
+                    value={newGroupName}
+                    onChange={e => setNewGroupName(e.target.value)}
+                    placeholder="e.g., Mezé Co. Group"
+                    className="bg-[#0B0B12] border-white/10 text-white"
+                  />
+                </div>
+              )}
+
+              {groupMode !== 'none' && (
+                <Button onClick={handleSaveGroup} disabled={savingGroup || (groupMode === 'existing' && !selectedGroupId) || (groupMode === 'new' && !newGroupName.trim())}>
+                  {savingGroup ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : groupSaved ? <Check className="w-4 h-4 mr-2" /> : <Layers className="w-4 h-4 mr-2" />}
+                  {groupSaved ? 'Saved!' : 'Save Group'}
                 </Button>
               )}
             </div>
