@@ -19,6 +19,7 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
     { value: '2', label: '2 Months Ago' },
     { value: '3', label: '3 Months Ago' },
     { value: '6', label: '6 Months Ago' },
+    { value: 'all', label: 'All Time' },
   ];
 
   const handleAutoFill = async () => {
@@ -27,43 +28,43 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
     setFeedback('');
 
     try {
+      const isAllTime = selectedMonth === 'all';
       const monthsBack = selectedMonth === 'current' ? 0 : parseInt(selectedMonth);
       const targetDate = monthsBack === 0 ? new Date() : subMonths(new Date(), monthsBack);
-      const periodStart = startOfMonth(targetDate);
-      const periodEnd = endOfMonth(targetDate);
+      const periodStart = isAllTime ? null : startOfMonth(targetDate);
+      const periodEnd = isAllTime ? null : endOfMonth(targetDate);
 
       const data = {};
 
-      // 1. Fetch from FinancialSnapshot if available
-      const snapshots = await base44.entities.FinancialSnapshot.filter(
-        { business_id: businessId },
-        '-period_start',
-        10
-      );
-
-      const relevantSnapshot = snapshots.find(s => {
-        const snapshotDate = new Date(s.period_start);
-        return snapshotDate >= periodStart && snapshotDate <= periodEnd;
-      });
-
-      if (relevantSnapshot) {
-        if (relevantSnapshot.monthly_revenue) data.monthly_revenue = relevantSnapshot.monthly_revenue;
-        if (relevantSnapshot.rent_fixed_costs) data.rent_fixed_costs = relevantSnapshot.rent_fixed_costs;
-        if (relevantSnapshot.purchases_food_bev) data.purchases_food_bev = relevantSnapshot.purchases_food_bev;
-        if (relevantSnapshot.utilities) data.utilities = relevantSnapshot.utilities;
-        if (relevantSnapshot.other_operating) data.other_operating = relevantSnapshot.other_operating;
+      // 1. Fetch from FinancialSnapshot if available (only for specific month, not all time)
+      if (!isAllTime) {
+        const snapshots = await base44.entities.FinancialSnapshot.filter(
+          { business_id: businessId },
+          '-period_start',
+          10
+        );
+        const relevantSnapshot = snapshots.find(s => {
+          const snapshotDate = new Date(s.period_start);
+          return snapshotDate >= periodStart && snapshotDate <= periodEnd;
+        });
+        if (relevantSnapshot) {
+          if (relevantSnapshot.monthly_revenue) data.monthly_revenue = relevantSnapshot.monthly_revenue;
+          if (relevantSnapshot.rent_fixed_costs) data.rent_fixed_costs = relevantSnapshot.rent_fixed_costs;
+          if (relevantSnapshot.purchases_food_bev) data.purchases_food_bev = relevantSnapshot.purchases_food_bev;
+          if (relevantSnapshot.utilities) data.utilities = relevantSnapshot.utilities;
+          if (relevantSnapshot.other_operating) data.other_operating = relevantSnapshot.other_operating;
+        }
       }
 
-      // 2. Auto-fetch staff costs from Payroll
-      const laborShifts = await base44.entities.LaborShift.filter(
-        {
-          business_id: businessId,
-          date: { $gte: periodStart.toISOString().split('T')[0], $lte: periodEnd.toISOString().split('T')[0] }
-        }
-      );
-
-      if (laborShifts.length > 0) {
-        const totalStaffCosts = laborShifts.reduce((sum, shift) => sum + (shift.total_cost || 0), 0);
+      // 2. Auto-fetch staff costs from LaborShift (fetch all, filter client-side)
+      const allShifts = await base44.entities.LaborShift.filter({ business_id: businessId }, '-date', 2000);
+      const relevantShifts = isAllTime ? allShifts : allShifts.filter(s => {
+        if (!s.date) return false;
+        const d = new Date(s.date);
+        return d >= periodStart && d <= periodEnd;
+      });
+      if (relevantShifts.length > 0) {
+        const totalStaffCosts = relevantShifts.reduce((sum, shift) => sum + (shift.total_cost || 0), 0);
         data.staff_costs = totalStaffCosts;
       }
 
@@ -71,10 +72,10 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
       const expenses = await base44.entities.ExpenseDocument.filter(
         { business_id: businessId },
         '-invoice_date',
-        500
+        2000
       );
 
-      const periodExpenses = expenses.filter(e => {
+      const periodExpenses = isAllTime ? expenses : expenses.filter(e => {
         if (!e.invoice_date) return false;
         const expDate = new Date(e.invoice_date);
         return expDate >= periodStart && expDate <= periodEnd;
