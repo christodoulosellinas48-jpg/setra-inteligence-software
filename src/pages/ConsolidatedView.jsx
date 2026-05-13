@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Building2, RefreshCw, Calendar } from 'lucide-react';
+import { Building2, RefreshCw, Calendar, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
@@ -34,12 +34,20 @@ export default function ConsolidatedView() {
   const navigate = useNavigate();
   const [user, setUser] = React.useState(null);
   const [dateRange, setDateRange] = useState('this_month');
+  const [groupFilter, setGroupFilter] = useState('all'); // 'all' | group id
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  const { data: ownedBusinesses = [], isLoading } = useQuery({
+  const { data: groups = [], refetch: refetchGroups } = useQuery({
+    queryKey: ['businessGroups', user?.email],
+    queryFn: () => base44.entities.BusinessGroup.filter({ owner_email: user.email }),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000
+  });
+
+  const { data: ownedBusinesses = [], isLoading, refetch: refetchBusinesses } = useQuery({
     queryKey: ['ownedBusinesses', user?.email],
     queryFn: () => base44.entities.Business.filter({ owner_email: user.email }),
     enabled: !!user,
@@ -65,6 +73,11 @@ export default function ConsolidatedView() {
     staleTime: 5 * 60 * 1000
   });
 
+  const handleGroupSaved = () => {
+    refetchBusinesses();
+    refetchGroups();
+  };
+
   // Deduplicate by id
   const allBusinesses = useMemo(() => {
     const seen = new Set();
@@ -77,13 +90,19 @@ export default function ConsolidatedView() {
 
   const multiplier = getRevenueMultiplier(dateRange);
 
+  // Apply group filter
+  const filteredBusinesses = useMemo(() => {
+    if (groupFilter === 'all') return allBusinesses;
+    return allBusinesses.filter(b => b.group_id === groupFilter);
+  }, [allBusinesses, groupFilter]);
+
   const consolidatedMetrics = useMemo(() => {
-    if (allBusinesses.length === 0) return null;
+    if (filteredBusinesses.length === 0) return null;
 
     let totalRevenue = 0, totalProfit = 0;
     const businessPerformance = [];
 
-    allBusinesses.forEach(business => {
+    filteredBusinesses.forEach(business => {
       const financials = calculateFinancials(business, business.industry_group || business.business_type);
       const revenue = (business.monthly_revenue || 0) * multiplier;
       const profit = financials ? financials.netProfit * multiplier : null;
@@ -96,6 +115,8 @@ export default function ConsolidatedView() {
       businessPerformance.push({
         name: business.name,
         id: business.id,
+        group_id: business.group_id || null,
+        groupName: groups.find(g => g.id === business.group_id)?.name || null,
         revenue,
         profit,
         margin,
@@ -121,11 +142,11 @@ export default function ConsolidatedView() {
       totalProfit,
       avgHealthScore,
       avgMargin,
-      businessCount: allBusinesses.length,
+      businessCount: filteredBusinesses.length,
       businessPerformance: businessPerformance.sort((a, b) => (b.profit ?? -Infinity) - (a.profit ?? -Infinity)),
       dateRangeLabel: DATE_RANGE_OPTIONS.find(o => o.value === dateRange)?.label || 'This month',
     };
-  }, [allBusinesses, multiplier, dateRange]);
+  }, [filteredBusinesses, groups, multiplier, dateRange]);
 
   const handleViewBusiness = (business) => {
     if (business.id) {
@@ -169,6 +190,38 @@ export default function ConsolidatedView() {
     );
   }
 
+  // Group filter yields no results
+  if (!isLoading && user && filteredBusinesses.length === 0 && groupFilter !== 'all') {
+    return (
+      <div className="min-h-screen bg-[#0B0B12]">
+        <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-2xl font-bold text-white flex items-center gap-3"><Building2 className="w-6 h-6 text-[#C084FC]" />Consolidated View</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-slate-400" />
+              <Select value={groupFilter} onValueChange={setGroupFilter}>
+                <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All venues</SelectItem>
+                  {groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </header>
+        <div className="flex items-center justify-center p-12">
+          <div className="text-center">
+            <Layers className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-400">No venues assigned to this group yet.</p>
+            <Button variant="outline" className="mt-4 border-white/10 text-slate-300" onClick={() => setGroupFilter('all')}>Show all venues</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0B0B12]">
       <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
@@ -182,19 +235,37 @@ export default function ConsolidatedView() {
               Portfolio analytics across {consolidatedMetrics?.businessCount} {consolidatedMetrics?.businessCount === 1 ? 'business' : 'businesses'}
             </p>
           </div>
-          {/* Date range selector */}
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DATE_RANGE_OPTIONS.map(o => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Filters */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {groups.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-slate-400" />
+                <Select value={groupFilter} onValueChange={setGroupFilter}>
+                  <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All venues</SelectItem>
+                    {groups.map(g => (
+                      <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DATE_RANGE_OPTIONS.map(o => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </header>
@@ -203,7 +274,13 @@ export default function ConsolidatedView() {
         <SummaryCards metrics={consolidatedMetrics} />
         <CrossVenueInsights businesses={consolidatedMetrics.businessPerformance} />
         <PerformanceChart data={consolidatedMetrics.businessPerformance} />
-        <BusinessTable businesses={consolidatedMetrics.businessPerformance} onViewBusiness={handleViewBusiness} />
+        <BusinessTable
+          businesses={consolidatedMetrics.businessPerformance}
+          onViewBusiness={handleViewBusiness}
+          userEmail={user?.email}
+          groups={groups}
+          onGroupSaved={handleGroupSaved}
+        />
       </main>
     </div>
   );

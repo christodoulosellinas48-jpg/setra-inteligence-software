@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, Download } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Download, Layers } from 'lucide-react';
+import AddToGroupModal from './AddToGroupModal';
 
 function fmtEur(val) {
   if (val === null || val === undefined) return '—';
@@ -15,10 +16,11 @@ function SortIcon({ col, sortCol, sortDir }) {
   return sortDir === 'asc' ? <ArrowUp className="w-3 h-3 text-[#C084FC]" /> : <ArrowDown className="w-3 h-3 text-[#C084FC]" />;
 }
 
-export default function BusinessTable({ businesses, onViewBusiness }) {
+export default function BusinessTable({ businesses, onViewBusiness, userEmail, groups = [], onGroupSaved }) {
   const [search, setSearch] = useState('');
   const [sortCol, setSortCol] = useState('profit');
   const [sortDir, setSortDir] = useState('desc');
+  const [groupModalBusiness, setGroupModalBusiness] = useState(null);
 
   const handleSort = (col) => {
     if (sortCol === col) {
@@ -157,14 +159,26 @@ export default function BusinessTable({ businesses, onViewBusiness }) {
                   )}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewBusiness(business)}
-                    className="text-[#C084FC] hover:text-white text-xs"
-                  >
-                    View →
-                  </Button>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setGroupModalBusiness(business)}
+                      className="text-violet-400 hover:text-white text-xs gap-1"
+                      title={business.groupName ? `Group: ${business.groupName}` : 'Add to group'}
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      {business.groupName ? business.groupName : 'Group'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onViewBusiness(business)}
+                      className="text-[#C084FC] hover:text-white text-xs"
+                    >
+                      View →
+                    </Button>
+                  </div>
                 </td>
               </motion.tr>
             ))}
@@ -176,6 +190,16 @@ export default function BusinessTable({ businesses, onViewBusiness }) {
           </tbody>
         </table>
       </div>
+
+      {groupModalBusiness && (
+        <AddToGroupModal
+          business={groupModalBusiness}
+          userEmail={userEmail}
+          open={!!groupModalBusiness}
+          onClose={() => setGroupModalBusiness(null)}
+          onSaved={onGroupSaved}
+        />
+      )}
     </Card>
   );
 }
