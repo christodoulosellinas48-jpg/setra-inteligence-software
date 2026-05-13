@@ -142,6 +142,23 @@ Be thorough. Extract every line item visible. If a field cannot be determined, s
           raw_text: lineItemsJson, // reuse raw_text to store line items JSON
         });
 
+        // Mirror to ExpenseDocument so it also appears in Expenses page
+        await base44.entities.ExpenseDocument.create({
+          business_id: businessId,
+          supplier_name: parseResult.supplier_name,
+          supplier_vat_number: parseResult.supplier_vat_number || '',
+          invoice_number: parseResult.invoice_number || '',
+          invoice_date: parseResult.invoice_date || '',
+          due_date: parseResult.due_date || '',
+          invoice_total: parseResult.gross_total || 0,
+          net_amount: parseResult.net_total || 0,
+          vat_amount: parseResult.vat_total || 0,
+          expense_category: parseResult.expense_category || 'operating_expenses',
+          document_url: file_url,
+          status: confidence < 0.7 ? 'needs_review' : 'pending',
+          confidence_score: confidence,
+        });
+
         // Store category + line_items on document via a custom update after create
         // (we'll pass them through raw_text as JSON payload and read them in modal)
         setUploadProgress(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'done' } : p));

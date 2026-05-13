@@ -74,6 +74,20 @@ export default function ManualExpenseModal({ open, onOpenChange, onSave, busines
       last_edited_by: userEmail,
       last_edited_at: new Date().toISOString(),
     });
+
+    // Mirror to Document entity so it appears in VAT & Bookkeeping Inbox
+    await base44.entities.Document.create({
+      business_id: businessId,
+      type: 'invoice',
+      supplier_name: form.supplier_name,
+      invoice_date: form.invoice_date,
+      gross_total: parseFloat(form.invoice_total) || 0,
+      net_total: parseFloat(form.net_amount) || 0,
+      vat_total: parseFloat(form.vat_amount) || 0,
+      status: 'parsed',
+      confidence_score: 1,
+    });
+
     setSaving(false);
     onSave?.();
     onOpenChange(false);

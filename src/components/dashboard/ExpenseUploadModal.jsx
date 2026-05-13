@@ -219,6 +219,24 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
       last_edited_at: new Date().toISOString()
     });
 
+    // Also create a Document record so this appears in VAT & Bookkeeping Inbox
+    await base44.entities.Document.create({
+      business_id: businessId,
+      type: 'invoice',
+      supplier_name: form.supplier_name,
+      supplier_vat_number: aiData?.supplier_vat_number || '',
+      invoice_number: form.invoice_number,
+      invoice_date: form.invoice_date,
+      due_date: aiData?.due_date || '',
+      gross_total: parseFloat(form.invoice_total) || 0,
+      net_total: parseFloat(form.net_amount) || 0,
+      vat_total: parseFloat(form.vat_amount) || 0,
+      file_url: documentUrl,
+      status: 'parsed',
+      confidence_score: aiData?.confidence_score || 0,
+      raw_text: aiData?.line_items ? JSON.stringify(aiData.line_items) : null,
+    });
+
     // 2. Run full automation — await it so we can show results
     try {
       const response = await base44.functions.invoke('processInvoice', {
