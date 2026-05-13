@@ -56,8 +56,9 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
         }
       }
 
-      // 2. Auto-fetch staff costs from LaborShift (fetch all, filter client-side)
+      // 2. Auto-fetch staff costs from LaborShift (fetch all for business, filter client-side)
       const allShifts = await base44.entities.LaborShift.filter({ business_id: businessId }, '-date', 2000);
+      console.log('LaborShift results:', allShifts.length, allShifts.slice(0, 3));
       const relevantShifts = isAllTime ? allShifts : allShifts.filter(s => {
         if (!s.date) return false;
         const d = new Date(s.date);
@@ -66,6 +67,21 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
       if (relevantShifts.length > 0) {
         const totalStaffCosts = relevantShifts.reduce((sum, shift) => sum + (shift.total_cost || 0), 0);
         data.staff_costs = totalStaffCosts;
+      } else {
+        // Fallback: use active EmployeeContracts monthly salaries
+        const contracts = await base44.entities.EmployeeContract.filter({ business_id: businessId, status: 'active' });
+        console.log('EmployeeContract fallback:', contracts.length, contracts.slice(0, 3));
+        if (contracts.length > 0) {
+          const totalFromContracts = contracts.reduce((sum, c) => {
+            if (c.contract_type === 'monthly') return sum + (c.monthly_salary || 0);
+            if (c.contract_type === 'hourly' || c.contract_type === 'part_time') {
+              // Estimate: hourly rate * 160 hours/month
+              return sum + ((c.hourly_rate || 0) * 160);
+            }
+            return sum;
+          }, 0);
+          if (totalFromContracts > 0) data.staff_costs = totalFromContracts;
+        }
       }
 
       // 3. Aggregate Expense Documents for food costs & utilities
@@ -97,6 +113,7 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
       if (utilitiesTotal > 0) data.utilities = utilitiesTotal;
       if (otherTotal > 0) data.other_operating = otherTotal;
 
+      console.log('Autofill final data:', data);
       if (Object.keys(data).length === 0) {
         setFeedback('No data found for this period');
       } else {
