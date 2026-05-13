@@ -422,8 +422,11 @@ function DashboardContent() {
                 businessId={currentBusiness?.id}
                 disabled={!currentBusiness}
                 onApplyData={(data) => {
+                  // Apply all values at once to avoid stale closure overwrites
+                  setLocalBusinessData(prev => ({ ...prev, ...data }));
+                  // Save each field to the DB
                   Object.entries(data).forEach(([key, value]) => {
-                    handleInputChange(key, value);
+                    debouncedSave({ [key]: value });
                   });
                 }}
               />
