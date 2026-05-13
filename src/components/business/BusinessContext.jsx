@@ -7,6 +7,8 @@ const BusinessContext = createContext(null);
 export function BusinessProvider({ children }) {
   const [user, setUser] = useState(null);
   const [businesses, setBusinesses] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [selectedGroupId, setSelectedGroupId] = useState(null); // null = no group filter
   const [currentBusiness, setCurrentBusiness] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [userMember, setUserMember] = useState(null); // full member record for permission lookup
@@ -29,6 +31,10 @@ export function BusinessProvider({ children }) {
       setLoading(true);
       const currentUser = await base44.auth.me();
       setUser(currentUser);
+
+      // Get business groups
+      const userGroups = await base44.entities.BusinessGroup.filter({ owner_email: currentUser.email });
+      setGroups(userGroups);
 
       // Get businesses where user is owner
       const ownedBusinesses = await base44.entities.Business.filter({ owner_email: currentUser.email });
@@ -94,8 +100,20 @@ export function BusinessProvider({ children }) {
 
   const switchBusiness = async (business) => {
     setCurrentBusiness(business);
+    setSelectedGroupId(null); // clear group filter when picking a specific business
     localStorage.setItem('currentBusinessId', business.id);
     await loadUserRole(user.email, business);
+  };
+
+  const selectGroup = async (groupId) => {
+    setSelectedGroupId(groupId);
+    // Auto-switch to the first business in this group
+    const firstInGroup = businesses.find(b => b.group_id === groupId);
+    if (firstInGroup) {
+      setCurrentBusiness(firstInGroup);
+      localStorage.setItem('currentBusinessId', firstInGroup.id);
+      if (user) await loadUserRole(user.email, firstInGroup);
+    }
   };
 
   const refreshBusinesses = async () => {
@@ -113,15 +131,24 @@ export function BusinessProvider({ children }) {
     return perms.includes(permission);
   };
 
+  // businesses filtered by selected group (or all if no group selected)
+  const groupFilteredBusinesses = selectedGroupId
+    ? businesses.filter(b => b.group_id === selectedGroupId)
+    : businesses;
+
   return (
     <BusinessContext.Provider value={{
       user,
       businesses,
+      groups,
+      selectedGroupId,
+      groupFilteredBusinesses,
       currentBusiness,
       userRole,
       userMember,
       loading,
       switchBusiness,
+      selectGroup,
       refreshBusinesses,
       canEdit,
       canManageTeam,
