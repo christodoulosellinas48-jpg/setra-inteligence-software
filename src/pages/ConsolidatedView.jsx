@@ -44,14 +44,14 @@ export default function ConsolidatedView() {
     queryKey: ['businessGroups', user?.email],
     queryFn: () => base44.entities.BusinessGroup.filter({ owner_email: user.email }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000
+    staleTime: 0
   });
 
   const { data: ownedBusinesses = [], isLoading, refetch: refetchBusinesses } = useQuery({
     queryKey: ['ownedBusinesses', user?.email],
     queryFn: () => base44.entities.Business.filter({ owner_email: user.email }),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000
+    staleTime: 0
   });
 
   const { data: memberships = [] } = useQuery({
