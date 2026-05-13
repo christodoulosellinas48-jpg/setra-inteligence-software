@@ -1,0 +1,153 @@
+{
+  "name": "Business",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Business name"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "Optional reference to a BusinessGroup"
+    },
+    "industry_group": {
+      "type": "string",
+      "enum": [
+        "bar",
+        "canteen",
+        "coffee_shop",
+        "catering_events",
+        "confectionery",
+        "deli_cava",
+        "food_to_go",
+        "hotels",
+        "restaurant"
+      ],
+      "description": "Type of hospitality business"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "sole_trader",
+        "ltd"
+      ],
+      "default": "sole_trader",
+      "description": "Legal entity type"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "USD",
+        "GBP",
+        "CHF",
+        "AUD",
+        "CAD"
+      ],
+      "default": "EUR"
+    },
+    "address": {
+      "type": "string"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the business owner"
+    },
+    "monthly_revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "rent_fixed_costs": {
+      "type": "number",
+      "default": 0
+    },
+    "staff_costs": {
+      "type": "number",
+      "default": 0
+    },
+    "purchases_food_bev": {
+      "type": "number",
+      "default": 0
+    },
+    "utilities": {
+      "type": "number",
+      "default": 0
+    },
+    "other_operating": {
+      "type": "number",
+      "default": 0
+    },
+    "corporate_tax_rate": {
+      "type": "number",
+      "default": 12.5,
+      "description": "Corporate tax rate percentage (Cyprus: 12.5%)"
+    },
+    "vat_rate": {
+      "type": "number",
+      "default": 19,
+      "description": "VAT rate percentage"
+    },
+    "target_food_cost_pct": {
+      "type": "number",
+      "default": 30,
+      "description": "Target food cost percentage"
+    },
+    "target_labor_cost_pct": {
+      "type": "number",
+      "default": 25,
+      "description": "Target labor cost percentage"
+    },
+    "target_overhead_pct": {
+      "type": "number",
+      "default": 15,
+      "description": "Target overhead percentage"
+    },
+    "target_profit_margin_pct": {
+      "type": "number",
+      "default": 20,
+      "description": "Target profit margin percentage"
+    },
+    "audit_period_default": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "monthly",
+        "quarterly"
+      ],
+      "default": "monthly",
+      "description": "Default audit period"
+    },
+    "vat_registered": {
+      "type": "boolean",
+      "default": false,
+      "description": "VAT registration status"
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "VAT registration number"
+    },
+    "vat_quarter_group": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ],
+      "description": "VAT quarter group assigned by tax office"
+    },
+    "default_vat_rates": {
+      "type": "string",
+      "default": "[0,5,19,\"exempt\",\"reverse_charge\"]",
+      "description": "JSON array of available VAT rates"
+    },
+    "chart_of_accounts_template": {
+      "type": "string",
+      "description": "JSON string with chart of accounts"
+    }
+  },
+  "required": [
+    "name",
+    "industry_group",
+    "owner_email"
+  ]
+}

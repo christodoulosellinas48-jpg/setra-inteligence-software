@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import {
   Wine, Users, Coffee, PartyPopper, Cake, Store, ShoppingBag, Hotel, UtensilsCrossed,
-  ArrowRight, ArrowLeft, Building2, Loader2, Info, Plus, X
+  ArrowRight, ArrowLeft, Building2, Loader2, Info, Plus, X, Layers, ChevronDown, Check
 } from 'lucide-react';
 
 // Country config: currency, VAT rate, corp tax
@@ -72,6 +72,10 @@ export default function CreateBusiness() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showNotSureTooltip, setShowNotSureTooltip] = useState(false);
+  const [existingGroups, setExistingGroups] = useState([]);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [groupMode, setGroupMode] = useState('none'); // 'none' | 'existing' | 'new'
+  const [selectedGroupId, setSelectedGroupId] = useState('');
 
   const defaultFormData = {
     name: '',
@@ -101,6 +105,16 @@ export default function CreateBusiness() {
   useEffect(() => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
   }, [formData]);
+
+  // Load existing groups for this user
+  useEffect(() => {
+    base44.auth.me().then(user => {
+      if (!user) return;
+      base44.entities.BusinessGroup.filter({ owner_email: user.email })
+        .then(groups => setExistingGroups(groups || []))
+        .catch(() => {});
+    });
+  }, []);
 
   const update = (patch) => setFormData(prev => ({ ...prev, ...patch }));
 
@@ -151,6 +165,18 @@ export default function CreateBusiness() {
 
       const user = await base44.auth.me();
 
+      // Resolve group ID
+      let groupId = '';
+      if (groupMode === 'new' && newGroupName.trim()) {
+        const group = await base44.entities.BusinessGroup.create({
+          name: newGroupName.trim(),
+          owner_email: user.email,
+        });
+        groupId = group.id;
+      } else if (groupMode === 'existing' && selectedGroupId) {
+        groupId = selectedGroupId;
+      }
+
       const business = await base44.entities.Business.create({
         name: formData.name,
         industry_group: formData.industry_group,
@@ -167,6 +193,7 @@ export default function CreateBusiness() {
         purchases_food_bev: 0,
         utilities: 0,
         other_operating: 0,
+        ...(groupId ? { group_id: groupId } : {}),
       });
 
       await base44.entities.BusinessMember.create({
@@ -239,6 +266,72 @@ export default function CreateBusiness() {
                 placeholder="e.g., The Corner Café"
                 className="bg-slate-800 border-slate-700 text-white"
               />
+            </div>
+
+            {/* Group assignment */}
+            <div className="border border-white/[0.06] rounded-xl p-5 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Layers className="w-4 h-4 text-[#C084FC]" />
+                <p className="text-sm font-semibold text-white">Assign to a Group</p>
+                <span className="text-xs text-slate-500 ml-1">— optional, for multi-venue operators</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { v: 'none', l: 'No group' },
+                  { v: 'new', l: 'Create new group' },
+                  ...(existingGroups.length > 0 ? [{ v: 'existing', l: 'Add to existing' }] : []),
+                ].map(opt => (
+                  <button
+                    key={opt.v}
+                    onClick={() => setGroupMode(opt.v)}
+                    className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all text-center ${
+                      groupMode === opt.v
+                        ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/50 text-white'
+                        : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:border-slate-600'
+                    }`}
+                  >
+                    {opt.l}
+                  </button>
+                ))}
+              </div>
+
+              {groupMode === 'new' && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                  <Label className="text-slate-400 mb-2 block text-xs">Group name</Label>
+                  <Input
+                    value={newGroupName}
+                    onChange={e => setNewGroupName(e.target.value)}
+                    placeholder="e.g., Mezé Co. Group"
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </motion.div>
+              )}
+
+              {groupMode === 'existing' && existingGroups.length > 0 && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-2">
+                  <Label className="text-slate-400 mb-2 block text-xs">Select group</Label>
+                  <div className="space-y-1.5">
+                    {existingGroups.map(g => (
+                      <button
+                        key={g.id}
+                        onClick={() => setSelectedGroupId(g.id)}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-all ${
+                          selectedGroupId === g.id
+                            ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/50 text-white'
+                            : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-600'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Layers className="w-3.5 h-3.5 text-slate-500" />
+                          {g.name}
+                        </span>
+                        {selectedGroupId === g.id && <Check className="w-4 h-4 text-[#C084FC]" />}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Venue type */}

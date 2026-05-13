@@ -1,0 +1,22 @@
+{
+  "name": "BusinessGroup",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Group name (e.g., Mez\u00e9 Co. Group)"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the group owner"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description"
+    }
+  },
+  "required": [
+    "name",
+    "owner_email"
+  ]
+}
