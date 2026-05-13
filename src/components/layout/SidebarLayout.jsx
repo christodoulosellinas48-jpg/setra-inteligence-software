@@ -97,7 +97,10 @@ export default function SidebarLayout({ children }) {
               />
             </div>
           ) : (
-            <LogoLink className="h-10" />
+            <div>
+              <LogoLink className="h-10" />
+              <p className="text-[9px] font-semibold text-slate-600 uppercase tracking-widest mt-1 pl-1">Intelligence Platform</p>
+            </div>
           )}
         </div>
 

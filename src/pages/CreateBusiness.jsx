@@ -108,22 +108,18 @@ export default function CreateBusiness() {
   const handleCountryChange = (countryCode) => {
     const c = COUNTRIES.find(c => c.value === countryCode);
     if (!c) return;
+    // Always use the standard VAT rate for the country (never a reduced rate as the default)
     update({
       country: countryCode,
       currency: c.currency,
-      vat_rate: formData.industry_group
-        ? (countryCode === 'CY' ? INDUSTRY_REDUCED_VAT[formData.industry_group] ?? c.vat : c.vat)
-        : c.vat,
+      vat_rate: c.vat,
       corp_tax_rate: c.corp_tax,
     });
   };
 
-  // Auto-adjust reduced VAT when industry changes
+  // Auto-adjust industry group (keep standard VAT rate unchanged)
   const handleIndustryChange = (type) => {
-    const country = COUNTRIES.find(c => c.value === formData.country);
-    const stdVat = country?.vat ?? 19;
-    const reducedVat = formData.country === 'CY' ? INDUSTRY_REDUCED_VAT[type] ?? stdVat : stdVat;
-    update({ industry_group: type, vat_rate: reducedVat });
+    update({ industry_group: type });
   };
 
   const addReducedRate = () => {

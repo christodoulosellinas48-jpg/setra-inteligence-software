@@ -45,6 +45,7 @@ export default function CashFlowMiniChart({ currentBusiness, snapshots }) {
     return data;
   }, [currentBusiness, snapshots]);
 
+  const hasRevenue = (currentBusiness?.monthly_revenue || 0) > 0;
   const trend = projectionData.length > 1 ? 
     projectionData[projectionData.length - 1].profit - projectionData[0].profit : 0;
 
@@ -61,6 +62,16 @@ export default function CashFlowMiniChart({ currentBusiness, snapshots }) {
     }
     return null;
   };
+
+  if (!hasRevenue) {
+    return (
+      <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center min-h-[280px] text-center">
+        <DollarSign className="w-10 h-10 text-slate-600 mb-3" />
+        <h3 className="text-base font-semibold text-white mb-1">Cash Flow Projection</h3>
+        <p className="text-sm text-slate-500 max-w-xs">Add 30 days of revenue to see cashflow projections</p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">

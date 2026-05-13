@@ -546,12 +546,12 @@ export default function OperationsHub() {
             </div>
             <div>
               <p className="text-sm font-semibold text-white">Need strategic guidance?</p>
-              <p className="text-xs text-slate-500">Your AI Counselor analyses your business and suggests where to act next.</p>
+              <p className="text-xs text-slate-500">Ask Setra analyses your business and suggests where to act next.</p>
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate('/Dashboard')}>
             <Zap className="w-4 h-4 mr-2 text-[#C084FC]" />
-            Open AI Counselor
+            Ask Setra
           </Button>
         </motion.div>
 

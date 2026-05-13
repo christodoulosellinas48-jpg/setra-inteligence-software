@@ -3,11 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { base44 } from '@/api/base44Client';
 import { pagesConfig } from '@/pages.config';
+import usePageTitle from './usePageTitle';
 
 export default function NavigationTracker() {
     const location = useLocation();
     const { isAuthenticated } = useAuth();
     const { Pages, mainPage } = pagesConfig;
+    usePageTitle();
     const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 
     // Log user activity when navigating to a page

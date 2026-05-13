@@ -490,6 +490,7 @@ export default function Vendors() {
         <Card className="bg-[#151528]/80 border-white/5 p-4">
           <p className="text-slate-400 text-sm">Total Spend</p>
           <p className="text-3xl font-bold text-white mt-1">{currencySymbol}{totalSpend.toLocaleString()}</p>
+          <p className="text-xs text-slate-600 mt-1">All-time, from supplier records</p>
         </Card>
         <Card className="bg-[#151528]/80 border-white/5 p-4">
           <p className="text-slate-400 text-sm">Top Category</p>

@@ -170,10 +170,28 @@ export function generateInsights(calculations, businessType) {
       message: `Profit margin at ${profitMargin.toFixed(1)}% shows room for improvement. Industry leaders achieve ${benchmarks.profitMargin.healthy}%+ margins.`
     });
   } else if (profitMargin >= benchmarks.profitMargin.healthy) {
-    insights.push({
-      type: 'success',
-      message: `Excellent profit margin of ${profitMargin.toFixed(1)}%! You're outperforming typical ${BENCHMARKS[businessType]?.displayName || 'hospitality'} benchmarks.`
-    });
+    // Sanity check: if food/staff costs are implausibly low, warn instead of celebrate
+    const foodCostTooLow = foodCostRatio > 0 && foodCostRatio < benchmarks.foodCostRatio.healthy * 0.5;
+    const staffCostTooLow = staffCostRatio > 0 && staffCostRatio < benchmarks.staffCostRatio.healthy * 0.5;
+    if (foodCostTooLow || staffCostTooLow) {
+      if (foodCostTooLow) {
+        insights.push({
+          type: 'warning',
+          message: `Your food cost is ${foodCostRatio.toFixed(1)}% of revenue — well below the typical ${benchmarks.foodCostRatio.healthy}%+ range for a ${BENCHMARKS[businessType]?.displayName || 'restaurant'}. Have you entered all your F&B purchases?`
+        });
+      }
+      if (staffCostTooLow) {
+        insights.push({
+          type: 'warning',
+          message: `Your staff cost is ${staffCostRatio.toFixed(1)}% of revenue — well below the typical ${benchmarks.staffCostRatio.healthy}%+ range. Have you entered all your staff costs?`
+        });
+      }
+    } else {
+      insights.push({
+        type: 'success',
+        message: `Excellent profit margin of ${profitMargin.toFixed(1)}%! You're outperforming typical ${BENCHMARKS[businessType]?.displayName || 'hospitality'} benchmarks.`
+      });
+    }
   }
   
   if (foodCostRatio > benchmarks.foodCostRatio.warning) {

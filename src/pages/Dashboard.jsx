@@ -306,6 +306,7 @@ function DashboardContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/ConsolidatedView')}
+                title="Compare all your venues in one view"
                 className="text-xs h-8"
               >
                 <Building2 className="w-3.5 h-3.5 mr-1.5" />
@@ -315,10 +316,11 @@ function DashboardContent() {
                 size="sm"
                 variant="outline"
                 onClick={() => setShowCounselorChat(true)}
+                title="Chat with Setra's AI for financial advice and insights"
                 className="text-xs h-8 border-[#7B3BFF]/40 text-[#C084FC] hover:bg-[#7B3BFF]/10"
               >
                 <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                AI Counselor
+                Ask Setra
               </Button>
               {financials && (
                 <Button

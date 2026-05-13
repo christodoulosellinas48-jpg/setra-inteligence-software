@@ -27,6 +27,7 @@ export default function BudgetVsActualMini({ budget, actual }) {
   const totalBudget = chartData.reduce((sum, d) => sum + d.budget, 0);
   const totalActual = chartData.reduce((sum, d) => sum + d.value, 0);
   const overallVariance = totalBudget > 0 ? ((totalActual - totalBudget) / totalBudget) * 100 : 0;
+  const noBudget = !budget || totalBudget === 0;
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -41,6 +42,19 @@ export default function BudgetVsActualMini({ budget, actual }) {
     }
     return null;
   };
+
+  if (noBudget) {
+    return (
+      <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center min-h-[280px] text-center">
+        <TrendingDown className="w-10 h-10 text-slate-600 mb-3" />
+        <h3 className="text-base font-semibold text-white mb-1">Budget Performance</h3>
+        <p className="text-sm text-slate-500 mb-4 max-w-xs">No budget set — create a budget to track performance against targets</p>
+        <a href="/Budgeting" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#7B3BFF]/20 border border-[#7B3BFF]/30 text-[#C084FC] text-xs font-medium rounded-lg hover:bg-[#7B3BFF]/30 transition-colors">
+          Set a budget →
+        </a>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-slate-900/50 border-slate-800 p-6 rounded-2xl">
