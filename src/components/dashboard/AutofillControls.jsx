@@ -36,24 +36,37 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
 
       const data = {};
 
-      // 1. Fetch from FinancialSnapshot if available (only for specific month, not all time)
+      // 1. Fetch from FinancialSnapshot — highest priority source
+      const snapshots = await base44.entities.FinancialSnapshot.filter(
+        { business_id: businessId },
+        '-period_start',
+        24
+      );
+
+      let relevantSnapshot = null;
       if (!isAllTime) {
-        const snapshots = await base44.entities.FinancialSnapshot.filter(
-          { business_id: businessId },
-          '-period_start',
-          10
-        );
-        const relevantSnapshot = snapshots.find(s => {
+        // Match by period_start falling within the selected month
+        relevantSnapshot = snapshots.find(s => {
+          if (!s.period_start) return false;
           const snapshotDate = new Date(s.period_start);
           return snapshotDate >= periodStart && snapshotDate <= periodEnd;
         });
-        if (relevantSnapshot) {
-          if (relevantSnapshot.monthly_revenue) data.monthly_revenue = relevantSnapshot.monthly_revenue;
-          if (relevantSnapshot.rent_fixed_costs) data.rent_fixed_costs = relevantSnapshot.rent_fixed_costs;
-          if (relevantSnapshot.purchases_food_bev) data.purchases_food_bev = relevantSnapshot.purchases_food_bev;
-          if (relevantSnapshot.utilities) data.utilities = relevantSnapshot.utilities;
-          if (relevantSnapshot.other_operating) data.other_operating = relevantSnapshot.other_operating;
+        // Fallback: use the most recent snapshot if nothing matches this exact month
+        if (!relevantSnapshot && snapshots.length > 0) {
+          relevantSnapshot = snapshots[0];
         }
+      } else {
+        // All time: use the most recent snapshot
+        relevantSnapshot = snapshots.length > 0 ? snapshots[0] : null;
+      }
+
+      if (relevantSnapshot) {
+        if (relevantSnapshot.monthly_revenue > 0) data.monthly_revenue = relevantSnapshot.monthly_revenue;
+        if (relevantSnapshot.rent_fixed_costs > 0) data.rent_fixed_costs = relevantSnapshot.rent_fixed_costs;
+        if (relevantSnapshot.purchases_food_bev > 0) data.purchases_food_bev = relevantSnapshot.purchases_food_bev;
+        if (relevantSnapshot.utilities > 0) data.utilities = relevantSnapshot.utilities;
+        if (relevantSnapshot.other_operating > 0) data.other_operating = relevantSnapshot.other_operating;
+        if (relevantSnapshot.staff_costs > 0) data.staff_costs = relevantSnapshot.staff_costs;
       }
 
       // 2. Auto-fetch staff costs from LaborShift (fetch all for business, filter client-side)
@@ -125,12 +138,13 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
       // Only use invoice staff costs if payroll didn't already fill staff_costs
       if (staffCostsFromInvoices > 0 && !data.staff_costs) data.staff_costs = staffCostsFromInvoices;
 
-      console.log('Autofill final data:', data);
       if (Object.keys(data).length === 0) {
-        setFeedback('No data found for this period');
+        setFeedback('No data found for this period. Try a different month or enter manually.');
       } else {
         onApplyData(data);
-        setFeedback(`✓ Auto-filled: ${Object.keys(data).join(', ')}`);
+        const fieldLabels = { monthly_revenue: 'Revenue', purchases_food_bev: 'F&B', staff_costs: 'Staff', rent_fixed_costs: 'Rent', utilities: 'Utilities', other_operating: 'Other' };
+        const filled = Object.keys(data).map(k => fieldLabels[k] || k).join(', ');
+        setFeedback(`✓ Filled: ${filled}`);
         setShowOptions(false);
       }
     } catch (error) {

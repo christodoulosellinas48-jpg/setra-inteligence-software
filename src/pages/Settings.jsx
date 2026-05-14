@@ -105,9 +105,25 @@ function SettingsContent() {
     vat_registered: currentBusiness?.vat_registered || false,
     vat_number: currentBusiness?.vat_number || '',
     vat_quarter_group: currentBusiness?.vat_quarter_group || 'A',
-    standard_vat_rate: currentBusiness?.target_food_cost_pct || 19,
+    standard_vat_rate: currentBusiness?.vat_rate || 19,
     corporate_tax_rate: currentBusiness?.corporate_tax_rate || 12.5,
   });
+
+  // Sync form when active business changes (e.g. switching between venues)
+  useEffect(() => {
+    if (!currentBusiness) return;
+    setBusinessForm({
+      name: currentBusiness.name || '',
+      country: currentBusiness.country || 'CY',
+      currency: currentBusiness.currency || 'EUR',
+      address: currentBusiness.address || '',
+      vat_registered: currentBusiness.vat_registered || false,
+      vat_number: currentBusiness.vat_number || '',
+      vat_quarter_group: currentBusiness.vat_quarter_group || 'A',
+      standard_vat_rate: currentBusiness.vat_rate || 19,
+      corporate_tax_rate: currentBusiness.corporate_tax_rate || 12.5,
+    });
+  }, [currentBusiness?.id]);
 
   const updateBusiness = useMutation({
     mutationFn: (data) => base44.entities.Business.update(currentBusiness.id, data),

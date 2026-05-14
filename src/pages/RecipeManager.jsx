@@ -50,7 +50,7 @@ function FoodCostDisplay({ pct, target }) {
 }
 
 function RecipeManagerContent() {
-  const { currentBusiness, canEdit } = useBusiness();
+  const { currentBusiness, canEdit, businesses } = useBusiness();
   const qc = useQueryClient();
   const [selectedItem, setSelectedItem] = useState(null);
   const [sectionFilter, setSectionFilter] = useState('all');
@@ -85,18 +85,22 @@ function RecipeManagerContent() {
   });
 
   const bulkImportMutation = useMutation({
-    mutationFn: async (importedItems) => {
+    mutationFn: async ({ importedItems, targetBusinessId }) => {
+      const bizId = targetBusinessId || currentBusiness.id;
       for (const item of importedItems) {
         await base44.entities.Item.create({
-          business_id: currentBusiness.id,
+          business_id: bizId,
           name: item.name,
           category: item.category || 'main',
           selling_price: parseFloat(item.selling_price) || 0,
+          notes: item.section_name ? `Section: ${item.section_name}` : undefined,
           active: true
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries(['items', currentBusiness?.id])
+    onSuccess: () => {
+      qc.invalidateQueries(['items']);
+    }
   });
 
   const deleteItemMutation = useMutation({
@@ -292,9 +296,13 @@ function RecipeManagerContent() {
                       </div>
                       <div className="text-right ml-2 shrink-0">
                         <p className="text-white text-sm">€{item.selling_price?.toFixed(2)}</p>
-                        {fcp !== null && (
+                        {fcp !== null && fcp > 0 ? (
                           <p className={`text-xs font-semibold ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
-                        )}
+                        ) : fcp === 0 && recipes.filter(r => r.item_id === item.id).length === 0 ? (
+                          <p className="text-xs text-slate-600">FC: n/a</p>
+                        ) : fcp !== null ? (
+                          <p className={`text-xs font-semibold ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
+                        ) : null}
                       </div>
                     </div>
                     {canEdit() && (
@@ -515,10 +523,11 @@ function RecipeManagerContent() {
       <MenuImportModal
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
-        onImport={async (importedItems) => {
-          await bulkImportMutation.mutateAsync(importedItems);
+        onImport={async (importedItems, targetBusinessId) => {
+          await bulkImportMutation.mutateAsync({ importedItems, targetBusinessId });
         }}
         businessId={currentBusiness?.id}
+        businesses={businesses || []}
       />
     </div>
   );
