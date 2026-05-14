@@ -420,7 +420,7 @@ export default function Vendors() {
     ]);
   });
 
-  const { data: suppliers = [], isLoading: loadingSuppliers } = useQuery({
+  const { data: supplierRecords = [], isLoading: loadingSuppliers } = useQuery({
     queryKey: ['suppliers', currentBusiness?.id],
     queryFn: () => base44.entities.Supplier.filter({ business_id: currentBusiness.id }, '-total_spend'),
     enabled: !!currentBusiness,
@@ -428,7 +428,7 @@ export default function Vendors() {
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['allExpenses', currentBusiness?.id],
-    queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-invoice_date', 100),
+    queryFn: () => base44.entities.ExpenseDocument.filter({ business_id: currentBusiness.id }, '-invoice_date', 500),
     enabled: !!currentBusiness,
   });
 
@@ -438,13 +438,52 @@ export default function Vendors() {
     enabled: !!currentBusiness,
   });
 
-  const totalSpend = suppliers.reduce((s, v) => s + (v.total_spend || 0), 0);
+  // Build a virtual supplier list from ExpenseDocuments so vendors always appear
+  // even if the Supplier FK was never set during invoice upload.
+  const suppliers = useMemo(() => {
+    if (expenses.length === 0 && supplierRecords.length === 0) return [];
+
+    // Group expenses by supplier name
+    const expenseMap = {};
+    expenses.forEach(e => {
+      const name = (e.supplier_name || '').trim();
+      if (!name) return;
+      if (!expenseMap[name]) {
+        expenseMap[name] = { name, total_spend: 0, invoice_count: 0, last_order_date: null, category: e.expense_category || 'other', invoices: [] };
+      }
+      expenseMap[name].total_spend += (e.invoice_total || 0);
+      expenseMap[name].invoice_count += 1;
+      if (e.invoice_date && (!expenseMap[name].last_order_date || e.invoice_date > expenseMap[name].last_order_date)) {
+        expenseMap[name].last_order_date = e.invoice_date;
+      }
+      expenseMap[name].invoices.push(e);
+    });
+
+    // Merge with actual Supplier records (they may have contact details)
+    const merged = { ...expenseMap };
+    supplierRecords.forEach(s => {
+      const name = (s.name || '').trim();
+      if (merged[name]) {
+        // Enrich with contact details from the Supplier record
+        merged[name] = { ...merged[name], ...s, name, total_spend: merged[name].total_spend, invoice_count: merged[name].invoice_count, last_order_date: merged[name].last_order_date };
+      } else {
+        merged[name] = { ...s, name, invoices: [] };
+      }
+    });
+
+    return Object.values(merged).sort((a, b) => (b.total_spend || 0) - (a.total_spend || 0));
+  }, [expenses, supplierRecords]);
+
+  const totalSpend = useMemo(() => expenses.reduce((s, e) => s + (e.invoice_total || 0), 0), [expenses]);
   const topCategory = useMemo(() => {
     const catMap = {};
     suppliers.forEach(s => { catMap[s.category] = (catMap[s.category] || 0) + (s.total_spend || 0); });
     const top = Object.entries(catMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
     return CATEGORY_OPTIONS.find(c => c.value === top)?.label || top?.replace(/_/g, ' ') || '';
   }, [suppliers]);
+
+  // loading state is only true when no data yet (both suppliers & expenses pending)
+  const isLoading = loadingSuppliers;
 
   if (!currentBusiness) return (
     <div className="p-8 text-center text-slate-400">No business selected.</div>
@@ -501,7 +540,7 @@ export default function Vendors() {
       </div>
 
       {/* Supplier List */}
-      {loadingSuppliers ? (
+      {isLoading ? (
         <div className="text-center text-slate-400 py-12">Loading suppliers...</div>
       ) : suppliers.length === 0 ? (
         <Card className="bg-[#151528]/80 border-white/5 p-12 text-center">

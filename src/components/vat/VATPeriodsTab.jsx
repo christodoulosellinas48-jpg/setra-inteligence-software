@@ -8,8 +8,40 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit2, Trash2, CalendarDays, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, CalendarDays, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
+
+// Helper: get VAT quarter bounds for a date
+function getQuarterForDate(dateStr, quarterGroup = 'A') {
+  const d = new Date(dateStr);
+  const year = d.getFullYear();
+  const month = d.getMonth(); // 0-indexed
+
+  // Quarter groups determine which months = which quarter
+  // Group A: Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec
+  // Group B: Feb-Apr, May-Jul, Aug-Oct, Nov-Jan
+  // Group C: Mar-May, Jun-Aug, Sep-Nov, Dec-Feb
+  const offsets = { A: 0, B: 1, C: 2 };
+  const offset = offsets[quarterGroup] || 0;
+  const adjustedMonth = (month - offset + 12) % 12;
+  const qStart = Math.floor(adjustedMonth / 3) * 3 + offset;
+
+  const startMonth = qStart % 12;
+  const startYear = qStart > month + 12 ? year - 1 : (startMonth > month ? year - 1 : year);
+  const endMonth = (startMonth + 2) % 12;
+  const endYear = startMonth + 2 > 11 ? startYear + 1 : startYear;
+
+  const periodStart = `${startYear}-${String(startMonth + 1).padStart(2, '0')}-01`;
+  // last day of end month
+  const lastDay = new Date(endYear, endMonth + 1, 0).getDate();
+  const periodEnd = `${endYear}-${String(endMonth + 1).padStart(2, '0')}-${lastDay}`;
+  // Filing deadline = 10th of 2nd month after period end
+  const deadlineMonth = (endMonth + 2) % 12;
+  const deadlineYear = endMonth + 2 > 11 ? endYear + 1 : endYear;
+  const filingDeadline = `${deadlineYear}-${String(deadlineMonth + 1).padStart(2, '0')}-10`;
+
+  return { periodStart, periodEnd, filingDeadline, key: periodStart };
+}
 
 const STATUS_CONFIG = {
   open:   { label: 'Open',   className: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
@@ -27,6 +59,7 @@ export default function VATPeriodsTab({ business }) {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [autoGenerating, setAutoGenerating] = useState(false);
 
   const { data: periods = [], isLoading } = useQuery({
     queryKey: ['vatPeriods', business?.id],
@@ -78,6 +111,48 @@ export default function VATPeriodsTab({ business }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  const handleAutoGenerate = async () => {
+    setAutoGenerating(true);
+    try {
+      // Fetch all expenses for this business to find date range
+      const expenses = await base44.entities.ExpenseDocument.filter(
+        { business_id: business.id }, '-invoice_date', 500
+      );
+      const dates = expenses.map(e => e.invoice_date).filter(Boolean).sort();
+      if (dates.length === 0) { setAutoGenerating(false); return; }
+
+      const quarterGroup = business.vat_quarter_group || 'A';
+      const quartersNeeded = new Map();
+
+      dates.forEach(d => {
+        const q = getQuarterForDate(d, quarterGroup);
+        if (!quartersNeeded.has(q.key)) quartersNeeded.set(q.key, q);
+      });
+
+      // Also aggregate VAT from expenses per quarter
+      const existingKeys = new Set(periods.map(p => p.period_start));
+      for (const [key, q] of quartersNeeded) {
+        if (existingKeys.has(q.periodStart)) continue; // skip if already exists
+        const periodExpenses = expenses.filter(e => e.invoice_date >= q.periodStart && e.invoice_date <= q.periodEnd);
+        const inputVat = periodExpenses.reduce((s, e) => s + (e.vat_amount || 0), 0);
+        await base44.entities.VATPeriod.create({
+          business_id: business.id,
+          period_start: q.periodStart,
+          period_end: q.periodEnd,
+          filing_deadline: q.filingDeadline,
+          status: 'open',
+          input_vat: Math.round(inputVat * 100) / 100,
+          output_vat: 0,
+          net_vat_payable: -Math.round(inputVat * 100) / 100,
+        });
+      }
+      qc.invalidateQueries(['vatPeriods', business?.id]);
+    } catch (err) {
+      console.error('Auto-generate error:', err);
+    }
+    setAutoGenerating(false);
+  };
+
   const daysUntilDeadline = (deadline) => {
     if (!deadline) return null;
     return differenceInDays(new Date(deadline), new Date());
@@ -87,9 +162,15 @@ export default function VATPeriodsTab({ business }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-white">VAT Periods</h2>
-        <Button onClick={openAdd} size="sm">
-          <Plus className="w-4 h-4 mr-2" /> New Period
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleAutoGenerate} disabled={autoGenerating}>
+            {autoGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+            Auto-generate from invoices
+          </Button>
+          <Button onClick={openAdd} size="sm">
+            <Plus className="w-4 h-4 mr-2" /> New Period
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

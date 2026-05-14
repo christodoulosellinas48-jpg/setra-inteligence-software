@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     const {
       business_id,
       expense_document_id,
+      document_id, // from Bookkeeping Inbox approval
       supplier_name,
       supplier_vat_number,
       invoice_date,
@@ -53,9 +54,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Mark document as processing
+    // Mark documents as processing
     if (expense_document_id) {
       await base44.entities.ExpenseDocument.update(expense_document_id, { status: 'processing' });
+    }
+    if (document_id) {
+      await base44.entities.Document.update(document_id, { status: 'approved' });
     }
 
     // Re-validate / improve the category via the dedicated AI categorizer
@@ -304,6 +308,10 @@ Deno.serve(async (req) => {
           snapshot: results.snapshot_updated
         })
       });
+    }
+    // Mark bookkeeping Document as posted
+    if (document_id) {
+      await base44.entities.Document.update(document_id, { status: 'posted' });
     }
 
     return Response.json({ success: true, results });

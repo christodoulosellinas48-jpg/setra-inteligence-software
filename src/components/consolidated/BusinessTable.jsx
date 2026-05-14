@@ -141,10 +141,10 @@ export default function BusinessTable({ businesses, onViewBusiness, userEmail, g
                   {fmtEur(business.profit)}
                 </td>
                 <td className="py-3 px-4 text-right text-slate-300 text-sm font-mono">
-                  {business.margin !== null ? `${business.margin.toFixed(1)}%` : '—'}
+                  {business.revenue ? `${business.margin !== null ? business.margin.toFixed(1) : '0.0'}%` : '—'}
                 </td>
                 <td className="py-3 px-4 text-center">
-                  {business.healthScore !== null ? (
+                  {business.healthScore !== null && business.revenue > 0 ? (
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
                       business.status === 'healthy' ? 'bg-emerald-500/20 text-emerald-400' :
                       business.status === 'warning' ? 'bg-amber-500/20 text-amber-400' :

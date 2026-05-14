@@ -109,9 +109,21 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
         .filter(e => ['operating_expenses', 'one_off_expenses'].includes(e.expense_category))
         .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
 
+      const fixedCostsTotal = periodExpenses
+        .filter(e => e.expense_category === 'fixed_costs')
+        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
+
+      // Staff costs from invoices (only if not already filled from payroll)
+      const staffCostsFromInvoices = periodExpenses
+        .filter(e => e.expense_category === 'staff_costs')
+        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
+
       if (foodBevTotal > 0) data.purchases_food_bev = foodBevTotal;
       if (utilitiesTotal > 0) data.utilities = utilitiesTotal;
       if (otherTotal > 0) data.other_operating = otherTotal;
+      if (fixedCostsTotal > 0) data.rent_fixed_costs = fixedCostsTotal;
+      // Only use invoice staff costs if payroll didn't already fill staff_costs
+      if (staffCostsFromInvoices > 0 && !data.staff_costs) data.staff_costs = staffCostsFromInvoices;
 
       console.log('Autofill final data:', data);
       if (Object.keys(data).length === 0) {

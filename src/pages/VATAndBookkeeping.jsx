@@ -107,8 +107,10 @@ function VATSection({ business, hasPermission }) {
               {business.default_vat_rates && (() => {
                 try {
                   const rates = JSON.parse(business.default_vat_rates);
-                  const reduced = rates.filter(r => typeof r === 'number' && r > 0 && r < (business.vat_rate ?? 19));
-                  return reduced.length > 0 ? ` · Reduced: ${reduced.join('%, ')}%` : null;
+                  const standardRate = business.vat_rate ?? 19;
+                  const reduced = rates.filter(r => typeof r === 'number' && r > 0 && r < standardRate);
+                  if (reduced.length === 0) return null;
+                  return ' · Reduced: ' + reduced.map(r => `${r}%`).join(', ');
                 } catch { return null; }
               })()}
             </p>

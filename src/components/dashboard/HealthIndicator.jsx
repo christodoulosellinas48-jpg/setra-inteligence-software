@@ -29,11 +29,22 @@ export default function HealthIndicator({ status, score, noData = false }) {
     );
   }
 
+  // Tiered copy by score band
+  const getTieredCopy = (s, sc) => {
+    if (s === 'risk' || (sc !== undefined && sc < 30)) return { title: 'Critical Issues', description: 'Critical issues detected — act immediately to prevent further losses.' };
+    if (s === 'risk' || (sc !== undefined && sc < 50)) return { title: 'Multiple Risks', description: 'Several risks identified. Review cost structure and revenue now.' };
+    if (s === 'warning' || (sc !== undefined && sc < 70)) return { title: 'Stable, Needs Attention', description: 'Business is stable but several areas need attention to improve margins.' };
+    if (sc !== undefined && sc < 90) return { title: 'Healthy with Room to Optimise', description: 'Good financial health — a few optimisations could push margins higher.' };
+    return { title: 'Strong Financial Health', description: 'Strong financial health with balanced cost structures. Keep it up.' };
+  };
+
+  const tiered = getTieredCopy(status, score);
+
   const configs = {
     healthy: {
       icon: Shield,
-      title: 'Healthy Position',
-      description: 'Your business shows strong financial health with balanced cost structures.',
+      title: tiered.title,
+      description: tiered.description,
       gradient: 'from-emerald-500/20 via-emerald-500/10 to-transparent',
       border: 'border-emerald-500/30',
       iconBg: 'bg-emerald-500/20',
@@ -43,8 +54,8 @@ export default function HealthIndicator({ status, score, noData = false }) {
     },
     warning: {
       icon: AlertTriangle,
-      title: 'Margin Pressure',
-      description: 'Some cost ratios are approaching threshold levels. Review recommended actions.',
+      title: tiered.title,
+      description: tiered.description,
       gradient: 'from-amber-500/20 via-amber-500/10 to-transparent',
       border: 'border-amber-500/30',
       iconBg: 'bg-amber-500/20',
@@ -54,8 +65,8 @@ export default function HealthIndicator({ status, score, noData = false }) {
     },
     risk: {
       icon: AlertOctagon,
-      title: 'Profitability Risk',
-      description: 'Critical cost structure issues detected. Immediate attention required.',
+      title: tiered.title,
+      description: tiered.description,
       gradient: 'from-rose-500/20 via-rose-500/10 to-transparent',
       border: 'border-rose-500/30',
       iconBg: 'bg-rose-500/20',
@@ -65,7 +76,7 @@ export default function HealthIndicator({ status, score, noData = false }) {
     }
   };
 
-  const config = configs[status] || configs.healthy;
+  const config = configs[status] || configs.risk;
   const Icon = config.icon;
 
   return (

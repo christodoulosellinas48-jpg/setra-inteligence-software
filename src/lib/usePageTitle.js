@@ -21,7 +21,7 @@ const PAGE_TITLES = {
   '/PurchaseOrders': 'Purchase Orders',
   '/Integrations': 'Setra Connect',
   '/Settings': 'Settings',
-  '/ConsolidatedView': 'Multi-Site View',
+  '/ConsolidatedView': 'Consolidated View',
   '/CreateBusiness': 'Create Business',
   '/Onboarding': 'Onboarding',
   '/Invitations': 'Invitations',
