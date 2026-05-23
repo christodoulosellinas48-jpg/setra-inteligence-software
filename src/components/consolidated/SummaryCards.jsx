@@ -12,6 +12,8 @@ export default function SummaryCards({ metrics }) {
     ? metrics.avgHealthScore.toFixed(0)
     : '—';
 
+  const showHealthCard = hasRealData && metrics.avgMargin >= 0;
+
   const cards = [
     {
       icon: DollarSign,
@@ -27,13 +29,13 @@ export default function SummaryCards({ metrics }) {
       sub: metrics.totalRevenue > 0 ? `${metrics.avgMargin.toFixed(1)}% avg margin` : 'Enter revenue data to calculate',
       valueClass: metrics.totalProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
     },
-    {
+    ...(showHealthCard ? [{
       icon: BarChart3,
       label: 'Portfolio Health',
       value: healthScoreDisplay,
-      sub: hasRealData && metrics.avgHealthScore !== null ? 'Average across active venues' : 'Add revenue data to calculate',
+      sub: 'Average across active venues',
       valueClass: 'text-white'
-    },
+    }] : []),
     {
       icon: Building2,
       label: 'Active Businesses',

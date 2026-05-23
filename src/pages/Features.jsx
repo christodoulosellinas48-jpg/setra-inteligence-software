@@ -59,7 +59,7 @@ export default function Features() {
     },
     {
       icon: Target,
-      title: "Cost Control",
+      title: "Budget",
       description: "Monitor and optimize your operational expenses in real-time",
       details: [
         "Food cost ratio tracking",
@@ -101,7 +101,7 @@ export default function Features() {
     },
     {
       icon: LineChart,
-      title: "Forecasting",
+      title: "Forecast",
       description: "AI-powered financial projections and scenario modeling",
       details: [
         "6-month revenue and expense projections",

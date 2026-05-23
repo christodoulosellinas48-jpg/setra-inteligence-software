@@ -84,26 +84,60 @@ export default function Home() {
       <section className="relative min-h-[90vh] flex items-center justify-center px-4 sm:px-6 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto w-full relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-            {/* Left Side - Text & Features */}
+            {/* Left Side - Headline + Subhead + Checkmarks + CTAs */}
             <div>
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+                <motion.h1
+                  className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 tracking-wide uppercase"
+                  style={{ fontFamily: 'system-ui, -apple-system, sans-serif', letterSpacing: '0.12em' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <span className="bg-gradient-to-r from-[#E9D5FF] via-white to-[#E9D5FF] bg-clip-text text-transparent">
+                    {typedText1}
+                    {typedText1.length < text1.length && <span className="animate-pulse">|</span>}
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent">
+                    {typedText2}
+                    {typedText2.length > 0 && typedText2.length < text2.length && <span className="animate-pulse">|</span>}
+                  </span>
+                </motion.h1>
+                <p className="text-sm sm:text-base text-slate-400 mb-6 max-w-lg">
+                  See your real profitability, fix what's bleeding, and grow with confidence — without hiring a CFO.
+                </p>
+                <div className="space-y-3 mb-7">
                   <div className="flex items-center gap-2 text-[#C084FC]">
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm font-medium">See which dishes actually make you money</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#C084FC]">
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm font-medium">Hit VAT and bookkeeping deadlines automatically</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#C084FC]">
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                     <span className="text-xs sm:text-sm font-medium">Forecast cashflow before it's a problem</span>
                   </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => navigate('/Dashboard')}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white font-semibold text-sm hover:shadow-[0_0_30px_rgba(123,59,255,0.6)] transition-all duration-200 hover:scale-105"
+                  >
+                    Start free — no credit card
+                  </button>
+                  <button
+                    onClick={() => navigate('/Features')}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-medium text-sm hover:border-[#7B3BFF]/50 hover:text-white transition-all duration-200"
+                  >
+                    See how it works →
+                  </button>
                 </div>
               </motion.div>
             </div>
@@ -154,53 +188,7 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Headline Below */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-center mt-8 sm:mt-16"
-          >
-            <motion.h1 
-              className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 sm:mb-4 tracking-wide uppercase px-4"
-              style={{ fontFamily: 'system-ui, -apple-system, sans-serif', letterSpacing: '0.15em' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <span className="bg-gradient-to-r from-[#E9D5FF] via-white to-[#E9D5FF] bg-clip-text text-transparent">
-                {typedText1}
-                {typedText1.length < text1.length && <span className="animate-pulse">|</span>}
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent">
-                {typedText2}
-                {typedText2.length > 0 && typedText2.length < text2.length && <span className="animate-pulse">|</span>}
-              </span>
-            </motion.h1>
-            <p className="text-sm sm:text-lg text-slate-400 max-w-2xl mx-auto px-4">
-              See your real profitability, fix what's bleeding, and grow with confidence — without hiring a CFO.
-            </p>
-            <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 sm:mt-8 px-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1 }}
-            >
-              <button
-                onClick={() => navigate('/Dashboard')}
-                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white font-semibold text-sm hover:shadow-[0_0_30px_rgba(123,59,255,0.6)] transition-all duration-200 hover:scale-105"
-              >
-                Start free — no credit card
-              </button>
-              <button
-                onClick={() => navigate('/Features')}
-                className="w-full sm:w-auto px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-medium text-sm hover:border-[#7B3BFF]/50 hover:text-white transition-all duration-200"
-              >
-                See how it works →
-              </button>
-            </motion.div>
-          </motion.div>
+          {/* Spacer — headline + CTAs now live in left column */}
         </div>
       </section>
 

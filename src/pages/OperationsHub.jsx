@@ -479,12 +479,7 @@ export default function OperationsHub() {
                   {lowStockCount} low stock
                 </Badge>
               )}
-              {pendingExpenses.length === 0 && lowStockCount === 0 && (
-                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 border text-xs gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  All systems operational
-                </Badge>
-              )}
+              {/* Removed always-on "All systems operational" badge — no real integration data to back it */}
             </div>
           </div>
 
