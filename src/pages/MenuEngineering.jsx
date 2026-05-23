@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BusinessProvider, useBusiness } from '@/components/business/BusinessContext';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Cell } from 'recharts';
-import { Star, TrendingUp, HelpCircle, TrendingDown, RefreshCw, BarChart3, LayoutGrid, Info } from 'lucide-react';
+import { Star, TrendingUp, HelpCircle, TrendingDown, RefreshCw, BarChart3, LayoutGrid, Info, AlertTriangle, ChevronRight } from 'lucide-react';
 
 // Canonical color mapping — consistent everywhere
 const QUADRANTS = {
@@ -185,31 +185,47 @@ function MenuEngineeringContent() {
         return sum + unitCost * r.qty * (100 / (r.yield_pct || 100));
       }, 0);
 
-    const dishes = items.filter(i => i.active !== false).map(item => {
+    const allMapped = items.filter(i => i.active !== false).map(item => {
       const units = salesByItem[item.id] || 0;
       const ingredientCost = getIngredientCost(item.id);
+      const itemRecipes = recipes.filter(r => r.item_id === item.id);
+      const hasRecipe = itemRecipes.length > 0;
+      const hasRealCost = ingredientCost > 0;
       const margin = (item.selling_price || 0) - ingredientCost;
       const foodCostPct = item.selling_price ? (ingredientCost / item.selling_price) * 100 : 0;
-      return { id: item.id, name: item.name, category: item.category, units, margin, ingredientCost, sellingPrice: item.selling_price || 0, foodCostPct };
+      return { id: item.id, name: item.name, category: item.category, units, margin, ingredientCost, sellingPrice: item.selling_price || 0, foodCostPct, hasRecipe, hasRealCost };
     });
 
-    if (!dishes.length) return [];
+    // Separate items without real cost — these must NOT enter the quadrant matrix
+    const incomplete = allMapped.filter(d => !d.hasRealCost);
+    const dishes = allMapped.filter(d => d.hasRealCost);
+
+    if (!dishes.length) return { classified: [], incomplete };
     const avgUnits = dishes.reduce((s, d) => s + d.units, 0) / dishes.length;
     const avgMargin = dishes.reduce((s, d) => s + d.margin, 0) / dishes.length;
 
-    return dishes.map(d => ({
+    const classified = dishes.map(d => ({
       ...d,
       popScore: d.units - avgUnits,
       profScore: d.margin - avgMargin,
       quadrant: getQuadrant(d.units - avgUnits, d.margin - avgMargin)
     }));
+
+    return { classified, incomplete };
   }, [items, filteredSales, recipes, inventoryItems]);
 
   const categories = useMemo(() => ['all', ...new Set(items.map(i => i.category))], [items]);
 
+  const { classified: allClassified = [], incomplete: allIncomplete = [] } = allDishData || {};
+
   const dishData = useMemo(() =>
-    categoryFilter === 'all' ? allDishData : allDishData.filter(d => d.category === categoryFilter),
-    [allDishData, categoryFilter]
+    categoryFilter === 'all' ? allClassified : allClassified.filter(d => d.category === categoryFilter),
+    [allClassified, categoryFilter]
+  );
+
+  const incompleteData = useMemo(() =>
+    categoryFilter === 'all' ? allIncomplete : allIncomplete.filter(d => d.category === categoryFilter),
+    [allIncomplete, categoryFilter]
   );
 
   const byQuadrant = useMemo(() => {
@@ -230,7 +246,7 @@ function MenuEngineeringContent() {
     </div>
   );
 
-  const isEmpty = dishData.length === 0;
+  const isEmpty = dishData.length === 0 && incompleteData.length === 0;
 
   return (
     <div className="min-h-screen bg-[#0B0B12]">
@@ -283,6 +299,43 @@ function MenuEngineeringContent() {
           </div>
         </div>
 
+        {/* Incomplete items — excluded from quadrant matrix */}
+        {incompleteData.length > 0 && (
+          <Card className="border border-amber-500/20 bg-amber-500/5 overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-amber-500/10">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <h3 className="text-amber-300 font-semibold text-sm">Incomplete — needs recipe ({incompleteData.length})</h3>
+              <span className="ml-2 text-xs text-amber-500/70">These items are excluded from the quadrant matrix until ingredient cost is set</span>
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-amber-500/10">
+                  <th className="text-left px-5 py-2 text-amber-500/60 text-xs">Item</th>
+                  <th className="text-right px-5 py-2 text-amber-500/60 text-xs">Sell Price</th>
+                  <th className="text-left px-5 py-2 text-amber-500/60 text-xs">Issue</th>
+                  <th className="px-5 py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {incompleteData.map(d => (
+                  <tr key={d.id} className="border-b border-amber-500/5 hover:bg-amber-500/5">
+                    <td className="px-5 py-2.5 text-white">{d.name}</td>
+                    <td className="px-5 py-2.5 text-right text-slate-300">€{d.sellingPrice.toFixed(2)}</td>
+                    <td className="px-5 py-2.5 text-amber-400 text-xs">
+                      {!d.hasRecipe ? 'No recipe linked' : 'Recipe has €0 cost'}
+                    </td>
+                    <td className="px-5 py-2.5 text-right">
+                      <a href="/RecipeManager" className="text-xs text-[#A855F7] hover:text-[#C084FC] flex items-center justify-end gap-0.5">
+                        Link recipe <ChevronRight className="w-3 h-3" />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        )}
+
         {/* Quadrant summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(QUADRANTS).map(([key, q]) => {
@@ -320,10 +373,10 @@ function MenuEngineeringContent() {
               </p>
               {isLoading ? (
                 <div className="h-80 flex items-center justify-center"><RefreshCw className="w-6 h-6 text-[#7B3BFF] animate-spin" /></div>
-              ) : isEmpty ? (
+              ) : dishData.length === 0 ? (
                 <div className="h-80 flex flex-col items-center justify-center gap-3">
                   <BarChart3 className="w-10 h-10 text-slate-700" />
-                  <p className="text-slate-500 text-sm">No menu items found. Add items in Recipe Manager first.</p>
+                  <p className="text-slate-500 text-sm">{incompleteData.length > 0 ? 'No items with recipe cost yet — link ingredients above to enable the matrix.' : 'No menu items found. Add items in Recipe Manager first.'}</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={380}>
@@ -350,10 +403,10 @@ function MenuEngineeringContent() {
               </p>
               {isLoading ? (
                 <div className="h-96 flex items-center justify-center"><RefreshCw className="w-6 h-6 text-[#7B3BFF] animate-spin" /></div>
-              ) : isEmpty ? (
+              ) : dishData.length === 0 ? (
                 <div className="h-96 flex flex-col items-center justify-center gap-3">
                   <LayoutGrid className="w-10 h-10 text-slate-700" />
-                  <p className="text-slate-500 text-sm">No menu items found. Add items in Recipe Manager first.</p>
+                  <p className="text-slate-500 text-sm">{incompleteData.length > 0 ? 'No items with recipe cost yet — link ingredients above to enable the heatmap.' : 'No menu items found. Add items in Recipe Manager first.'}</p>
                 </div>
               ) : (
                 <div className="relative rounded-xl overflow-hidden" style={{ height: 460 }}>
@@ -401,7 +454,7 @@ function MenuEngineeringContent() {
         </Card>
 
         {/* Per-quadrant breakdown tables */}
-        {!isEmpty && (
+        {dishData.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(QUADRANTS).map(([key, q]) => {
               const Icon = q.icon;

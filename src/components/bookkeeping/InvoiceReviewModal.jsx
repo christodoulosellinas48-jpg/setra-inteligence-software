@@ -110,7 +110,7 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
                 <div className="space-y-1 text-sm text-emerald-400/80">
                   {automationResults.supplier && (
                     <p className="flex items-center gap-2">
-                      <Building2 className="w-3 h-3" /> Supplier "{automationResults.supplier.name}" created/updated in Vendors
+                      <Building2 className="w-3 h-3" /> Supplier '{typeof automationResults.supplier === 'string' ? automationResults.supplier : automationResults.supplier?.name || form.supplier_name}' {automationResults.supplier_action === 'created' ? 'added to' : 'updated in'} Vendors
                     </p>
                   )}
                   {automationResults.ledger_entry && (

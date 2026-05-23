@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Building2, RefreshCw, Calendar, Layers } from 'lucide-react';
+import { Building2, RefreshCw, Calendar, Layers, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
@@ -20,13 +20,13 @@ const DATE_RANGE_OPTIONS = [
   { value: 'ytd', label: 'Year to date' },
 ];
 
-// Revenue scaling multiplier based on date range (relative to monthly)
-function getRevenueMultiplier(range) {
+// Returns the MAXIMUM months the range covers — used only for the disclaimer, not for multiplication
+function getRangeMonths(range) {
   switch (range) {
     case 'last_3_months': return 3;
     case 'last_12_months': return 12;
     case 'ytd': return new Date().getMonth() + 1;
-    default: return 1; // this_month, last_month
+    default: return 1;
   }
 }
 
@@ -88,7 +88,8 @@ export default function ConsolidatedView() {
     });
   }, [ownedBusinesses, memberBusinesses]);
 
-  const multiplier = getRevenueMultiplier(dateRange);
+  // No multiplier — always show actual snapshot data, never annualize
+  const rangeMonths = getRangeMonths(dateRange);
 
   // Apply group filter
   const filteredBusinesses = useMemo(() => {
@@ -104,8 +105,9 @@ export default function ConsolidatedView() {
 
     filteredBusinesses.forEach(business => {
       const financials = calculateFinancials(business, business.industry_group || business.business_type);
-      const revenue = (business.monthly_revenue || 0) * multiplier;
-      const profit = financials ? financials.netProfit * multiplier : null;
+      // Use actual stored monthly_revenue — no annualisation multiplier
+      const revenue = business.monthly_revenue || 0;
+      const profit = financials ? financials.netProfit : null;
       const margin = financials ? financials.profitMargin : null;
 
       totalRevenue += revenue;
@@ -146,7 +148,7 @@ export default function ConsolidatedView() {
       businessPerformance: businessPerformance.sort((a, b) => (b.profit ?? -Infinity) - (a.profit ?? -Infinity)),
       dateRangeLabel: DATE_RANGE_OPTIONS.find(o => o.value === dateRange)?.label || 'This month',
     };
-  }, [filteredBusinesses, groups, multiplier, dateRange]);
+  }, [filteredBusinesses, groups, dateRange]);
 
   const handleViewBusiness = (business) => {
     if (business.id) {
@@ -269,6 +271,16 @@ export default function ConsolidatedView() {
           </div>
         </div>
       </header>
+
+      {/* Data completeness disclaimer — never annualise */}
+      {rangeMonths > 1 && (
+        <div className="border-b border-amber-500/15 bg-amber-500/5">
+          <div className="max-w-7xl mx-auto px-6 py-2.5 flex items-center gap-2 text-xs text-amber-400">
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+            Showing actual data for {consolidatedMetrics?.businessCount} venue{consolidatedMetrics?.businessCount !== 1 ? 's' : ''}. Values are not annualised — totals reflect real recorded figures only.
+          </div>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         <SummaryCards metrics={consolidatedMetrics} />

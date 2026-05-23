@@ -16,7 +16,7 @@ export default function LogoLink({ className = "h-10" }) {
           SETRA
         </span>
         <span className="text-xs text-slate-400 uppercase tracking-wider -mt-1">
-          Financial Operations
+          Intelligence Platform
         </span>
       </div>
     </Link>

@@ -20,7 +20,7 @@ import EmailIngestBanner from '@/components/expenses/EmailIngestBanner';
 import DateRangeFilter from '@/components/expenses/DateRangeFilter';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
-import { isWithinInterval, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { isWithinInterval, parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 const STATUS_CONFIG = {
   pending:      { label: 'Pending',    color: 'bg-slate-500/15 text-slate-400 border-slate-500/30',      icon: Clock },
@@ -83,7 +83,7 @@ export default function Expenses() {
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [dateRange, setDateRange] = useState({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
+  const [dateRange, setDateRange] = useState({ from: subMonths(new Date(), 12), to: new Date() });
   const [selected, setSelected] = useState(new Set());
 
   const { data: expenses = [], isLoading } = useQuery({

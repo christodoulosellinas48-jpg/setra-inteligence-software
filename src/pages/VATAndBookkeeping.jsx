@@ -103,16 +103,7 @@ function VATSection({ business, hasPermission }) {
             <p className="text-xs text-blue-400/60 mt-1">
               VAT Quarter Group: {business.vat_quarter_group || 'Not set'} •
               VAT Number: {business.vat_number || 'Not set'} •
-              Standard Rate: {business.vat_rate ?? 19}%
-              {business.default_vat_rates && (() => {
-                try {
-                  const rates = JSON.parse(business.default_vat_rates);
-                  const standardRate = business.vat_rate ?? 19;
-                  const reduced = rates.filter(r => typeof r === 'number' && r > 0 && r < standardRate);
-                  if (reduced.length === 0) return null;
-                  return ' · Reduced: ' + reduced.map(r => `${r}%`).join(', ');
-                } catch { return null; }
-              })()}
+              Rates: 19% (standard) · 9% (reduced) · 5% (super-reduced) · 0% (zero)
             </p>
           </div>
         </div>

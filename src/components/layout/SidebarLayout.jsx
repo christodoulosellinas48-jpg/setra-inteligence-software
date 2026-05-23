@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Zap,
   FileStack,
-  LayoutGrid
+  LayoutGrid,
+  ChefHat
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 
@@ -33,6 +34,7 @@ const ALL_NAV_ITEMS = [
   { label: 'Expenses',          icon: FileStack,   path: '/Expenses',          permission: 'upload_expenses' },
   { label: 'VAT & Bookkeeping', icon: Receipt,     path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
   { label: 'Menu Engineering', icon: LayoutGrid,  path: '/MenuEngineering',   permission: 'view_reports' },
+  { label: 'Recipe Manager',  icon: ChefHat,     path: '/RecipeManager',     permission: 'view_reports' },
 ];
 
 export default function SidebarLayout({ children }) {

@@ -278,7 +278,8 @@ function RecipeManagerContent() {
             ) : (
               filteredItems.map(item => {
                 const fcp = getDishFoodCostPct(item);
-                const fcpC = fcp === null ? 'text-slate-500'
+                const dishHasZeroCost = fcp === 0 && recipes.filter(r => r.item_id === item.id).length > 0;
+                const fcpC = fcp === null || dishHasZeroCost ? 'text-slate-500'
                   : !targetFcp ? 'text-slate-400'
                   : fcp <= targetFcp ? 'text-emerald-400'
                   : fcp <= targetFcp + 5 ? 'text-amber-400'
@@ -296,13 +297,15 @@ function RecipeManagerContent() {
                       </div>
                       <div className="text-right ml-2 shrink-0">
                         <p className="text-white text-sm">€{item.selling_price?.toFixed(2)}</p>
-                        {fcp !== null && fcp > 0 ? (
-                          <p className={`text-xs font-semibold ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
-                        ) : fcp === 0 && recipes.filter(r => r.item_id === item.id).length === 0 ? (
-                          <p className="text-xs text-slate-600">FC: n/a</p>
-                        ) : fcp !== null ? (
-                          <p className={`text-xs font-semibold ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
-                        ) : null}
+                        {fcp === null ? null
+                          : dishHasZeroCost ? (
+                            <p className="text-xs text-rose-400 font-semibold">Missing cost</p>
+                          ) : recipes.filter(r => r.item_id === item.id).length === 0 ? (
+                            <p className="text-xs text-slate-600">FC: n/a</p>
+                          ) : (
+                            <p className={`text-xs font-semibold ${fcpC}`}>{fcp.toFixed(1)}% FC</p>
+                          )
+                        }
                       </div>
                     </div>
                     {canEdit() && (
@@ -393,15 +396,19 @@ function RecipeManagerContent() {
                             <tr key={r.id} className="border-b border-white/5 hover:bg-white/2">
                               <td className="px-4 py-3">
                                 <p className="text-white text-sm">{r.ingredient_name}</p>
-                                {isLive
+                                {isLive && liveUnitCost > 0
                                   ? <p className="text-xs text-emerald-500">● live price</p>
-                                  : <p className="text-xs text-slate-600">no inventory link</p>
+                                  : isLive && liveUnitCost === 0
+                                  ? <p className="text-xs text-rose-400">⚠ Missing cost — set unit cost in Inventory</p>
+                                  : <p className="text-xs text-rose-400">⚠ Missing cost — link inventory item</p>
                                 }
                               </td>
                               <td className="px-4 py-3 text-slate-300 font-mono text-sm">{r.qty} {r.unit}</td>
                               <td className="px-4 py-3 text-slate-400 text-sm">{r.yield_pct || 100}%</td>
                               <td className="px-4 py-3 text-slate-300 text-sm">€{liveUnitCost.toFixed(3)}</td>
-                              <td className="px-4 py-3 text-amber-400 font-medium text-sm">€{lineCost.toFixed(3)}</td>
+                              <td className={`px-4 py-3 font-medium text-sm ${lineCost === 0 ? 'text-rose-400' : 'text-amber-400'}`}>
+                                {lineCost === 0 ? '€0.000 ⚠' : `€${lineCost.toFixed(3)}`}
+                              </td>
                               <td className="px-4 py-3">
                                 {canEdit() && (
                                   <div className="flex gap-1">

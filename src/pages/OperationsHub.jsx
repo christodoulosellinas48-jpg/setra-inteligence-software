@@ -61,7 +61,7 @@ const CATEGORIES = [
   },
   {
     id: 'cost',
-    label: 'Cost Control',
+    label: 'Budget',
     subtitle: 'Track every euro leaving the business',
     icon: DollarSign,
     color: 'text-emerald-400',
