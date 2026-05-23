@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Upload, FileText, CheckCircle, AlertCircle, Loader2,
   Eye, Trash2, Sparkles, Package, Building2, ChevronRight,
-  Clock, CheckCircle2
+  Clock, CheckCircle2, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import InvoiceReviewModal from './InvoiceReviewModal';
@@ -27,6 +27,8 @@ export default function InboxTab({ businessId }) {
   const [uploadProgress, setUploadProgress] = useState([]);
   const [reviewDoc, setReviewDoc] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [autoBulkProcessing, setAutoBulkProcessing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, current: '' });
   const fileInputRef = useRef(null);
 
   const { data: documents = [], isLoading } = useQuery({
@@ -198,6 +200,60 @@ Be thorough. Extract every line item visible. If a field cannot be determined, s
     setReviewDoc({ ...doc, line_items: Array.isArray(lineItems) ? lineItems : [] });
   };
 
+  const handleAutoApproveAll = async () => {
+    const pending = documents.filter(d => ['parsed', 'needs_review', 'new'].includes(d.status));
+    if (pending.length === 0) return;
+    setAutoBulkProcessing(true);
+    setBulkProgress({ done: 0, total: pending.length, current: '' });
+    let succeeded = 0;
+    let failed = 0;
+    for (let i = 0; i < pending.length; i++) {
+      const doc = pending[i];
+      setBulkProgress({ done: i, total: pending.length, current: doc.supplier_name || 'Unknown' });
+      try {
+        // Step 1: AI categorize
+        let lineItems = [];
+        if (doc.raw_text) { try { lineItems = JSON.parse(doc.raw_text); } catch {} }
+        const catResult = await base44.functions.invoke('categorizeInvoice', {
+          business_id: doc.business_id,
+          supplier_name: doc.supplier_name || '',
+          line_items: Array.isArray(lineItems) ? lineItems : [],
+          gross_total: doc.gross_total,
+          raw_text: null,
+        });
+        const category = catResult?.data?.category || 'operating_expenses';
+
+        // Step 2: processInvoice (approve & propagate)
+        await base44.functions.invoke('processInvoice', {
+          business_id: doc.business_id,
+          document_id: doc.id,
+          supplier_name: doc.supplier_name || '',
+          supplier_vat_number: doc.supplier_vat_number || '',
+          invoice_date: doc.invoice_date || '',
+          due_date: doc.due_date || '',
+          invoice_number: doc.invoice_number || '',
+          expense_category: category,
+          line_items: Array.isArray(lineItems) ? lineItems : [],
+          invoice_total: doc.gross_total || 0,
+          vat_amount: doc.vat_total || 0,
+          net_amount: doc.net_total || 0,
+        });
+        succeeded++;
+      } catch {
+        failed++;
+      }
+    }
+    setBulkProgress({ done: pending.length, total: pending.length, current: '' });
+    queryClient.invalidateQueries(['documents', businessId]);
+    queryClient.invalidateQueries(['suppliers', businessId]);
+    queryClient.invalidateQueries(['ledgerEntries', businessId]);
+    queryClient.invalidateQueries(['vatPeriods', businessId]);
+    queryClient.invalidateQueries(['inventory', businessId]);
+    setAutoBulkProcessing(false);
+    if (failed === 0) toast.success(`✅ ${succeeded} invoices auto-categorised & approved!`);
+    else toast.success(`✅ ${succeeded} approved, ${failed} failed — review those manually`);
+  };
+
   const pendingDocs = documents.filter(d => ['parsed', 'needs_review', 'new'].includes(d.status));
   const processedDocs = documents.filter(d => ['approved', 'posted'].includes(d.status));
 
@@ -286,9 +342,29 @@ Be thorough. Extract every line item visible. If a field cannot be determined, s
       {/* Pending Review */}
       {pendingDocs.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <h3 className="text-base font-semibold text-white">Pending Review ({pendingDocs.length})</h3>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-400" />
+              <h3 className="text-base font-semibold text-white">Pending Review ({pendingDocs.length})</h3>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleAutoApproveAll}
+              disabled={autoBulkProcessing}
+              className="h-8 px-3 text-xs bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-900/30"
+            >
+              {autoBulkProcessing ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  {bulkProgress.current ? `${bulkProgress.done}/${bulkProgress.total} — ${bulkProgress.current}` : 'Processing...'}
+                </>
+              ) : (
+                <>
+                  <Zap className="w-3.5 h-3.5 mr-1.5" />
+                  Auto-categorise & Approve All
+                </>
+              )}
+            </Button>
           </div>
           {pendingDocs.map((doc, idx) => (
             <DocumentRow
