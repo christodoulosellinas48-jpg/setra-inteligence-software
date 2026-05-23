@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import { base44 } from '@/api/base44Client';
-import { Upload, X, CheckCircle, AlertCircle, Loader2, FileText, Receipt, Users, BookOpen } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, FileText, Receipt, Users, BookOpen, Building2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,22 +14,28 @@ const DOC_TYPES = {
 };
 
 export default function SmartUploadButton() {
-  const { currentBusiness } = useBusiness();
+  const { businesses, currentBusiness } = useBusiness();
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState('idle'); // idle | uploading | classifying | saving | done | error
-  const [result, setResult] = useState(null); // { type, label, route, fileName }
+  const [status, setStatus] = useState('idle'); // idle | selecting | uploading | classifying | saving | done | error
+  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [bizDropOpen, setBizDropOpen] = useState(false);
   const fileRef = useRef(null);
   const navigate = useNavigate();
+
+  const activeBusiness = selectedBusiness || currentBusiness;
 
   const reset = () => {
     setStatus('idle');
     setResult(null);
     setError(null);
+    setSelectedBusiness(null);
+    setBizDropOpen(false);
   };
 
   const handleFile = async (file) => {
-    if (!file || !currentBusiness) return;
+    if (!file || !activeBusiness) return;
     setOpen(true);
     setStatus('uploading');
     setError(null);
@@ -45,7 +51,7 @@ export default function SmartUploadButton() {
       const classification = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a document classifier for a restaurant finance platform. Analyze the document and classify it.
 
-Business: ${currentBusiness.name}
+Business: ${activeBusiness.name}
 File name: ${file.name}
 
 Classify as ONE of: invoice, payslip, menu, receipt, document
@@ -81,7 +87,7 @@ Respond with JSON only.`,
 
       if (docType === 'invoice' || docType === 'receipt') {
         await base44.entities.ExpenseDocument.create({
-          business_id: currentBusiness.id,
+          business_id: activeBusiness.id,
           supplier_name: classification.supplier_name || file.name.replace(/\.[^.]+$/, ''),
           invoice_date: classification.invoice_date || new Date().toISOString().split('T')[0],
           invoice_total: classification.invoice_total || 0,
@@ -93,7 +99,7 @@ Respond with JSON only.`,
         });
       } else if (docType === 'payslip') {
         await base44.entities.ExpenseDocument.create({
-          business_id: currentBusiness.id,
+          business_id: activeBusiness.id,
           supplier_name: classification.employee_name || 'Employee',
           invoice_date: new Date().toISOString().split('T')[0],
           invoice_total: classification.net_pay || 0,
@@ -105,7 +111,7 @@ Respond with JSON only.`,
       } else {
         // Generic document — save to bookkeeping inbox
         await base44.entities.Document.create({
-          business_id: currentBusiness.id,
+          business_id: activeBusiness.id,
           type: 'invoice',
           supplier_name: classification.supplier_name || file.name.replace(/\.[^.]+$/, ''),
           file_url,
@@ -155,7 +161,38 @@ Respond with JSON only.`,
             </button>
 
             <h3 className="text-white font-semibold text-base mb-1">Smart Document Upload</h3>
-            <p className="text-slate-400 text-xs mb-5">Drop any file — AI will detect what it is and save it automatically.</p>
+            <p className="text-slate-400 text-xs mb-4">AI detects the document type and saves it to the right place automatically.</p>
+
+            {/* Business selector — always visible */}
+            {businesses.length > 1 && status === 'idle' && (
+              <div className="mb-4 relative">
+                <p className="text-xs text-slate-500 mb-1.5">Save to business:</p>
+                <button
+                  onClick={() => setBizDropOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-sm text-white transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-[#C084FC]" />
+                    {activeBusiness?.name || 'Select business'}
+                  </span>
+                  <ChevronDown className={cn('w-3.5 h-3.5 text-slate-400 transition-transform', bizDropOpen && 'rotate-180')} />
+                </button>
+                {bizDropOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1a2e] border border-white/10 rounded-lg shadow-xl z-10 overflow-hidden">
+                    {businesses.map(b => (
+                      <button
+                        key={b.id}
+                        onClick={() => { setSelectedBusiness(b); setBizDropOpen(false); }}
+                        className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/5 text-sm text-white transition-colors"
+                      >
+                        <span>{b.name}</span>
+                        {activeBusiness?.id === b.id && <CheckCircle className="w-3.5 h-3.5 text-[#C084FC]" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* States */}
             {status === 'idle' && (
@@ -179,7 +216,10 @@ Respond with JSON only.`,
             {(status === 'uploading' || status === 'classifying' || status === 'saving') && (
               <div className="flex flex-col items-center gap-4 py-8">
                 <div className="relative w-14 h-14">
-                  <div className="absolute inset-0 rounded-full border-2 border-[#7B3BFF]/20 border-t-[#7B3BFF] animate-spin" />
+                  <svg className="absolute inset-0 w-14 h-14 animate-spin" viewBox="0 0 56 56">
+                    <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(123,59,255,0.2)" strokeWidth="3" />
+                    <circle cx="28" cy="28" r="24" fill="none" stroke="#7B3BFF" strokeWidth="3" strokeDasharray="30 120" strokeLinecap="round" />
+                  </svg>
                   <div className="absolute inset-2 rounded-full bg-[#7B3BFF]/10 flex items-center justify-center">
                     {status === 'uploading' && <Upload className="w-5 h-5 text-[#C084FC]" />}
                     {status === 'classifying' && <FileText className="w-5 h-5 text-[#C084FC]" />}
@@ -188,7 +228,7 @@ Respond with JSON only.`,
                 </div>
                 <div className="text-center">
                   <p className="text-white text-sm font-medium">
-                    {status === 'uploading' && 'Uploading file…'}
+                    {status === 'uploading' && `Uploading to ${activeBusiness?.name}…`}
                     {status === 'classifying' && 'AI is reading your document…'}
                     {status === 'saving' && 'Saving to the right place…'}
                   </p>
@@ -211,6 +251,7 @@ Respond with JSON only.`,
                     {result.classification?.supplier_name && (
                       <> from <span className="text-white">{result.classification.supplier_name}</span></>
                     )}
+                    {' '}→ saved to <span className="text-white">{activeBusiness?.name}</span>
                   </p>
                   {result.classification?.invoice_total > 0 && (
                     <p className="text-slate-500 text-xs mt-0.5">

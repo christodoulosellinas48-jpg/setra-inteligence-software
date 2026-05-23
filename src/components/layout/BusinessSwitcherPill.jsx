@@ -56,7 +56,7 @@ export default function BusinessSwitcherPill() {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-60 bg-[#151528] border border-white/10 rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
+        <div className="absolute top-full left-0 sm:left-0 right-0 sm:right-auto mt-2 w-60 bg-[#151528] border border-white/10 rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-50 overflow-hidden">
           {/* Groups */}
           {groups.length > 0 && (
             <>
