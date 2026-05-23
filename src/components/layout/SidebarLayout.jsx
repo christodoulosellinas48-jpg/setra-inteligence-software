@@ -24,6 +24,8 @@ import {
   ChefHat
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
+import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
+import SmartUploadButton from '@/components/layout/SmartUploadButton';
 
 const ALL_NAV_ITEMS = [
   { label: 'Dashboard',   icon: LayoutDashboard, path: '/Dashboard',     permission: null },
@@ -231,7 +233,9 @@ export default function SidebarLayout({ children }) {
               </button>
             )}
           </div>
-          <div className="ml-auto">
+          <div className="flex items-center gap-2 ml-auto">
+            <BusinessSwitcherPill />
+            <SmartUploadButton />
             <UserMenu />
           </div>
         </header>
