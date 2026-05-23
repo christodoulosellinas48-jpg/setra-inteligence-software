@@ -113,8 +113,7 @@ export default function AboutUs() {
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">Who We Are</h3>
                 <p className="text-slate-400">
-                  Setra is an independent project, founded in Cyprus in 2026. It's built in close partnership with hospitality operators
-                  on the ground — every feature comes from a real conversation with a real owner.
+                  Built in Cyprus by a solo founder for independent hospitality operators. Every feature comes from a real conversation with a real owner.
                 </p>
               </Card>
             </motion.div>

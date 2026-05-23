@@ -7,7 +7,8 @@ function fmtEur(val) {
 }
 
 export default function SummaryCards({ metrics }) {
-  const healthScoreDisplay = metrics.avgHealthScore !== null
+  const hasRealData = metrics.totalRevenue > 0;
+  const healthScoreDisplay = (hasRealData && metrics.avgHealthScore !== null)
     ? metrics.avgHealthScore.toFixed(0)
     : '—';
 
@@ -30,7 +31,7 @@ export default function SummaryCards({ metrics }) {
       icon: BarChart3,
       label: 'Portfolio Health',
       value: healthScoreDisplay,
-      sub: metrics.avgHealthScore !== null ? 'Average across active venues' : 'No venues with data yet',
+      sub: hasRealData && metrics.avgHealthScore !== null ? 'Average across active venues' : 'Add revenue data to calculate',
       valueClass: 'text-white'
     },
     {

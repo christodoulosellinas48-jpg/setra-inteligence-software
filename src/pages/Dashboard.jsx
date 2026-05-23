@@ -276,7 +276,7 @@ function DashboardContent() {
                   <span className="capitalize text-slate-500">{userRole}</span>
                 </p>
               </div>
-              {financials ? (
+              {financials && (currentBusiness?.monthly_revenue || 0) > 0 ? (
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
                   financials.overallStatus === 'healthy' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                   : financials.overallStatus === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
@@ -284,11 +284,7 @@ function DashboardContent() {
                 } capitalize`}>
                   {financials.overallStatus}
                 </span>
-              ) : (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full border border-white/10 text-slate-600">
-                  No data
-                </span>
-              )}
+              ) : null}
             </div>
             <div className="flex items-center gap-2">
               {pendingInvitations.length > 0 && (
@@ -374,7 +370,7 @@ function DashboardContent() {
             <HealthIndicator
               status={financials?.overallStatus}
               score={financials?.healthScore}
-              noData={!financials}
+              noData={!financials || (currentBusiness?.monthly_revenue || 0) === 0}
             />
           </div>
           <div className="lg:col-span-2 grid grid-cols-2 gap-4">

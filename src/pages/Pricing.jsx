@@ -60,7 +60,7 @@ const PLANS = [
     annualMonthly: 82,
     tagline: '1 venue · 5 users · unlimited invoices',
     description: 'Best for: growing operators who want to plan, forecast, and dig into margins.',
-    recommended: true,
+
     features: [
       'All Basic features',
       'Budgeting: create, track, and optimise budgets',
@@ -231,14 +231,7 @@ export default function Pricing() {
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="h-full"
                 >
-                  <Card className={`relative bg-[#151528]/70 backdrop-blur-xl border-[#7B3BFF]/20 p-6 h-full flex flex-col hover:border-[#7B3BFF]/50 transition-all duration-300 group ${plan.recommended ? 'ring-2 ring-[#7B3BFF]/60' : ''}`}>
-                    {plan.recommended && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                        <div className="bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
-                          Recommended
-                        </div>
-                      </div>
-                    )}
+                  <Card className="relative bg-[#151528]/70 backdrop-blur-xl border-[#7B3BFF]/20 p-6 h-full flex flex-col hover:border-[#7B3BFF]/50 transition-all duration-300 group">
 
                     {/* Icon */}
                     <div className="w-12 h-12 mb-4 mx-auto relative">

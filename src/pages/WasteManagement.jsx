@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { BusinessProvider } from '@/components/business/BusinessContext';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -220,7 +221,10 @@ function WasteManagementContent() {
 
   if (!currentBusiness) return (
     <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
-      <p className="text-slate-400">Please select a business first.</p>
+      <div className="text-center">
+        <p className="text-slate-400 mb-4">No business selected.</p>
+        <Button onClick={() => window.location.href = '/CreateBusiness'}>Create a Business</Button>
+      </div>
     </div>
   );
 
@@ -571,5 +575,5 @@ function WasteManagementContent() {
 }
 
 export default function WasteManagement() {
-  return <WasteManagementContent />;
+  return <BusinessProvider><WasteManagementContent /></BusinessProvider>;
 }

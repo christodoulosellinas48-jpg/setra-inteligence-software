@@ -18,7 +18,7 @@ export default function HealthIndicator({ status, score, noData = false }) {
           <div className="flex-1">
             <h3 className="text-xl font-bold text-slate-400 mb-2">No data yet</h3>
             <p className="text-slate-600 text-sm leading-relaxed">
-              Setra will score your financial health once you've entered your monthly figures or connected a data source.
+              Add your first month of data to see your financial health score.
             </p>
             <div className="mt-4 h-2 bg-slate-800 rounded-full overflow-hidden">
               <div className="h-full w-0 rounded-full bg-slate-700" />

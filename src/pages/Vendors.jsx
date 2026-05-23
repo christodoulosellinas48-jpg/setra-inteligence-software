@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useBusiness } from '@/components/business/BusinessContext';
+import { useBusiness, BusinessProvider } from '@/components/business/BusinessContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Building2, TrendingUp, FileText, Calendar, Mail, Phone,
@@ -405,7 +405,7 @@ function VendorProfile({ supplier, documents, expenses, currencySymbol, onBack }
   );
 }
 
-export default function Vendors() {
+function VendorsContent() {
   const { currentBusiness } = useBusiness();
   const qc = useQueryClient();
   const [selectedSupplier, setSelectedSupplier] = useState(null);
@@ -486,7 +486,12 @@ export default function Vendors() {
   const isLoading = loadingSuppliers;
 
   if (!currentBusiness) return (
-    <div className="p-8 text-center text-slate-400">No business selected.</div>
+    <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-slate-400 mb-4">No business selected.</p>
+        <Button onClick={() => window.location.href = '/CreateBusiness'}>Create a Business</Button>
+      </div>
+    </div>
   );
 
   // Show vendor profile detail view
@@ -627,4 +632,8 @@ export default function Vendors() {
       />
     </div>
   );
+}
+
+export default function Vendors() {
+  return <BusinessProvider><VendorsContent /></BusinessProvider>;
 }
