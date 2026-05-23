@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -154,6 +154,22 @@ export default function VATAndBookkeeping() {
   const { currentBusiness, loading, hasPermission } = useBusiness();
   const [activeTab, setActiveTab] = useState('inbox');
 
+  const vatHero = useMemo(() => {
+    if (!currentBusiness?.vat_registered) return null;
+    const today = new Date();
+    const year = today.getFullYear();
+    const quarters = [
+      { label: 'Q1', start: new Date(year, 0, 1), end: new Date(year, 2, 31), deadline: new Date(year, 7, 10), period: `Jan–Mar ${year}` },
+      { label: 'Q2', start: new Date(year, 3, 1), end: new Date(year, 5, 30), deadline: new Date(year, 7, 10), period: `Apr–Jun ${year}` },
+      { label: 'Q3', start: new Date(year, 6, 1), end: new Date(year, 8, 30), deadline: new Date(year, 10, 10), period: `Jul–Sep ${year}` },
+      { label: 'Q4', start: new Date(year, 9, 1), end: new Date(year, 11, 31), deadline: new Date(year + 1, 1, 10), period: `Oct–Dec ${year}` },
+    ];
+    const current = quarters.find(q => today >= q.start && today <= q.end) || quarters[1];
+    const daysLeft = Math.ceil((current.deadline - today) / (1000 * 60 * 60 * 24));
+    const deadlineStr = current.deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    return { ...current, daysLeft, deadlineStr };
+  }, [currentBusiness]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
@@ -227,6 +243,30 @@ export default function VATAndBookkeeping() {
           </div>
         </div>
       </div>
+
+      {/* VAT Filing Hero */}
+      {vatHero && (
+        <div className="border-b border-white/[0.04] bg-gradient-to-r from-[#7B3BFF]/8 via-transparent to-transparent">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🇨🇾</span>
+                <div>
+                  <p className="text-white font-semibold text-sm">{vatHero.label} {vatHero.period} VAT — due {vatHero.deadlineStr}</p>
+                  <p className="text-slate-500 text-xs">{vatHero.daysLeft > 0 ? `${vatHero.daysLeft} days remaining` : 'Deadline passed'} · Cyprus quarterly filing</p>
+                </div>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab('vat')}
+              className="text-sm"
+            >
+              Review and prepare filing →
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">

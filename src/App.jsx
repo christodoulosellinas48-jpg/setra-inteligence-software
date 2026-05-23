@@ -20,6 +20,7 @@ import Payroll from './pages/Payroll';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import AboutUs from './pages/AboutUs';
+import Accountants from './pages/Accountants';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -83,6 +84,7 @@ const AuthenticatedApp = () => {
       <Route path="/Features" element={<Features />} />
       <Route path="/Pricing" element={<Pricing />} />
       <Route path="/AboutUs" element={<AboutUs />} />
+      <Route path="/Accountants" element={<Accountants />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}

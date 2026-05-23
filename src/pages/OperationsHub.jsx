@@ -211,7 +211,7 @@ const CATEGORIES = [
     borderColor: 'border-indigo-500/20',
     modules: [
       {
-        id: 'integrations', label: 'Setra Connect', icon: Zap, path: '/Integrations',
+        id: 'integrations', label: 'Integrations', icon: Zap, path: '/Integrations',
         description: 'Connect your POS, accounting, banking, and delivery platforms.',
         badge: 'Integrations', badgeColor: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20',
         fetchStat: async (biz) => null

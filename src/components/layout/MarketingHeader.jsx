@@ -10,9 +10,10 @@ export default function MarketingHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: 'Features', page: 'Features' },
-    { label: 'Pricing',  page: 'Pricing' },
-    { label: 'About Us', page: 'AboutUs' },
+    { label: 'Features',    page: 'Features' },
+    { label: 'For Accountants', page: 'Accountants' },
+    { label: 'Pricing',     page: 'Pricing' },
+    { label: 'About',       page: 'AboutUs' },
   ];
 
   return (

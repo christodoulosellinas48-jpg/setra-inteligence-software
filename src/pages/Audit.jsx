@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ClipboardCheck, ArrowLeft, RefreshCw, Play } from 'lucide-react';
+import { ClipboardCheck, ArrowLeft, RefreshCw, Play, TrendingUp, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import AuditOverview from '../components/audit/AuditOverview.jsx';
@@ -122,6 +122,28 @@ function AuditContent() {
             </Button>
           )}
         </div>
+
+        {/* Stats counter */}
+        {findings.length > 0 && (() => {
+          const fixed = findings.filter(f => f.status === 'fixed');
+          const closedImpact = fixed.reduce((s, f) => s + (f.estimated_monthly_impact_eur || 0), 0);
+          return closedImpact > 0 ? (
+            <div className="mb-6 flex flex-wrap items-center gap-4 px-5 py-4 rounded-2xl bg-gradient-to-r from-emerald-900/20 to-[#0B0B12]/0 border border-emerald-500/20">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <span className="text-emerald-400 font-bold text-lg">€{closedImpact.toLocaleString()}</span>
+                <span className="text-slate-400 text-sm">closed this period</span>
+              </div>
+              <div className="h-4 w-px bg-white/10 hidden sm:block" />
+              <span className="text-slate-400 text-sm">{findings.length} total findings</span>
+              <div className="h-4 w-px bg-white/10 hidden sm:block" />
+              <div className="flex items-center gap-1.5 text-amber-400 text-sm">
+                <Flame className="w-4 h-4" />
+                <span>Sort by € impact to prioritise</span>
+              </div>
+            </div>
+          ) : null;
+        })()}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-[#151528]/80 border border-white/5 mb-6 h-auto flex-wrap gap-1 p-1 rounded-xl">

@@ -280,18 +280,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Built for Cyprus — Trust Band */}
+      <section className="relative py-8 sm:py-10 px-4 sm:px-6 border-t border-white/5 bg-[#0D0D1A]/60">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm">
+            <div className="flex items-center gap-2 text-slate-300">
+              <span className="text-lg">🇨🇾</span>
+              <span className="font-medium">Built for Cyprus</span>
+            </div>
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+            <span className="text-slate-400">€ first — EUR native</span>
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+            <span className="text-slate-400">Cyprus VAT &amp; TAXISnet ready</span>
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+            <span className="text-slate-400">Cyprus phone format +357</span>
+            <div className="h-4 w-px bg-white/10 hidden sm:block" />
+            <span className="text-slate-400">Support Mon–Fri 9–6 EET</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Try the demo */}
+      <section className="relative py-10 sm:py-14 px-4 sm:px-6 border-t border-white/5">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-slate-400 text-sm mb-3">See real numbers, no account needed</p>
+          <h2 className="text-xl sm:text-3xl font-bold text-white mb-4">Try the live demo</h2>
+          <p className="text-slate-400 text-sm mb-6">
+            Explore Omakase by Lambros — a fully seeded restaurant with real invoices, VAT data, recipes, and audit findings.
+            Read-only. No signup. No credit card.
+          </p>
+          <button
+            onClick={() => { window.location.href = '/Dashboard'; }}
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white font-semibold text-sm hover:shadow-[0_0_30px_rgba(123,59,255,0.6)] transition-all duration-200 hover:scale-105"
+          >
+            Open sandbox demo →
+          </button>
+        </div>
+      </section>
+
       {/* Integration Logos Footer */}
       <section className="relative py-8 sm:py-12 px-4 sm:px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto">
           <p className="text-center text-xs text-slate-600 uppercase tracking-widest mb-4 sm:mb-6">Connects with the tools you already use</p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:gap-x-10">
+            <span className="text-slate-500 text-sm font-medium">Lightspeed</span>
             <span className="text-slate-500 text-sm font-medium">Square</span>
             <span className="text-slate-500 text-sm font-medium">Toast</span>
-            <span className="text-slate-500 text-sm font-medium">Lightspeed</span>
             <span className="text-slate-500 text-sm font-medium">Xero</span>
             <span className="text-slate-500 text-sm font-medium">QuickBooks</span>
-            <span className="text-slate-500 text-sm font-medium">Stripe</span>
-            <span className="text-slate-400 text-xs border border-white/10 rounded-full px-2 py-0.5">+ more coming soon</span>
+            <a
+              href="mailto:chris@setra.app?subject=Vote for next POS"
+              className="text-[#A855F7] text-xs border border-[#7B3BFF]/30 rounded-full px-3 py-1 hover:border-[#7B3BFF]/60 transition-colors"
+            >
+              Vote for the next POS →
+            </a>
           </div>
         </div>
       </section>
