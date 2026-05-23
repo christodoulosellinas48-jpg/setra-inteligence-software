@@ -201,7 +201,7 @@ export default function VATAndBookkeeping() {
   return (
     <div className="min-h-screen bg-[#0B0B12]">
       {/* Page Header */}
-      <div className="border-b border-white/[0.06] bg-[#0B0B12]/95 backdrop-blur-xl sticky top-0 z-40">
+      <div className="border-b border-white/[0.06] bg-[#0B0B12]/95 backdrop-blur-xl sticky top-16 z-30">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-4">
