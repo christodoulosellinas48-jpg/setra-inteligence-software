@@ -10,7 +10,7 @@ import { debounce } from 'lodash';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, RefreshCw, Mail, Building2, Trash2, Sparkles, Save, CheckCircle2
+  ChevronRight, Mail, Building2, Trash2, Sparkles, Save, CheckCircle2, RefreshCw
 } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import AICounselorChat from '@/components/AICounselorChat';
@@ -25,7 +25,6 @@ import HealthIndicator from '@/components/dashboard/HealthIndicator';
 import InsightCard from '@/components/dashboard/InsightCard';
 import FinancialInputs from '@/components/dashboard/FinancialInputs';
 import { useBusiness } from '@/components/business/BusinessContext';
-import BusinessSwitcher from '@/components/business/BusinessSwitcher';
 
 import SensitivitySlider from '@/components/dashboard/SensitivitySlider';
 import ExpenseUploadModal from '@/components/dashboard/ExpenseUploadModal';
@@ -263,92 +262,6 @@ function DashboardContent() {
   return (
     <div ref={containerRef} className="min-h-screen bg-[#0B0B12]">
       <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
-      {/* Sticky Header */}
-      <header className="border-b border-white/[0.06] backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95">
-        <div className="max-w-7xl mx-auto px-6 py-3.5">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3">
-              <BusinessSwitcher />
-              <div className="h-5 w-px bg-white/10" />
-              <div>
-                <p className="text-xs text-slate-500">{businessDisplayName}
-                  <span className="mx-1.5 text-slate-700">·</span>
-                  <span className="capitalize text-slate-500">{userRole}</span>
-                </p>
-              </div>
-              {financials && (currentBusiness?.monthly_revenue || 0) > 0 ? (
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                  financials.overallStatus === 'healthy' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                  : financials.overallStatus === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                  : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-                } capitalize`}>
-                  {financials.overallStatus}
-                </span>
-              ) : null}
-            </div>
-            <div className="flex items-center gap-2">
-              {pendingInvitations.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/Invitations')}
-                  className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10 text-xs h-8"
-                >
-                  <Mail className="w-3.5 h-3.5 mr-1.5" />
-                  {pendingInvitations.length} Invite{pendingInvitations.length > 1 ? 's' : ''}
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/ConsolidatedView')}
-                title="Compare all your venues in one view"
-                className="text-xs h-8"
-              >
-                <Building2 className="w-3.5 h-3.5 mr-1.5" />
-                Multi-Site
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowCounselorChat(true)}
-                title="Chat with Setra's AI for financial advice and insights"
-                className="text-xs h-8 border-[#7B3BFF]/40 text-[#C084FC] hover:bg-[#7B3BFF]/10"
-              >
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                Ask Setra
-              </Button>
-              {financials && (
-                <Button
-                  size="sm"
-                  onClick={saveSnapshot}
-                  disabled={savingSnapshot}
-                  variant="outline"
-                  className="text-xs h-8"
-                >
-                  {snapshotSaved
-                    ? <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />Saved</>
-                    : savingSnapshot
-                    ? <><RefreshCw className="w-3.5 h-3.5 mr-1.5 animate-spin" />Saving...</>
-                    : <><Save className="w-3.5 h-3.5 mr-1.5" />Save Snapshot</>
-                  }
-                </Button>
-              )}
-              {canEdit() && (
-                <Button
-                  size="sm"
-                  onClick={() => setShowUploadModal(true)}
-                  className="text-xs h-8"
-                >
-                  <Upload className="w-3.5 h-3.5 mr-1.5" />
-                  Upload Invoice
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
 
         {/* Setup checklist — shown to owner until complete */}
