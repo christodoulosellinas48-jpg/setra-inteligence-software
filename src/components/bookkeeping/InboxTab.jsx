@@ -204,16 +204,13 @@ Be thorough. Extract every line item visible. If a field cannot be determined, s
     const pending = documents.filter(d => ['parsed', 'needs_review', 'new'].includes(d.status));
     if (pending.length === 0) return;
     setAutoBulkProcessing(true);
-    setBulkProgress({ done: 0, total: pending.length, current: '' });
-    let succeeded = 0;
-    let failed = 0;
-    for (let i = 0; i < pending.length; i++) {
-      const doc = pending[i];
-      setBulkProgress({ done: i, total: pending.length, current: doc.supplier_name || 'Unknown' });
+    setBulkProgress({ done: 0, total: pending.length, current: 'Categorising all...' });
+
+    // Step 1: categorize ALL in parallel
+    const categorized = await Promise.all(pending.map(async (doc) => {
+      let lineItems = [];
+      if (doc.raw_text) { try { lineItems = JSON.parse(doc.raw_text); } catch {} }
       try {
-        // Step 1: AI categorize
-        let lineItems = [];
-        if (doc.raw_text) { try { lineItems = JSON.parse(doc.raw_text); } catch {} }
         const catResult = await base44.functions.invoke('categorizeInvoice', {
           business_id: doc.business_id,
           supplier_name: doc.supplier_name || '',
@@ -221,28 +218,35 @@ Be thorough. Extract every line item visible. If a field cannot be determined, s
           gross_total: doc.gross_total,
           raw_text: null,
         });
-        const category = catResult?.data?.category || 'operating_expenses';
-
-        // Step 2: processInvoice (approve & propagate)
-        await base44.functions.invoke('processInvoice', {
-          business_id: doc.business_id,
-          document_id: doc.id,
-          supplier_name: doc.supplier_name || '',
-          supplier_vat_number: doc.supplier_vat_number || '',
-          invoice_date: doc.invoice_date || '',
-          due_date: doc.due_date || '',
-          invoice_number: doc.invoice_number || '',
-          expense_category: category,
-          line_items: Array.isArray(lineItems) ? lineItems : [],
-          invoice_total: doc.gross_total || 0,
-          vat_amount: doc.vat_total || 0,
-          net_amount: doc.net_total || 0,
-        });
-        succeeded++;
+        return { doc, lineItems, category: catResult?.data?.category || 'operating_expenses' };
       } catch {
-        failed++;
+        return { doc, lineItems, category: 'operating_expenses' };
       }
-    }
+    }));
+
+    setBulkProgress({ done: 0, total: pending.length, current: 'Approving all...' });
+
+    // Step 2: process ALL in parallel
+    const results = await Promise.allSettled(categorized.map(({ doc, lineItems, category }) =>
+      base44.functions.invoke('processInvoice', {
+        business_id: doc.business_id,
+        document_id: doc.id,
+        supplier_name: doc.supplier_name || '',
+        supplier_vat_number: doc.supplier_vat_number || '',
+        invoice_date: doc.invoice_date || '',
+        due_date: doc.due_date || '',
+        invoice_number: doc.invoice_number || '',
+        expense_category: category,
+        line_items: Array.isArray(lineItems) ? lineItems : [],
+        invoice_total: doc.gross_total || 0,
+        vat_amount: doc.vat_total || 0,
+        net_amount: doc.net_total || 0,
+      })
+    ));
+
+    const succeeded = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.length - succeeded;
+
     setBulkProgress({ done: pending.length, total: pending.length, current: '' });
     queryClient.invalidateQueries(['documents', businessId]);
     queryClient.invalidateQueries(['suppliers', businessId]);
