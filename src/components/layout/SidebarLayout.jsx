@@ -210,7 +210,11 @@ export default function SidebarLayout({ children }) {
         )}
       >
         {/* Top Header with User Menu */}
-        <header className="sticky z-30 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]" style={{ top: 'env(safe-area-inset-top)' }}>
+        <header className={cn(
+          'fixed top-0 right-0 z-40 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]',
+          'left-0',
+          collapsed ? 'md:left-16' : 'md:left-64'
+        )}>
           <div className="flex items-center gap-2">
             {/* Mobile hamburger — only shown on top-level pages */}
             {isTopLevel ? (
@@ -239,7 +243,7 @@ export default function SidebarLayout({ children }) {
             <UserMenu />
           </div>
         </header>
-        <div className="pb-16 md:pb-0">
+        <div className="pt-16 pb-16 md:pb-0">
           {children}
         </div>
       </main>
