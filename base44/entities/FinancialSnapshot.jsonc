@@ -1,0 +1,78 @@
+{
+  "name": "FinancialSnapshot",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_type": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "quarterly",
+        "annual",
+        "custom"
+      ]
+    },
+    "monthly_revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "rent_fixed_costs": {
+      "type": "number",
+      "default": 0
+    },
+    "staff_costs": {
+      "type": "number",
+      "default": 0
+    },
+    "purchases_food_bev": {
+      "type": "number",
+      "default": 0
+    },
+    "utilities": {
+      "type": "number",
+      "default": 0
+    },
+    "other_operating": {
+      "type": "number",
+      "default": 0
+    },
+    "net_profit": {
+      "type": "number"
+    },
+    "profit_margin": {
+      "type": "number"
+    },
+    "days_open": {
+      "type": "number",
+      "description": "Number of trading days in the period"
+    },
+    "total_covers": {
+      "type": "number",
+      "description": "Total guest covers for the period"
+    },
+    "average_ticket": {
+      "type": "number",
+      "description": "Average spend per cover (\u20ac)"
+    },
+    "created_by_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "period_start",
+    "period_end",
+    "period_type"
+  ]
+}
