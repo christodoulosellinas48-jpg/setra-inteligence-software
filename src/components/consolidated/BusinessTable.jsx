@@ -153,7 +153,13 @@ export default function BusinessTable({ businesses, onViewBusiness, userEmail, g
                       {business.healthScore}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-slate-600 bg-white/5">
+                    <span
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-slate-500 bg-white/5 cursor-help border border-white/10 hover:border-amber-500/30 hover:text-amber-400 transition-colors"
+                      title={business.missingFields?.length > 0
+                        ? `Missing: ${business.missingFields.join(', ')}\n\nGo to Settings → Business to complete your setup.`
+                        : 'Add financial data in your business settings to calculate health.'
+                      }
+                    >
                       Setup needed
                     </span>
                   )}

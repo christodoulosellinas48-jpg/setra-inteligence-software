@@ -115,6 +115,13 @@ export default function ConsolidatedView() {
       if (profit !== null) totalProfit += profit;
 
       const industryKey = business.industry_group || business.business_type;
+      // Determine what's missing for the tooltip
+      const missingFields = [];
+      if (!business.monthly_revenue) missingFields.push('Monthly revenue');
+      if (!business.purchases_food_bev) missingFields.push('Food & beverage costs');
+      if (!business.staff_costs) missingFields.push('Staff costs');
+      if (!business.rent_fixed_costs) missingFields.push('Rent & fixed costs');
+
       businessPerformance.push({
         name: business.name,
         id: business.id,
@@ -128,6 +135,7 @@ export default function ConsolidatedView() {
         type: BENCHMARKS[industryKey]?.displayName || industryKey || 'Business',
         industryGroup: industryKey,
         hasData: !!financials,
+        missingFields,
         // raw monthly values for cross-venue insights
         foodCostRatio: financials ? financials.foodCostRatio : null,
         staffCostRatio: financials ? financials.staffCostRatio : null,
