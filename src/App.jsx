@@ -9,6 +9,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { CommandPaletteProvider } from '@/lib/CommandPaletteContext';
+import CommandPalette from '@/components/CommandPalette';
 import ConsolidatedView from './pages/ConsolidatedView';
 import Expenses from './pages/Expenses';
 import VATAndBookkeeping from './pages/VATAndBookkeeping';
@@ -196,8 +198,11 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <NavigationTracker />
-          <AuthenticatedApp />
+          <CommandPaletteProvider>
+            <NavigationTracker />
+            <AuthenticatedApp />
+            <CommandPalette />
+          </CommandPaletteProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

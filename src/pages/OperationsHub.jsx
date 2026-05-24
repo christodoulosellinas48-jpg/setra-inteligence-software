@@ -4,17 +4,17 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useBusiness } from '@/components/business/BusinessContext';
+import { useCommandPalette } from '@/lib/CommandPaletteContext';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
-  UtensilsCrossed, ShoppingCart, Store, Trash2, Users, ArrowRight,
-  ChefHat, Package, TrendingUp, Percent, BarChart2, Brain,
-  Receipt, BookOpen, DollarSign, FileText, Activity, Zap,
-  AlertTriangle, Target, CheckCircle2, Clock, Layers, PieChart,
-  Search, X, Copy, LayoutDashboard, Lightbulb, CalendarRange,
-  ShoppingBag, Boxes, LineChart, ClipboardCheck
+  UtensilsCrossed, Store, Users, ArrowRight,
+  Package, BarChart2,
+  Receipt, DollarSign, Activity, Zap,
+  AlertTriangle, Target, Layers,
+  Search, LayoutDashboard, Lightbulb,
+  Boxes, LineChart, ClipboardCheck
 } from 'lucide-react';
 
 const containerVariants = {
@@ -249,101 +249,13 @@ function SectionBlock({ section, index, stats }) {
   );
 }
 
-function SearchModal({ open, onClose }) {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-
-  const allModules = SECTIONS.flatMap(s => s.modules);
-  const filtered = query.trim()
-    ? allModules.filter(m =>
-        m.label.toLowerCase().includes(query.toLowerCase()) ||
-        m.description.toLowerCase().includes(query.toLowerCase())
-      )
-    : [];
-
-  const handleSelect = (mod) => {
-    navigate(mod.path);
-    onClose();
-  };
-
-  return open ? (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-20">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className="w-full max-w-md mx-4"
-      >
-        <Card className="bg-[#151528] border-white/10 overflow-hidden">
-          <div className="p-3 border-b border-white/5 flex items-center gap-2">
-            <Search className="w-4 h-4 text-slate-500" />
-            <Input
-              autoFocus
-              placeholder="Search modules, reports, dishes…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              className="bg-transparent border-0 text-white placeholder-slate-500 text-sm"
-              onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
-            />
-            <button onClick={onClose} className="text-slate-500 hover:text-white">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          {query.trim() && (
-            <div className="max-h-64 overflow-y-auto">
-              {filtered.length > 0 ? (
-                <div className="py-2">
-                  {filtered.map(mod => (
-                    <button
-                      key={mod.id}
-                      onClick={() => handleSelect(mod)}
-                      className="w-full px-4 py-2.5 text-left hover:bg-white/5 transition-colors border-b border-white/[0.02] last:border-0"
-                    >
-                      <div className="flex items-center gap-2">
-                        <mod.icon className="w-4 h-4 text-slate-500" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white font-medium truncate">{mod.label}</p>
-                          <p className="text-xs text-slate-500 line-clamp-1">{mod.description}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="px-4 py-8 text-center">
-                  <p className="text-slate-500 text-sm">No modules found</p>
-                </div>
-              )}
-            </div>
-          )}
-          {!query.trim() && (
-            <div className="p-3 text-xs text-slate-500">
-              Type to search modules and features…
-            </div>
-          )}
-        </Card>
-      </motion.div>
-    </div>
-  ) : null;
-}
 
 export default function OperationsHub() {
   const navigate = useNavigate();
   const { currentBusiness } = useBusiness();
-  const [showSearch, setShowSearch] = useState(false);
+  const { setOpen: openPalette } = useCommandPalette();
   const [stats, setStats] = useState({});
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setShowSearch(true);
-      }
-      if (e.key === 'Escape' && showSearch) setShowSearch(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showSearch]);
 
   useEffect(() => {
     if (!currentBusiness) return;
@@ -442,7 +354,7 @@ export default function OperationsHub() {
                 <Button size="sm" variant="outline" onClick={() => navigate('/Insights')} className="text-sm">
                   <BarChart2 className="w-4 h-4 mr-2" /> Open Insights
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setShowSearch(true)} className="text-slate-400 gap-1.5">
+                <Button size="sm" variant="ghost" onClick={() => openPalette(true)} className="text-slate-400 gap-1.5">
                   <Search className="w-4 h-4" />
                   <kbd className="hidden sm:inline text-xs bg-white/10 px-1.5 py-0.5 rounded">⌘K</kbd>
                 </Button>
@@ -462,7 +374,6 @@ export default function OperationsHub() {
 
       </div>
 
-      <SearchModal open={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   );
 }
