@@ -183,11 +183,8 @@ export default function SidebarLayout({ children }) {
 
         {/* Nav */}
         <nav className="flex-1 p-3 overflow-y-auto flex flex-col gap-1">
-          {/* Operations Hub — always first, not draggable */}
-          {renderNavItem('ops_hub', 0)}
-
-          {/* Dashboard — always second, not draggable */}
-          {renderNavItem('dashboard', 1)}
+          {/* Dashboard — always first, not draggable */}
+          {renderNavItem('dashboard', 0)}
 
           {/* Pinned middle items — draggable */}
           <DragDropContext onDragEnd={handleDragEnd}>
@@ -230,6 +227,7 @@ export default function SidebarLayout({ children }) {
         {/* Bottom Items (Settings) */}
         <div className="p-3 border-t border-white/5 space-y-1">
           <BottomLogoLink collapsed={collapsed} />
+          {renderNavItem('ops_hub', 98)}
           {isOwner() && renderNavItem('settings', 99)}
         </div>
 

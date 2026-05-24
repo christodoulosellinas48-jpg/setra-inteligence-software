@@ -70,7 +70,6 @@ export function buildSidebarItems(pinnedIds, isVatRegistered, isOwner) {
 
   const items = [
     'dashboard',
-    'ops_hub',
     ...pinned,
     ...(isOwner ? ['settings'] : []),
   ];
