@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { Loader2, Calendar, Users, TrendingUp, Zap } from 'lucide-react';
+import { Loader2, Calendar, Users, TrendingUp, Zap, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function AutofillControls({ businessId, onApplyData, disabled = false }) {
   const [loading, setLoading] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState('current');
   const [showOptions, setShowOptions] = useState(false);
   const [feedback, setFeedback] = useState('');
 
-  const months = [
-    { value: 'current', label: 'Current Month' },
-    { value: '1', label: '1 Month Ago' },
-    { value: '2', label: '2 Months Ago' },
-    { value: '3', label: '3 Months Ago' },
-    { value: '6', label: '6 Months Ago' },
-    { value: 'all', label: 'All Time' },
-  ];
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-indexed
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
+  const years = Array.from({ length: 8 }, (_, i) => currentYear - i);
 
   const handleAutoFill = async () => {
     if (!businessId) return;
@@ -28,11 +26,9 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
     setFeedback('');
 
     try {
-      const isAllTime = selectedMonth === 'all';
-      const monthsBack = selectedMonth === 'current' ? 0 : parseInt(selectedMonth);
-      const targetDate = monthsBack === 0 ? new Date() : subMonths(new Date(), monthsBack);
-      const periodStart = isAllTime ? null : startOfMonth(targetDate);
-      const periodEnd = isAllTime ? null : endOfMonth(targetDate);
+      const targetDate = new Date(selectedYear, selectedMonth, 1);
+      const periodStart = startOfMonth(targetDate);
+      const periodEnd = endOfMonth(targetDate);
 
       const data = {};
 
@@ -43,22 +39,9 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
         24
       );
 
-      let relevantSnapshot = null;
-      if (!isAllTime) {
-        // Match by period_start falling within the selected month
-        relevantSnapshot = snapshots.find(s => {
-          if (!s.period_start) return false;
-          const snapshotDate = new Date(s.period_start);
-          return snapshotDate >= periodStart && snapshotDate <= periodEnd;
-        });
-        // Fallback: use the most recent snapshot if nothing matches this exact month
-        if (!relevantSnapshot && snapshots.length > 0) {
-          relevantSnapshot = snapshots[0];
-        }
-      } else {
-        // All time: use the most recent snapshot
-        relevantSnapshot = snapshots.length > 0 ? snapshots[0] : null;
-      }
+      const startStr = periodStart.toISOString().split('T')[0];
+      let relevantSnapshot = snapshots.find(s => s.period_start === startStr);
+      if (!relevantSnapshot && snapshots.length > 0) relevantSnapshot = snapshots[0];
 
       if (relevantSnapshot) {
         if (relevantSnapshot.monthly_revenue > 0) data.monthly_revenue = relevantSnapshot.monthly_revenue;
@@ -69,73 +52,49 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
         if (relevantSnapshot.staff_costs > 0) data.staff_costs = relevantSnapshot.staff_costs;
       }
 
-      // 2. Auto-fetch staff costs from LaborShift (fetch all for business, filter client-side)
+      // 2. Auto-fetch staff costs from LaborShift
       const allShifts = await base44.entities.LaborShift.filter({ business_id: businessId }, '-date', 2000);
-      console.log('LaborShift results:', allShifts.length, allShifts.slice(0, 3));
-      const relevantShifts = isAllTime ? allShifts : allShifts.filter(s => {
+      const relevantShifts = allShifts.filter(s => {
         if (!s.date) return false;
         const d = new Date(s.date);
         return d >= periodStart && d <= periodEnd;
       });
       if (relevantShifts.length > 0) {
-        const totalStaffCosts = relevantShifts.reduce((sum, shift) => sum + (shift.total_cost || 0), 0);
-        data.staff_costs = totalStaffCosts;
+        data.staff_costs = relevantShifts.reduce((sum, shift) => sum + (shift.total_cost || 0), 0);
       } else {
-        // Fallback: use active EmployeeContracts monthly salaries
         const contracts = await base44.entities.EmployeeContract.filter({ business_id: businessId, status: 'active' });
-        console.log('EmployeeContract fallback:', contracts.length, contracts.slice(0, 3));
         if (contracts.length > 0) {
           const totalFromContracts = contracts.reduce((sum, c) => {
             if (c.contract_type === 'monthly') return sum + (c.monthly_salary || 0);
-            if (c.contract_type === 'hourly' || c.contract_type === 'part_time') {
-              // Estimate: hourly rate * 160 hours/month
-              return sum + ((c.hourly_rate || 0) * 160);
-            }
-            return sum;
+            return sum + ((c.hourly_rate || 0) * 160);
           }, 0);
           if (totalFromContracts > 0) data.staff_costs = totalFromContracts;
         }
       }
 
-      // 3. Aggregate Expense Documents for food costs & utilities
+      // 3. Aggregate Expense Documents
       const expenses = await base44.entities.ExpenseDocument.filter(
         { business_id: businessId },
         '-invoice_date',
         2000
       );
 
-      const periodExpenses = isAllTime ? expenses : expenses.filter(e => {
+      const periodExpenses = expenses.filter(e => {
         if (!e.invoice_date) return false;
         const expDate = new Date(e.invoice_date);
         return expDate >= periodStart && expDate <= periodEnd;
       });
 
-      const foodBevTotal = periodExpenses
-        .filter(e => e.expense_category === 'food_beverage')
-        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
-
-      const utilitiesTotal = periodExpenses
-        .filter(e => e.expense_category === 'utilities')
-        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
-
-      const otherTotal = periodExpenses
-        .filter(e => ['operating_expenses', 'one_off_expenses'].includes(e.expense_category))
-        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
-
-      const fixedCostsTotal = periodExpenses
-        .filter(e => e.expense_category === 'fixed_costs')
-        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
-
-      // Staff costs from invoices (only if not already filled from payroll)
-      const staffCostsFromInvoices = periodExpenses
-        .filter(e => e.expense_category === 'staff_costs')
-        .reduce((sum, e) => sum + (e.invoice_total || 0), 0);
+      const foodBevTotal = periodExpenses.filter(e => e.expense_category === 'food_beverage').reduce((s, e) => s + (e.invoice_total || 0), 0);
+      const utilitiesTotal = periodExpenses.filter(e => e.expense_category === 'utilities').reduce((s, e) => s + (e.invoice_total || 0), 0);
+      const otherTotal = periodExpenses.filter(e => ['operating_expenses', 'one_off_expenses'].includes(e.expense_category)).reduce((s, e) => s + (e.invoice_total || 0), 0);
+      const fixedCostsTotal = periodExpenses.filter(e => e.expense_category === 'fixed_costs').reduce((s, e) => s + (e.invoice_total || 0), 0);
+      const staffCostsFromInvoices = periodExpenses.filter(e => e.expense_category === 'staff_costs').reduce((s, e) => s + (e.invoice_total || 0), 0);
 
       if (foodBevTotal > 0) data.purchases_food_bev = foodBevTotal;
       if (utilitiesTotal > 0) data.utilities = utilitiesTotal;
       if (otherTotal > 0) data.other_operating = otherTotal;
       if (fixedCostsTotal > 0) data.rent_fixed_costs = fixedCostsTotal;
-      // Only use invoice staff costs if payroll didn't already fill staff_costs
       if (staffCostsFromInvoices > 0 && !data.staff_costs) data.staff_costs = staffCostsFromInvoices;
 
       if (Object.keys(data).length === 0) {
@@ -173,26 +132,57 @@ export default function AutofillControls({ businessId, onApplyData, disabled = f
             initial={{ opacity: 0, scale: 0.95, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -8 }}
-            className="absolute top-full right-0 mt-2 w-72 z-50"
+            className="absolute top-full right-0 mt-2 w-80 z-50"
           >
             <Card className="bg-[#0F0F1E] border-white/[0.06] p-4 shadow-lg">
-              <p className="text-xs font-semibold text-slate-400 mb-3">Select month to pull data from:</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" /> Select month to pull data from:
+                </p>
+                <button onClick={() => setShowOptions(false)} className="text-slate-600 hover:text-slate-400">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-full bg-[#151528] border-white/10 text-white text-sm mb-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="bg-[#151528] border-white/10">
-                  {months.map(month => (
-                    <SelectItem key={month.value} value={month.value} className="text-white text-sm">
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Year row */}
+              <div className="flex gap-1.5 flex-wrap mb-2">
+                {years.map(y => (
+                  <button
+                    key={y}
+                    onClick={() => setSelectedYear(y)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      selectedYear === y
+                        ? 'bg-[#7B3BFF] text-white'
+                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+
+              {/* Month grid */}
+              <div className="grid grid-cols-6 gap-1 mb-4">
+                {MONTHS.map((m, i) => (
+                  <button
+                    key={m}
+                    onClick={() => setSelectedMonth(i)}
+                    className={`py-1.5 rounded-lg text-[11px] font-medium transition-colors ${
+                      selectedMonth === i && selectedYear === currentYear ? 'ring-1 ring-[#7B3BFF]/50' : ''
+                    } ${
+                      selectedMonth === i
+                        ? 'bg-[#7B3BFF] text-white'
+                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-slate-500 mb-3">
+                Selected: {MONTHS[selectedMonth]} {selectedYear}
+              </p>
 
               <div className="space-y-2 mb-4 text-xs text-slate-400">
                 <div className="flex items-center gap-2">

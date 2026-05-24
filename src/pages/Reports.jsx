@@ -1,13 +1,13 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, RefreshCw, Save, Loader2, FileText, TrendingUp, Activity } from 'lucide-react';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { BarChart3, RefreshCw, Save, FileText, TrendingUp, Activity } from 'lucide-react';
 import SpendingAnalyticsDashboard from '@/components/reports/SpendingAnalyticsDashboard';
+import SaveSnapshotModal from '@/components/reports/SaveSnapshotModal';
 
 import ReportBuilder from '@/components/reports/ReportBuilder';
 import { calculateFinancials, BENCHMARKS } from '@/components/dashboard/financialCalculations';
@@ -18,9 +18,8 @@ const RevenueTrendChart = lazy(() => import('@/components/reports/RevenueTrendCh
 const FinancialSummaryTable = lazy(() => import('@/components/reports/FinancialSummaryTable'));
 
 function ReportsContent() {
-  const [periodType, setPeriodType] = useState('monthly');
-  const [saving, setSaving] = useState(false);
-  const [dateRange] = useState({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const queryClient = useQueryClient();
 
   const { currentBusiness, user, loading: businessLoading } = useBusiness();
 
@@ -50,28 +49,6 @@ function ReportsContent() {
     return calculateFinancials(currentBusiness, currentBusiness.industry_group);
   }, [currentBusiness]);
 
-  const saveSnapshot = async () => {
-    if (!currentBusiness || !financials) return;
-    setSaving(true);
-    await base44.entities.FinancialSnapshot.create({
-      business_id: currentBusiness.id,
-      period_start: dateRange.from.toISOString().split('T')[0],
-      period_end: dateRange.to.toISOString().split('T')[0],
-      period_type: periodType,
-      monthly_revenue: currentBusiness.monthly_revenue,
-      rent_fixed_costs: currentBusiness.rent_fixed_costs,
-      staff_costs: currentBusiness.staff_costs,
-      purchases_food_bev: currentBusiness.purchases_food_bev,
-      utilities: currentBusiness.utilities,
-      other_operating: currentBusiness.other_operating,
-      net_profit: financials.netProfit,
-      profit_margin: financials.profitMargin,
-      created_by_email: user?.email,
-    });
-    await refetchSnapshots();
-    setSaving(false);
-  };
-
   if (businessLoading || !currentBusiness) {
     return (
       <div className="min-h-screen bg-[#0B0B12] flex items-center justify-center">
@@ -96,8 +73,8 @@ function ReportsContent() {
             </h1>
             <p className="text-slate-500 text-sm mt-1">{currentBusiness.name} · {businessDisplayName}</p>
           </div>
-          <Button onClick={saveSnapshot} disabled={saving} variant="outline">
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          <Button onClick={() => setShowSaveModal(true)} variant="outline">
+            <Save className="w-4 h-4 mr-2" />
             Save Snapshot
           </Button>
         </div>
@@ -189,8 +166,8 @@ function ReportsContent() {
                     {snapshots.length === 0 ? 'Save your first snapshot to start tracking performance over time.' : 'Save one more snapshot to unlock trend charts.'}
                   </p>
                 </div>
-                <Button onClick={saveSnapshot} disabled={saving} size="sm">
-                  {saving ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1.5" />}
+                <Button onClick={() => setShowSaveModal(true)} size="sm">
+                  <Save className="w-3.5 h-3.5 mr-1.5" />
                   Save Snapshot Now
                 </Button>
               </Card>
@@ -212,6 +189,17 @@ function ReportsContent() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <SaveSnapshotModal
+        open={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        business={currentBusiness}
+        userEmail={user?.email}
+        onSaved={() => {
+          refetchSnapshots();
+          queryClient.invalidateQueries(['financialSnapshots', currentBusiness?.id]);
+        }}
+      />
     </div>
   );
 }

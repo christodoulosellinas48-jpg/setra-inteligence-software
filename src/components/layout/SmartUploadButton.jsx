@@ -1,22 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import { base44 } from '@/api/base44Client';
-import { Upload, X, CheckCircle, AlertCircle, FileText, Receipt, Users, BookOpen, Building2, ChevronDown } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, FileText, Receipt, Users, BookOpen, Building2, ChevronDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 const DOC_TYPES = {
-  invoice: { label: 'Invoice', icon: Receipt, color: 'text-blue-400', route: '/Expenses' },
-  payslip: { label: 'Payslip', icon: Users, color: 'text-emerald-400', route: '/Payroll' },
-  menu: { label: 'Menu', icon: BookOpen, color: 'text-orange-400', route: '/MenuEngineering' },
-  receipt: { label: 'Receipt', icon: Receipt, color: 'text-yellow-400', route: '/Expenses' },
-  document: { label: 'Document', icon: FileText, color: 'text-slate-400', route: '/VATAndBookkeeping' },
+  invoice:       { label: 'Invoice',       icon: Receipt,     color: 'text-blue-400',    route: '/Expenses',           destination: 'Expenses' },
+  payslip:       { label: 'Payslip',       icon: Users,       color: 'text-emerald-400', route: '/Payroll',            destination: 'Payroll' },
+  menu:          { label: 'Menu',          icon: BookOpen,    color: 'text-orange-400',  route: '/MenuEngineering',    destination: 'Menu Engineering' },
+  receipt:       { label: 'Receipt',       icon: Receipt,     color: 'text-yellow-400',  route: '/Expenses',           destination: 'Expenses' },
+  income_report: { label: 'Income Report', icon: TrendingUp,  color: 'text-violet-400',  route: '/Reports',            destination: 'Reports' },
+  document:      { label: 'Document',      icon: FileText,    color: 'text-slate-400',   route: '/VATAndBookkeeping',  destination: 'Bookkeeping Inbox' },
 };
 
 export default function SmartUploadButton() {
   const { businesses, currentBusiness } = useBusiness();
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState('idle'); // idle | selecting | uploading | classifying | saving | done | error
+  const [status, setStatus] = useState('idle');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
@@ -43,10 +44,9 @@ export default function SmartUploadButton() {
 
     try {
       // 1. Upload file
-      setStatus('uploading');
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // 2. Classify with AI
+      // 2. Classify with AI — include income_report as a possible type
       setStatus('classifying');
       const classification = await base44.integrations.Core.InvokeLLM({
         prompt: `You are a document classifier for a restaurant finance platform. Analyze the document and classify it.
@@ -54,17 +54,20 @@ export default function SmartUploadButton() {
 Business: ${activeBusiness.name}
 File name: ${file.name}
 
-Classify as ONE of: invoice, payslip, menu, receipt, document
+Classify as ONE of: invoice, payslip, menu, receipt, income_report, document
+
+IMPORTANT: Classify as "income_report" if the document contains a header like "Monthly Income Report" followed by a venue name and month/year (e.g. "Souvla Lane · June 2025"), AND contains a row labeled "Total Revenue (Gross)" or similar revenue summary. Do NOT classify these as "document".
 
 For invoice/receipt: also extract supplier_name, invoice_date (YYYY-MM-DD), invoice_total (number), expense_category (food_beverage|staff_costs|fixed_costs|utilities|operating_expenses|one_off_expenses).
 For payslip: extract employee_name, pay_period, net_pay (number).
+For income_report: extract venue_name (string), report_period (YYYY-MM format, e.g. "2025-06"), monthly_revenue (number from "Total Revenue (Gross)" row), days_open (number, if present), total_covers (number, if present), average_ticket (number, if present).
 
 Respond with JSON only.`,
         file_urls: [file_url],
         response_json_schema: {
           type: 'object',
           properties: {
-            doc_type: { type: 'string', enum: ['invoice', 'payslip', 'menu', 'receipt', 'document'] },
+            doc_type: { type: 'string', enum: ['invoice', 'payslip', 'menu', 'receipt', 'income_report', 'document'] },
             supplier_name: { type: 'string' },
             invoice_date: { type: 'string' },
             invoice_total: { type: 'number' },
@@ -72,6 +75,12 @@ Respond with JSON only.`,
             employee_name: { type: 'string' },
             pay_period: { type: 'string' },
             net_pay: { type: 'number' },
+            venue_name: { type: 'string' },
+            report_period: { type: 'string' },
+            monthly_revenue: { type: 'number' },
+            days_open: { type: 'number' },
+            total_covers: { type: 'number' },
+            average_ticket: { type: 'number' },
             confidence: { type: 'number' },
             notes: { type: 'string' }
           },
@@ -97,6 +106,7 @@ Respond with JSON only.`,
           confidence_score: classification.confidence || 0.8,
           notes: `Smart upload — ${classification.notes || 'auto-classified'}`
         });
+
       } else if (docType === 'payslip') {
         await base44.entities.ExpenseDocument.create({
           business_id: activeBusiness.id,
@@ -108,8 +118,61 @@ Respond with JSON only.`,
           status: 'pending',
           notes: `Payslip — ${classification.pay_period || ''} — Smart upload`
         });
+
+      } else if (docType === 'income_report') {
+        // Parse period to get start/end dates
+        const period = classification.report_period; // e.g. "2025-06"
+        let periodStart, periodEnd;
+        if (period && /^\d{4}-\d{2}$/.test(period)) {
+          const [year, month] = period.split('-').map(Number);
+          periodStart = new Date(year, month - 1, 1).toISOString().split('T')[0];
+          periodEnd = new Date(year, month, 0).toISOString().split('T')[0]; // last day of month
+        } else {
+          // fallback to current month
+          const now = new Date();
+          periodStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+          periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+        }
+
+        // Check for existing snapshot for this business+period to upsert
+        const existing = await base44.entities.FinancialSnapshot.filter({
+          business_id: activeBusiness.id
+        }, '-period_start', 100);
+
+        const existingMatch = existing.find(s => s.period_start === periodStart);
+
+        const snapshotData = {
+          business_id: activeBusiness.id,
+          period_start: periodStart,
+          period_end: periodEnd,
+          period_type: 'monthly',
+          monthly_revenue: classification.monthly_revenue || 0,
+          created_by_email: '',
+        };
+        if (classification.days_open) snapshotData.days_open = classification.days_open;
+        if (classification.total_covers) snapshotData.total_covers = classification.total_covers;
+        if (classification.average_ticket) snapshotData.average_ticket = classification.average_ticket;
+
+        if (existingMatch) {
+          await base44.entities.FinancialSnapshot.update(existingMatch.id, snapshotData);
+        } else {
+          await base44.entities.FinancialSnapshot.create(snapshotData);
+        }
+
+        setResult({
+          ...typeConfig,
+          fileName: file.name,
+          docType,
+          classification,
+          snapshotPeriod: period,
+          venueName: classification.venue_name || activeBusiness.name,
+          savedTo: 'snapshot',
+        });
+        setStatus('done');
+        return;
+
       } else {
-        // Generic document — save to bookkeeping inbox
+        // Generic document — save to bookkeeping inbox (Document entity)
         await base44.entities.Document.create({
           business_id: activeBusiness.id,
           type: 'invoice',
@@ -120,7 +183,7 @@ Respond with JSON only.`,
         });
       }
 
-      setResult({ ...typeConfig, fileName: file.name, docType, classification });
+      setResult({ ...typeConfig, fileName: file.name, docType, classification, savedTo: docType });
       setStatus('done');
     } catch (err) {
       setError(err.message || 'Upload failed');
@@ -138,6 +201,29 @@ Respond with JSON only.`,
     if (result?.route) navigate(result.route);
     setOpen(false);
     reset();
+  };
+
+  // Determine what destination label to show on the CTA button
+  const getCtaLabel = () => {
+    if (!result) return 'View';
+    if (result.docType === 'income_report') return 'View in Reports →';
+    if (result.docType === 'payslip') return 'View in Payroll →';
+    if (result.docType === 'menu') return 'View in Menu Engineering →';
+    if (result.docType === 'invoice' || result.docType === 'receipt') return 'View in Expenses →';
+    if (result.docType === 'document') return 'View in Bookkeeping →';
+    return `View in ${result.destination} →`;
+  };
+
+  // Honest description of where it was saved
+  const getSavedDescription = () => {
+    if (!result) return '';
+    if (result.docType === 'income_report') {
+      return `Income report for ${result.venueName}${result.snapshotPeriod ? ` · ${result.snapshotPeriod}` : ''} → saved as Financial Snapshot`;
+    }
+    if (result.docType === 'document') {
+      return `Stored in Bookkeeping Inbox for ${activeBusiness?.name} — review under VAT & Bookkeeping`;
+    }
+    return `Detected as ${result.label}${result.classification?.supplier_name ? ` from ${result.classification.supplier_name}` : ''} → saved to ${activeBusiness?.name}`;
   };
 
   return (
@@ -207,7 +293,7 @@ Respond with JSON only.`,
                 </div>
                 <div className="text-center">
                   <p className="text-white text-sm font-medium">Click or drag & drop</p>
-                  <p className="text-slate-500 text-xs mt-1">Invoice · Payslip · Menu · Receipt · Any document</p>
+                  <p className="text-slate-500 text-xs mt-1">Invoice · Payslip · Menu · Receipt · Income Report · Any document</p>
                 </div>
                 <input ref={fileRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.xlsx,.csv" onChange={(e) => handleFile(e.target.files[0])} />
               </div>
@@ -245,15 +331,18 @@ Respond with JSON only.`,
                   <CheckCircle className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div className="text-center">
-                  <p className="text-white font-semibold">Saved successfully!</p>
-                  <p className="text-slate-400 text-xs mt-1 max-w-[240px]">
-                    Detected as <span className={cn('font-medium', result.color)}>{result.label}</span>
-                    {result.classification?.supplier_name && (
-                      <> from <span className="text-white">{result.classification.supplier_name}</span></>
-                    )}
-                    {' '}→ saved to <span className="text-white">{activeBusiness?.name}</span>
+                  <p className="text-white font-semibold">
+                    {result.docType === 'income_report' ? 'Snapshot saved!' : 'Saved successfully!'}
                   </p>
-                  {result.classification?.invoice_total > 0 && (
+                  <p className="text-slate-400 text-xs mt-1 max-w-[260px]">
+                    {getSavedDescription()}
+                  </p>
+                  {result.docType === 'income_report' && result.classification?.monthly_revenue > 0 && (
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Revenue: <span className="text-emerald-400 font-semibold">€{result.classification.monthly_revenue.toLocaleString()}</span>
+                    </p>
+                  )}
+                  {(result.docType === 'invoice' || result.docType === 'receipt') && result.classification?.invoice_total > 0 && (
                     <p className="text-slate-500 text-xs mt-0.5">
                       Amount: <span className="text-white">€{result.classification.invoice_total.toFixed(2)}</span>
                     </p>
@@ -263,7 +352,7 @@ Respond with JSON only.`,
                   onClick={goToResult}
                   className="mt-1 px-5 py-2 rounded-xl bg-[#7B3BFF] hover:bg-[#6d2ff7] text-white text-sm font-medium transition-colors"
                 >
-                  View in {result.label === 'Payslip' ? 'Payroll' : result.label === 'Menu' ? 'Menu Engineering' : 'Expenses'} →
+                  {getCtaLabel()}
                 </button>
               </div>
             )}
