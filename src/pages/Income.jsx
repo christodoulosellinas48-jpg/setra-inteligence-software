@@ -5,9 +5,10 @@ import { useBusiness } from '@/components/business/BusinessContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Plus, RefreshCw, Calendar, Edit2, Trash2 } from 'lucide-react';
+import { TrendingUp, Plus, RefreshCw, Calendar, Edit2, Trash2, UploadCloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SaveSnapshotModal from '@/components/reports/SaveSnapshotModal';
+import MassUploadSnapshotsModal from '@/components/reports/MassUploadSnapshotsModal';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -15,6 +16,7 @@ export default function Income() {
   const { currentBusiness, user, loading: businessLoading } = useBusiness();
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
+  const [showMassUpload, setShowMassUpload] = useState(false);
   const [editSnapshot, setEditSnapshot] = useState(null);
 
   const { data: snapshots = [], refetch, isLoading } = useQuery({
@@ -78,10 +80,16 @@ export default function Income() {
             </h1>
             <p className="text-slate-500 text-sm mt-1">{currentBusiness.name} · Monthly revenue snapshots</p>
           </div>
-          <Button onClick={() => { setEditSnapshot(null); setShowModal(true); }}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Income Record
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowMassUpload(true)}>
+              <UploadCloud className="w-4 h-4 mr-2" />
+              Mass Upload
+            </Button>
+            <Button onClick={() => { setEditSnapshot(null); setShowModal(true); }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Income Record
+            </Button>
+          </div>
         </div>
 
         {/* Summary cards */}
@@ -192,6 +200,14 @@ export default function Income() {
           )}
         </Card>
       </div>
+
+      <MassUploadSnapshotsModal
+        open={showMassUpload}
+        onClose={() => setShowMassUpload(false)}
+        business={currentBusiness}
+        userEmail={user?.email}
+        onSaved={() => { refetch(); queryClient.invalidateQueries(['financialSnapshots', currentBusiness?.id]); }}
+      />
 
       <SaveSnapshotModal
         open={showModal}
