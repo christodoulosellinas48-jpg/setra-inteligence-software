@@ -209,6 +209,14 @@ export default function SidebarLayout({ children }) {
           collapsed ? 'md:left-16' : 'md:left-64'
         )}>
           <div className="flex items-center gap-2">
+            {/* Search / Command Palette trigger */}
+            <button
+              onClick={() => openPalette(true)}
+              title="Search (⌘K)"
+              className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+            >
+              <Search className="w-4 h-4" />
+            </button>
             {/* Mobile hamburger — only shown on top-level pages */}
             {isTopLevel ? (
               <button
@@ -232,13 +240,6 @@ export default function SidebarLayout({ children }) {
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <BusinessSwitcherPill />
-            <button
-              onClick={() => openPalette(true)}
-              title="Search (⌘K)"
-              className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-            >
-              <Search className="w-4 h-4" />
-            </button>
             <SmartUploadButton />
             <button
               onClick={() => navigate('/Dashboard')}
