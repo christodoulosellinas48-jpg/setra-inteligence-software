@@ -10,8 +10,8 @@ export default function MarketingHeader() {
 
   const navLinks = [
     { label: 'Features',        path: '/Features' },
-    { label: 'For Accountants', path: '/Accountants' },
     { label: 'Pricing',         path: '/Pricing' },
+    { label: 'For Accountants', path: '/Accountants' },
     { label: 'About',           path: '/AboutUs' },
   ];
 

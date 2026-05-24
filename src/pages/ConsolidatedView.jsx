@@ -145,6 +145,7 @@ export default function ConsolidatedView() {
       avgHealthScore,
       avgMargin,
       businessCount: filteredBusinesses.length,
+      venuesWithData: venuesWithData.length,
       businessPerformance: businessPerformance.sort((a, b) => (b.profit ?? -Infinity) - (a.profit ?? -Infinity)),
       dateRangeLabel: DATE_RANGE_OPTIONS.find(o => o.value === dateRange)?.label || 'This month',
     };

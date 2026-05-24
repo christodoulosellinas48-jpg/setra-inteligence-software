@@ -26,21 +26,25 @@ export default function SummaryCards({ metrics }) {
       icon: TrendingUp,
       label: 'Combined Net Profit',
       value: metrics.totalRevenue > 0 ? fmtEur(metrics.totalProfit) : '—',
-      sub: metrics.totalRevenue > 0 ? `${metrics.avgMargin.toFixed(1)}% avg margin` : 'Enter revenue data to calculate',
+      sub: metrics.totalRevenue > 0 && metrics.totalProfit !== 0
+        ? `${metrics.avgMargin.toFixed(1)}% avg margin`
+        : metrics.totalRevenue > 0
+          ? 'Add cost data to compute margin'
+          : 'Enter revenue data to calculate',
       valueClass: metrics.totalProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
     },
     ...(showHealthCard ? [{
       icon: BarChart3,
       label: 'Portfolio Health',
       value: healthScoreDisplay,
-      sub: 'Average across active venues',
+      sub: `Based on ${metrics.venuesWithData} of ${metrics.businessCount} venue${metrics.businessCount !== 1 ? 's' : ''} with data`,
       valueClass: 'text-white'
     }] : []),
     {
       icon: Building2,
-      label: 'Active Businesses',
+      label: 'Venues',
       value: metrics.businessCount,
-      sub: 'In your portfolio',
+      sub: `${metrics.venuesWithData} with data this period`,
       valueClass: 'text-white'
     }
   ];

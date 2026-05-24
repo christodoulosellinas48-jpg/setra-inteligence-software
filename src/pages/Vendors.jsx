@@ -449,14 +449,27 @@ function VendorsContent() {
       const name = (e.supplier_name || '').trim();
       if (!name) return;
       if (!expenseMap[name]) {
-        expenseMap[name] = { name, total_spend: 0, invoice_count: 0, last_order_date: null, category: e.expense_category || 'other', invoices: [] };
+        expenseMap[name] = { name, total_spend: 0, invoice_count: 0, last_order_date: null, category: 'other', _catCounts: {}, invoices: [] };
       }
       expenseMap[name].total_spend += (e.invoice_total || 0);
       expenseMap[name].invoice_count += 1;
+      // Track dominant expense category from actual invoices
+      const cat = e.expense_category || 'other';
+      expenseMap[name]._catCounts[cat] = (expenseMap[name]._catCounts[cat] || 0) + 1;
       if (e.invoice_date && (!expenseMap[name].last_order_date || e.invoice_date > expenseMap[name].last_order_date)) {
         expenseMap[name].last_order_date = e.invoice_date;
       }
       expenseMap[name].invoices.push(e);
+    });
+    // Set category from dominant invoice category
+    Object.values(expenseMap).forEach(s => {
+      const dominant = Object.entries(s._catCounts).sort((a, b) => b[1] - a[1])[0];
+      if (dominant) {
+        // Map ExpenseDocument categories to Supplier categories
+        const catMap = { food_beverage: 'food_beverage', staff_costs: 'staff_costs', fixed_costs: 'fixed_costs', utilities: 'utilities', operating_expenses: 'operating_expenses', one_off_expenses: 'operating_expenses' };
+        s.category = catMap[dominant[0]] || 'other';
+      }
+      delete s._catCounts;
     });
 
     // Merge with actual Supplier records (they may have contact details)
@@ -477,10 +490,15 @@ function VendorsContent() {
   const totalSpend = useMemo(() => expenses.reduce((s, e) => s + (e.invoice_total || 0), 0), [expenses]);
   const topCategory = useMemo(() => {
     const catMap = {};
-    suppliers.forEach(s => { catMap[s.category] = (catMap[s.category] || 0) + (s.total_spend || 0); });
+    expenses.forEach(e => {
+      const cat = e.expense_category || 'other';
+      catMap[cat] = (catMap[cat] || 0) + (e.invoice_total || 0);
+    });
     const top = Object.entries(catMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
-    return CATEGORY_OPTIONS.find(c => c.value === top)?.label || top?.replace(/_/g, ' ') || '';
-  }, [suppliers]);
+    const catMap2 = { food_beverage: 'food_beverage', staff_costs: 'staff_costs', fixed_costs: 'fixed_costs', utilities: 'utilities', operating_expenses: 'operating_expenses', one_off_expenses: 'operating_expenses' };
+    const mappedTop = catMap2[top] || 'other';
+    return CATEGORY_OPTIONS.find(c => c.value === mappedTop)?.label || top?.replace(/_/g, ' ') || '';
+  }, [expenses]);
 
   // loading state is only true when no data yet (both suppliers & expenses pending)
   const isLoading = loadingSuppliers;
@@ -546,7 +564,23 @@ function VendorsContent() {
 
       {/* Supplier List */}
       {isLoading ? (
-        <div className="text-center text-slate-400 py-12">Loading suppliers...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-[#151528]/80 border border-white/5 rounded-2xl p-5 animate-pulse">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-white/5" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 bg-white/5 rounded w-2/3" />
+                  <div className="h-2 bg-white/5 rounded w-1/3" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-12 bg-white/5 rounded-lg" />
+                <div className="h-12 bg-white/5 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : suppliers.length === 0 ? (
         <Card className="bg-[#151528]/80 border-white/5 p-12 text-center">
           <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />

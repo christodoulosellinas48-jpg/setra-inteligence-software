@@ -478,7 +478,7 @@ export default function OperationsHub() {
                 <h1 className="text-2xl font-bold text-white tracking-tight">Operations Hub</h1>
               </div>
               <p className="text-slate-400 text-sm">
-                Your operational control centre — {totalModules} modules across {CATEGORIES.length} business areas.
+                Your operational control centre — {totalModules} modules across {CATEGORIES.length} areas.
               </p>
             </div>
 
