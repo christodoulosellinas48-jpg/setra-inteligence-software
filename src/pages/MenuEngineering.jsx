@@ -325,7 +325,7 @@ function MenuEngineeringContent() {
                       {!d.hasRecipe ? 'No recipe linked' : 'Recipe has €0 cost'}
                     </td>
                     <td className="px-5 py-2.5 text-right">
-                      <a href="/RecipeManager" className="text-xs text-[#A855F7] hover:text-[#C084FC] flex items-center justify-end gap-0.5">
+                      <a href="/Dishes" className="text-xs text-[#A855F7] hover:text-[#C084FC] flex items-center justify-end gap-0.5">
                         Link recipe <ChevronRight className="w-3 h-3" />
                       </a>
                     </td>

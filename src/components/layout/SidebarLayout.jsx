@@ -9,36 +9,24 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
-  Building2,
-  Wallet,
-  LineChart,
-  BarChart3,
-  ClipboardCheck,
+  DollarSign,
   Receipt,
   Settings,
   ChevronLeft,
   ChevronRight,
   Zap,
-  FileStack,
-  LayoutGrid,
-  ChefHat,
-  Plug
+  Plug,
+  MessageSquare
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
 import SmartUploadButton from '@/components/layout/SmartUploadButton';
 
 const ALL_NAV_ITEMS = [
-  { label: 'Dashboard',   icon: LayoutDashboard, path: '/Dashboard',     permission: null },
-  { label: 'Budget',      icon: Wallet,          path: '/Budgeting',     permission: 'manage_budget' },
-  { label: 'Forecast',    icon: LineChart,        path: '/Forecasting',   permission: 'manage_budget' },
-  { label: 'Reports',     icon: BarChart3,        path: '/Reports',       permission: 'view_reports' },
-  { label: 'Audit',       icon: ClipboardCheck,   path: '/Audit',         permission: 'view_reports' },
-  { label: 'Expenses',          icon: FileStack,   path: '/Expenses',          permission: 'upload_expenses' },
-  { label: 'VAT & Bookkeeping', icon: Receipt,     path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
-  { label: 'Menu Engineering', icon: LayoutGrid,  path: '/MenuEngineering',   permission: 'view_reports' },
-  { label: 'Recipe Manager',  icon: ChefHat,     path: '/RecipeManager',     permission: 'view_reports' },
-  { label: 'Integrations',   icon: Plug,        path: '/Integrations',      permission: null },
+  { label: 'Dashboard',         icon: LayoutDashboard, path: '/Dashboard',         permission: null },
+  { label: 'Money',             icon: DollarSign,      path: '/Money',             permission: null },
+  { label: 'VAT & Bookkeeping', icon: Receipt,         path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
+  { label: 'Integrations',      icon: Plug,            path: '/Integrations',      permission: null },
 ];
 
 export default function SidebarLayout({ children }) {
@@ -65,7 +53,7 @@ export default function SidebarLayout({ children }) {
   const isActive = (path) => location.pathname === path;
 
   // Determine if the current page is a top-level tab root (no Back button needed)
-  const TAB_ROOTS = ['/Dashboard', '/Expenses', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll', '/MenuEngineering', '/RecipeManager'];
+  const TAB_ROOTS = ['/Dashboard', '/Money', '/Expenses', '/Income', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll', '/MenuEngineering', '/RecipeManager', '/Dishes', '/Suppliers', '/Stock', '/Plan', '/Insights'];
   const isTopLevel = TAB_ROOTS.includes(location.pathname);
 
   return (
@@ -241,6 +229,14 @@ export default function SidebarLayout({ children }) {
           <div className="flex items-center gap-2 ml-auto">
             <BusinessSwitcherPill />
             <SmartUploadButton />
+            <button
+              onClick={() => navigate('/Dashboard')}
+              title="Ask Setra"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#7B3BFF]/10 border border-[#7B3BFF]/20 text-[#C084FC] hover:bg-[#7B3BFF]/20 hover:border-[#7B3BFF]/40 transition-all duration-200 text-sm font-medium"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span className="hidden sm:inline">Ask Setra</span>
+            </button>
             <UserMenu />
           </div>
         </header>

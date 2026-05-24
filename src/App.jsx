@@ -23,6 +23,12 @@ import AboutUs from './pages/AboutUs';
 import Accountants from './pages/Accountants';
 import Income from './pages/Income';
 import Duplicates from './pages/Duplicates';
+import Money from './pages/Money';
+import Dishes from './pages/Dishes';
+import Suppliers from './pages/Suppliers';
+import Stock from './pages/Stock';
+import Plan from './pages/Plan';
+import Insights from './pages/Insights';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -106,11 +112,7 @@ const AuthenticatedApp = () => {
           <ConsolidatedView />
         </LayoutWrapper>
       } />
-      <Route path="/Vendors" element={
-        <LayoutWrapper currentPageName="Vendors">
-          <Vendors />
-        </LayoutWrapper>
-      } />
+      <Route path="/Vendors" element={<Navigate to="/Suppliers" replace />} />
       <Route path="/OperationsHub" element={
         <LayoutWrapper currentPageName="OperationsHub">
           <OperationsHub />
@@ -121,20 +123,10 @@ const AuthenticatedApp = () => {
           <VATAndBookkeeping />
         </LayoutWrapper>
       } />
-      <Route path="/Expenses" element={
-        <LayoutWrapper currentPageName="Expenses">
-          <Expenses />
-        </LayoutWrapper>
-      } />
-      <Route path="/MenuHeatmap" element={<Navigate to="/MenuEngineering" replace />} />
+      <Route path="/MenuHeatmap" element={<Navigate to="/Dishes?tab=heatmap" replace />} />
       <Route path="/Payroll" element={
         <LayoutWrapper currentPageName="Payroll">
           <Payroll />
-        </LayoutWrapper>
-      } />
-      <Route path="/Income" element={
-        <LayoutWrapper currentPageName="Income">
-          <Income />
         </LayoutWrapper>
       } />
       <Route path="/Duplicates" element={
@@ -142,6 +134,54 @@ const AuthenticatedApp = () => {
           <Duplicates />
         </LayoutWrapper>
       } />
+
+      {/* ── Merged module routes ── */}
+      <Route path="/Money" element={
+        <LayoutWrapper currentPageName="Money">
+          <Money />
+        </LayoutWrapper>
+      } />
+      <Route path="/Dishes" element={
+        <LayoutWrapper currentPageName="Dishes">
+          <Dishes />
+        </LayoutWrapper>
+      } />
+      <Route path="/Suppliers" element={
+        <LayoutWrapper currentPageName="Suppliers">
+          <Suppliers />
+        </LayoutWrapper>
+      } />
+      <Route path="/Stock" element={
+        <LayoutWrapper currentPageName="Stock">
+          <Stock />
+        </LayoutWrapper>
+      } />
+      <Route path="/Plan" element={
+        <LayoutWrapper currentPageName="Plan">
+          <Plan />
+        </LayoutWrapper>
+      } />
+      <Route path="/Insights" element={
+        <LayoutWrapper currentPageName="Insights">
+          <Insights />
+        </LayoutWrapper>
+      } />
+
+      {/* ── Legacy redirects ── */}
+      <Route path="/Expenses" element={<Navigate to="/Money" replace />} />
+      <Route path="/Income" element={<Navigate to="/Money?tab=income" replace />} />
+      <Route path="/RecipeManager" element={<Navigate to="/Dishes" replace />} />
+      <Route path="/MenuEngineering" element={<Navigate to="/Dishes?tab=matrix" replace />} />
+      <Route path="/Vendor" element={<Navigate to="/Suppliers" replace />} />
+      <Route path="/PurchaseOrders" element={<Navigate to="/Suppliers?tab=orders" replace />} />
+      <Route path="/Inventory" element={<Navigate to="/Stock" replace />} />
+      <Route path="/WasteManagement" element={<Navigate to="/Stock?tab=waste" replace />} />
+      <Route path="/Budgeting" element={<Navigate to="/Plan" replace />} />
+      <Route path="/Forecasting" element={<Navigate to="/Plan?tab=forecast" replace />} />
+      <Route path="/Reports" element={<Navigate to="/Insights" replace />} />
+      <Route path="/Audit" element={<Navigate to="/Insights?tab=audit" replace />} />
+      <Route path="/DuplicateDetector" element={<Navigate to="/VATAndBookkeeping" replace />} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </motion.div>

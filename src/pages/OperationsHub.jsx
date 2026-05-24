@@ -13,7 +13,8 @@ import {
   ChefHat, Package, TrendingUp, Percent, BarChart2, Brain,
   Receipt, BookOpen, DollarSign, FileText, Activity, Zap,
   AlertTriangle, Target, CheckCircle2, Clock, Layers, PieChart,
-  Search, X, Copy
+  Search, X, Copy, LayoutDashboard, Lightbulb, CalendarRange,
+  ShoppingBag, Boxes, LineChart, ClipboardCheck
 } from 'lucide-react';
 
 const containerVariants = {
@@ -26,68 +27,27 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }
 };
 
-const CATEGORIES = [
+// ─── Section definitions (5 outcome-named sections) ───────────────────────
+
+const SECTIONS = [
   {
-    id: 'profit',
-    label: 'Profit Drivers',
-    subtitle: 'Maximise margin from every menu item and sale',
-    icon: TrendingUp,
+    id: 'today',
+    label: "Today's Numbers",
+    subtitle: 'Your venue, right now',
+    icon: LayoutDashboard,
     color: 'text-violet-400',
     borderColor: 'border-violet-500/20',
     modules: [
       {
-        id: 'menu', label: 'Menu Engineering', icon: UtensilsCrossed, path: '/MenuEngineering',
-        description: 'Stars, plowhorses, puzzles & dogs. Identify your top-margin items.',
-        badge: 'Profitability', badgeColor: 'bg-violet-500/15 text-violet-300 border-violet-500/20',
-        fetchStat: async (biz) => {
-          try {
-            const items = await base44.entities.Item.filter({ business_id: biz.id });
-            return items.length > 0 ? `${items.length} dishes` : null;
-          } catch { return null; }
-        }
+        id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/Dashboard',
+        description: 'Live P&L health score, KPIs, and the daily snapshot of your business.',
+        badge: 'Daily', badgeColor: 'bg-violet-500/15 text-violet-300 border-violet-500/20',
+        fetchStat: async () => null,
       },
       {
-        id: 'recipes', label: 'Recipe Manager', icon: ChefHat, path: '/RecipeManager',
-        description: 'Link ingredients to dishes and track real-time food cost per plate.',
-        badge: 'Food Cost', badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/20',
-        fetchStat: async (biz) => {
-          try {
-            const recipes = await base44.entities.Recipe.filter({ business_id: biz.id });
-            return recipes.length > 0 ? `${recipes.length} recipes` : null;
-          } catch { return null; }
-        }
-      },
-    ]
-  },
-  {
-    id: 'cost',
-    label: 'Budget',
-    subtitle: 'Track every euro leaving the business',
-    icon: DollarSign,
-    color: 'text-emerald-400',
-    borderColor: 'border-emerald-500/20',
-    modules: [
-      {
-        id: 'vendors', label: 'Vendors & Suppliers', icon: Store, path: '/Vendors',
-        description: 'Supplier relationships, invoice history, and total spend per vendor.',
-        badge: 'Suppliers', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
-        fetchStat: async (biz) => {
-          try {
-            const suppliers = await base44.entities.Supplier.filter({ business_id: biz.id });
-            return suppliers.length > 0 ? `${suppliers.length} suppliers` : null;
-          } catch { return null; }
-        }
-      },
-      {
-        id: 'waste', label: 'Waste Management', icon: Trash2, path: '/WasteManagement',
-        description: 'Log food waste, identify high-waste items, and reduce operational loss.',
-        badge: 'Waste', badgeColor: 'bg-orange-500/15 text-orange-300 border-orange-500/20',
-        fetchStat: async (biz) => null // Placeholder
-      },
-      {
-        id: 'expenses', label: 'Expenses', icon: Receipt, path: '/Expenses',
-        description: 'Upload invoices and receipts. AI extracts and categorises automatically.',
-        badge: 'Invoices', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+        id: 'money', label: 'Money', icon: DollarSign, path: '/Money',
+        description: 'All money in (revenue) and money out (expenses) in one view.',
+        badge: 'Cash Flow', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
         fetchStat: async (biz) => {
           try {
             const expenses = await base44.entities.ExpenseDocument.filter({ business_id: biz.id });
@@ -96,36 +56,46 @@ const CATEGORIES = [
         }
       },
       {
-        id: 'income', label: 'Income', icon: TrendingUp, path: '/Income',
-        description: 'Record and review monthly revenue snapshots. Upload income reports or enter manually.',
-        badge: 'Revenue', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
-        fetchStat: async (biz) => {
-          try {
-            const snaps = await base44.entities.FinancialSnapshot.filter({ business_id: biz.id });
-            return snaps.length > 0 ? `${snaps.length} months` : null;
-          } catch { return null; }
-        }
-      },
-      {
-        id: 'duplicates', label: 'Duplicate Detector', icon: Copy, path: '/Duplicates',
-        description: 'Find and remove duplicate invoices, menu items, and recipes across your business.',
-        badge: 'Hygiene', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
-        fetchStat: async (biz) => null,
+        id: 'vat', label: 'VAT & Bookkeeping', icon: Receipt, path: '/VATAndBookkeeping',
+        description: 'Inbox, bank reconciliation, VAT periods, P&L, payroll, and exports.',
+        badge: 'Compliance', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+        fetchStat: async () => null,
       },
     ]
   },
   {
-    id: 'supply',
-    label: 'Inventory & Supply',
-    subtitle: 'Know what you have and what you need',
-    icon: Package,
+    id: 'dishes',
+    label: 'Dishes & Menu',
+    subtitle: 'What you sell, what it costs you',
+    icon: UtensilsCrossed,
+    color: 'text-purple-400',
+    borderColor: 'border-purple-500/20',
+    modules: [
+      {
+        id: 'dishes', label: 'Dishes', icon: UtensilsCrossed, path: '/Dishes',
+        description: 'Menu items, recipes, food cost per plate, and the engineering matrix — all in one place.',
+        badge: 'Menu', badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const items = await base44.entities.Item.filter({ business_id: biz.id });
+            return items.length > 0 ? `${items.length} dishes` : null;
+          } catch { return null; }
+        }
+      },
+    ]
+  },
+  {
+    id: 'stock',
+    label: 'Stock & Suppliers',
+    subtitle: 'What you have, who you buy from',
+    icon: Boxes,
     color: 'text-cyan-400',
     borderColor: 'border-cyan-500/20',
     modules: [
       {
-        id: 'inventory', label: 'Inventory', icon: Package, path: '/Inventory',
-        description: 'Track stock levels, reorder thresholds, and ingredient unit costs.',
-        badge: 'Stock', badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
+        id: 'stock', label: 'Stock', icon: Package, path: '/Stock',
+        description: 'Inventory levels, reorder alerts, and waste log — the full stock picture.',
+        badge: 'Inventory', badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
         fetchStat: async (biz) => {
           try {
             const items = await base44.entities.InventoryItem.filter({ business_id: biz.id });
@@ -134,71 +104,30 @@ const CATEGORIES = [
         }
       },
       {
-        id: 'po', label: 'Purchase Orders', icon: ShoppingCart, path: '/PurchaseOrders',
-        description: 'Create and send POs to suppliers. Track delivery and cost expectations.',
+        id: 'suppliers', label: 'Suppliers', icon: Store, path: '/Suppliers',
+        description: 'Supplier directory, purchase orders, and spend analysis — past and future orders.',
         badge: 'Procurement', badgeColor: 'bg-teal-500/15 text-teal-300 border-teal-500/20',
         fetchStat: async (biz) => {
           try {
-            const pos = await base44.entities.PurchaseOrder.filter({ business_id: biz.id });
-            const sent = pos.filter(p => p.status === 'sent').length;
-            const received = pos.filter(p => p.status === 'received').length;
-            return pos.length > 0 ? `${sent} sent, ${received} received` : null;
+            const suppliers = await base44.entities.Supplier.filter({ business_id: biz.id });
+            return suppliers.length > 0 ? `${suppliers.length} suppliers` : null;
           } catch { return null; }
         }
       },
     ]
   },
   {
-    id: 'finance',
-    label: 'Financial Operations',
-    subtitle: 'Compliance, bookkeeping, and financial records',
-    icon: BookOpen,
-    color: 'text-blue-400',
-    borderColor: 'border-blue-500/20',
-    modules: [
-      {
-        id: 'vat', label: 'VAT & Bookkeeping', icon: Percent, path: '/VATAndBookkeeping',
-        description: 'Manage VAT periods, input/output VAT, P&L, payroll, and exports.',
-        badge: 'Compliance', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
-        fetchStat: async (biz) => null // Would need VAT period calculation
-      },
-      {
-        id: 'payroll', label: 'Payroll', icon: Users, path: '/Payroll',
-        description: 'Manage shifts, log labour costs, and maintain employee contracts.',
-        badge: 'HR', badgeColor: 'bg-pink-500/15 text-pink-300 border-pink-500/20',
-        fetchStat: async (biz) => {
-          try {
-            const contracts = await base44.entities.EmployeeContract.filter({ business_id: biz.id, status: 'active' });
-            return contracts.length > 0 ? `${contracts.length} employees` : null;
-          } catch { return null; }
-        }
-      },
-    ]
-  },
-  {
-    id: 'intelligence',
-    label: 'Intelligence & Reporting',
-    subtitle: 'Data that drives better decisions',
-    icon: Brain,
+    id: 'plan',
+    label: 'Plan & Analyse',
+    subtitle: 'Look ahead, look back',
+    icon: LineChart,
     color: 'text-amber-400',
     borderColor: 'border-amber-500/20',
     modules: [
       {
-        id: 'reports', label: 'Reports', icon: BarChart2, path: '/Reports',
-        description: 'Revenue trends, expense breakdowns, and financial summary reports.',
-        badge: 'Analytics', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
-        fetchStat: async (biz) => null
-      },
-      {
-        id: 'forecast', label: 'Forecasting', icon: Activity, path: '/Forecasting',
-        description: 'Project revenue and costs with optimistic, baseline, and conservative scenarios.',
-        badge: 'Forecast', badgeColor: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20',
-        fetchStat: async (biz) => null
-      },
-      {
-        id: 'budget', label: 'Budget', icon: Target, path: '/Budgeting',
-        description: 'Set monthly budgets and compare against actual financial performance.',
-        badge: 'Budget', badgeColor: 'bg-lime-500/15 text-lime-300 border-lime-500/20',
+        id: 'plan', label: 'Plan', icon: Target, path: '/Plan',
+        description: 'Set monthly budgets and run 6-month forecasts with optimistic/conservative scenarios.',
+        badge: 'Forward', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
         fetchStat: async (biz) => {
           try {
             const budgets = await base44.entities.Budget.filter({ business_id: biz.id });
@@ -207,9 +136,9 @@ const CATEGORIES = [
         }
       },
       {
-        id: 'audit', label: 'Audit', icon: PieChart, path: '/Audit',
-        description: 'Deep-dive audit findings: pricing, food cost, labour, waste, and menu.',
-        badge: 'Audit', badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/20',
+        id: 'insights', label: 'Insights', icon: Lightbulb, path: '/Insights',
+        description: 'Performance reports, deep-dive audit findings, and an action plan to act on them.',
+        badge: 'Analysis', badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/20',
         fetchStat: async (biz) => {
           try {
             const audits = await base44.entities.AuditRun.filter({ business_id: biz.id });
@@ -220,30 +149,35 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'setup',
-    label: 'Setup & Integrations',
-    subtitle: 'Connect your tools and configure your workspace',
-    icon: Zap,
-    color: 'text-indigo-400',
-    borderColor: 'border-indigo-500/20',
+    id: 'compliance',
+    label: 'Compliance & People',
+    subtitle: 'Filings, staff, money owed',
+    icon: ClipboardCheck,
+    color: 'text-blue-400',
+    borderColor: 'border-blue-500/20',
     modules: [
       {
-        id: 'integrations', label: 'Integrations', icon: Zap, path: '/Integrations',
-        description: 'Connect your POS, accounting, banking, and delivery platforms.',
-        badge: 'Integrations', badgeColor: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/20',
-        fetchStat: async (biz) => null
+        id: 'vat2', label: 'VAT & Bookkeeping', icon: Receipt, path: '/VATAndBookkeeping',
+        description: 'Cyprus VAT periods, filings, bank reconciliation, and accountant exports.',
+        badge: 'VAT', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
+        fetchStat: async () => null,
       },
       {
-        id: 'settings', label: 'Settings', icon: FileText, path: '/Settings',
-        description: 'Manage your business details, VAT, subscription, and team access.',
-        badge: 'Config', badgeColor: 'bg-slate-500/15 text-slate-300 border-slate-500/20',
-        fetchStat: async (biz) => null
+        id: 'payroll', label: 'Payroll', icon: Users, path: '/Payroll',
+        description: 'Employee contracts, shifts, labour costs, and Cyprus payroll tax breakdown.',
+        badge: 'HR', badgeColor: 'bg-pink-500/15 text-pink-300 border-pink-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const contracts = await base44.entities.EmployeeContract.filter({ business_id: biz.id, status: 'active' });
+            return contracts.length > 0 ? `${contracts.length} employees` : null;
+          } catch { return null; }
+        }
       },
     ]
   },
 ];
 
-function ModuleCard({ mod, stat, delay = 0 }) {
+function ModuleCard({ mod, stat }) {
   const navigate = useNavigate();
   const Icon = mod.icon;
 
@@ -281,8 +215,8 @@ function ModuleCard({ mod, stat, delay = 0 }) {
   );
 }
 
-function CategorySection({ category, index, stats }) {
-  const Icon = category.icon;
+function SectionBlock({ section, index, stats }) {
+  const Icon = section.icon;
 
   return (
     <motion.section
@@ -292,12 +226,12 @@ function CategorySection({ category, index, stats }) {
       className="space-y-3"
     >
       <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 rounded-lg bg-[#151528] border ${category.borderColor} flex items-center justify-center`}>
-          <Icon className={`w-4 h-4 ${category.color}`} />
+        <div className={`w-8 h-8 rounded-lg bg-[#151528] border ${section.borderColor} flex items-center justify-center`}>
+          <Icon className={`w-4 h-4 ${section.color}`} />
         </div>
         <div>
-          <h2 className="text-sm font-bold text-white tracking-wide uppercase">{category.label}</h2>
-          <p className="text-xs text-slate-500">{category.subtitle}</p>
+          <h2 className="text-sm font-bold text-white tracking-wide uppercase">{section.label}</h2>
+          <p className="text-xs text-slate-500">{section.subtitle}</p>
         </div>
       </div>
 
@@ -307,7 +241,7 @@ function CategorySection({ category, index, stats }) {
         animate="visible"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
       >
-        {category.modules.map((mod) => (
+        {section.modules.map((mod) => (
           <ModuleCard key={mod.id} mod={mod} stat={stats[mod.id]} />
         ))}
       </motion.div>
@@ -319,7 +253,7 @@ function SearchModal({ open, onClose }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
 
-  const allModules = CATEGORIES.flatMap(c => c.modules);
+  const allModules = SECTIONS.flatMap(s => s.modules);
   const filtered = query.trim()
     ? allModules.filter(m =>
         m.label.toLowerCase().includes(query.toLowerCase()) ||
@@ -345,19 +279,16 @@ function SearchModal({ open, onClose }) {
             <Search className="w-4 h-4 text-slate-500" />
             <Input
               autoFocus
-              placeholder="Search modules, reports, recipes…"
+              placeholder="Search modules, reports, dishes…"
               value={query}
               onChange={e => setQuery(e.target.value)}
               className="bg-transparent border-0 text-white placeholder-slate-500 text-sm"
-              onKeyDown={e => {
-                if (e.key === 'Escape') onClose();
-              }}
+              onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
             />
             <button onClick={onClose} className="text-slate-500 hover:text-white">
               <X className="w-4 h-4" />
             </button>
           </div>
-
           {query.trim() && (
             <div className="max-h-64 overflow-y-auto">
               {filtered.length > 0 ? (
@@ -385,10 +316,9 @@ function SearchModal({ open, onClose }) {
               )}
             </div>
           )}
-
           {!query.trim() && (
             <div className="p-3 text-xs text-slate-500">
-              Type to search modules, reports, and features…
+              Type to search modules and features…
             </div>
           )}
         </Card>
@@ -397,42 +327,34 @@ function SearchModal({ open, onClose }) {
   ) : null;
 }
 
-
-
 export default function OperationsHub() {
   const navigate = useNavigate();
   const { currentBusiness } = useBusiness();
   const [showSearch, setShowSearch] = useState(false);
   const [stats, setStats] = useState({});
 
-  // Register ⌘K global search
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setShowSearch(true);
       }
-      if (e.key === 'Escape' && showSearch) {
-        setShowSearch(false);
-      }
+      if (e.key === 'Escape' && showSearch) setShowSearch(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showSearch]);
 
-  // Fetch stats for all modules
   useEffect(() => {
     if (!currentBusiness) return;
     const fetchAllStats = async () => {
       const newStats = {};
-      for (const category of CATEGORIES) {
-        for (const mod of category.modules) {
+      for (const section of SECTIONS) {
+        for (const mod of section.modules) {
           try {
             const stat = await mod.fetchStat(currentBusiness);
             if (stat) newStats[mod.id] = stat;
-          } catch (e) {
-            // Silent fail for stats
-          }
+          } catch {}
         }
       }
       setStats(newStats);
@@ -455,7 +377,6 @@ export default function OperationsHub() {
   });
 
   const lowStockCount = inventoryItems.filter(i => i.current_stock <= i.reorder_threshold).length;
-  const totalModules = CATEGORIES.reduce((sum, c) => sum + c.modules.length, 0);
 
   return (
     <div className="min-h-screen bg-[#0B0B12]">
@@ -468,7 +389,6 @@ export default function OperationsHub() {
           transition={{ duration: 0.4 }}
           className="space-y-6"
         >
-          {/* Title row */}
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <div className="flex items-center gap-2.5 mb-2">
@@ -478,11 +398,10 @@ export default function OperationsHub() {
                 <h1 className="text-2xl font-bold text-white tracking-tight">Operations Hub</h1>
               </div>
               <p className="text-slate-400 text-sm">
-                Your operational control centre — {totalModules} modules across {CATEGORIES.length} areas.
+                11 modules across 5 areas, organised the way your day flows.
               </p>
             </div>
 
-            {/* Quick status indicators */}
             <div className="flex flex-wrap items-center gap-2">
               {pendingExpenses.length > 0 && (
                 <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 border text-xs gap-1">
@@ -496,15 +415,13 @@ export default function OperationsHub() {
                   {lowStockCount} low stock
                 </Badge>
               )}
-              {/* Removed always-on "All systems operational" badge — no real integration data to back it */}
             </div>
           </div>
 
-          {/* Hero command banner */}
+          {/* Hero banner */}
           <div className="relative overflow-hidden rounded-2xl border border-[#7B3BFF]/20 bg-gradient-to-br from-[#0F0B1E] via-[#10102A] to-[#0B0B12] p-6">
             <div className="absolute top-0 right-0 w-72 h-72 bg-[#7B3BFF]/8 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-20 w-48 h-48 bg-[#A855F7]/5 rounded-full blur-2xl pointer-events-none" />
-
             <div className="relative flex flex-col gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -518,13 +435,12 @@ export default function OperationsHub() {
                   From ingredient costs to VAT compliance, menu engineering to supplier spend — Setra connects every part of your business into one intelligent operating system.
                 </p>
               </div>
-
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button size="sm" onClick={() => navigate('/Dashboard')} className="text-sm">
                   <Activity className="w-4 h-4 mr-2" /> View Dashboard
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => navigate('/Reports')} className="text-sm">
-                  <BarChart2 className="w-4 h-4 mr-2" /> Open Reports
+                <Button size="sm" variant="outline" onClick={() => navigate('/Insights')} className="text-sm">
+                  <BarChart2 className="w-4 h-4 mr-2" /> Open Insights
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setShowSearch(true)} className="text-slate-400 gap-1.5">
                   <Search className="w-4 h-4" />
@@ -535,37 +451,14 @@ export default function OperationsHub() {
           </div>
         </motion.div>
 
-        {/* Divider */}
         <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
-        {/* Category Sections */}
+        {/* 5 Sections */}
         <div className="space-y-8">
-          {CATEGORIES.map((category, index) => (
-            <CategorySection key={category.id} category={category} index={index} stats={stats} />
+          {SECTIONS.map((section, index) => (
+            <SectionBlock key={section.id} section={section} index={index} stats={stats} />
           ))}
         </div>
-
-        {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          className="rounded-2xl border border-white/[0.06] bg-[#0F0F1E]/60 p-6 flex flex-wrap items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/10 border border-[#7B3BFF]/20 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-[#C084FC]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">Need strategic guidance?</p>
-              <p className="text-xs text-slate-500">Ask Setra analyses your business and suggests where to act next.</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/Dashboard')}>
-            <Zap className="w-4 h-4 mr-2 text-[#C084FC]" />
-            Ask Setra
-          </Button>
-        </motion.div>
 
       </div>
 

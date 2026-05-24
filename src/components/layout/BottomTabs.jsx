@@ -1,13 +1,13 @@
 import React, { useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileStack, Receipt, Zap } from 'lucide-react';
+import { LayoutDashboard, DollarSign, Receipt, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TABS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/Dashboard' },
-  { label: 'Expenses',  icon: FileStack,        path: '/Expenses' },
-  { label: 'Ops Hub',   icon: Zap,              path: '/OperationsHub' },
-  { label: 'VAT',       icon: Receipt,          path: '/VATAndBookkeeping' },
+  { label: 'Money',     icon: DollarSign,      path: '/Money' },
+  { label: 'Ops Hub',   icon: Zap,             path: '/OperationsHub' },
+  { label: 'VAT',       icon: Receipt,         path: '/VATAndBookkeeping' },
 ];
 
 // Persistent per-tab navigation stacks (survive re-renders)
@@ -28,14 +28,12 @@ export default function BottomTabs() {
 
   const activeTab = getActiveTab(location.pathname);
 
-  // Keep the active tab's stack in sync with the real pathname
   React.useEffect(() => {
     if (!activeTab) return;
     const stack = tabStacks[activeTab.path];
     const top = stack[stack.length - 1];
     if (top !== location.pathname) {
       if (stack.includes(location.pathname)) {
-        // popped back — trim stack
         tabStacks[activeTab.path] = stack.slice(0, stack.lastIndexOf(location.pathname) + 1);
       } else {
         tabStacks[activeTab.path] = [...stack, location.pathname];
@@ -46,15 +44,12 @@ export default function BottomTabs() {
 
   const handleTabPress = (tab) => {
     const isAlreadyOnTab = activeTab?.path === tab.path;
-
     if (isAlreadyOnTab) {
-      // Tap same tab → pop back to root
       if (location.pathname !== tab.path) {
         tabStacks[tab.path] = [tab.path];
         navigate(tab.path, { replace: true });
       }
     } else {
-      // Restore last position in that tab's stack
       const savedPath = tabStacks[tab.path]?.[tabStacks[tab.path].length - 1] ?? tab.path;
       navigate(savedPath);
     }
