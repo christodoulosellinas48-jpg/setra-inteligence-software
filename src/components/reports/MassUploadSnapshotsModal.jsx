@@ -280,9 +280,9 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
           <>
             {/* Upload buttons */}
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/10 hover:border-[#7B3BFF]/50 hover:bg-[#7B3BFF]/5 transition-all group"
+              <label
+                htmlFor="mass-upload-file"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/10 hover:border-[#7B3BFF]/50 hover:bg-[#7B3BFF]/5 transition-all group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-lg bg-[#7B3BFF]/10 flex items-center justify-center group-hover:bg-[#7B3BFF]/20 transition-colors">
                   <FileText className="w-4 h-4 text-[#C084FC]" />
@@ -294,7 +294,7 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
                 <div className="flex items-center gap-1 text-[10px] text-[#C084FC] bg-[#7B3BFF]/10 px-2 py-0.5 rounded-full">
                   <Sparkles className="w-2.5 h-2.5" /> AI extraction for PDFs
                 </div>
-              </button>
+              </label>
 
               <button
                 onClick={downloadTemplate}
@@ -310,7 +310,7 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
               </button>
             </div>
 
-            <input ref={fileRef} type="file" accept=".csv,.tsv,.txt,.pdf" className="hidden" onChange={handleFile} />
+            <input id="mass-upload-file" ref={fileRef} type="file" accept=".csv,.tsv,.txt,.pdf" className="hidden" onChange={handleFile} />
 
             {/* AI extracting state */}
             {extracting && (
