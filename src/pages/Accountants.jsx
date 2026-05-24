@@ -75,7 +75,7 @@ export default function Accountants() {
               </span>
             </h1>
             <p className="text-base sm:text-xl text-slate-400 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Setra hands you the audit, the VAT pack, and the P&L — for all of your clients, on schedule.
+              Setra hands you the audit, the Cyprus VAT pack, and the P&L — for all of your hospitality clients, on schedule.
               No chasing, no manual exports, no switching between systems.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -146,14 +146,14 @@ export default function Accountants() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Simple three-step setup</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Setup is three emails</h2>
           </motion.div>
 
           <div className="space-y-6">
             {[
-              { step: '01', title: 'Apply as a partner firm', desc: 'Email us and we\'ll provision a firm-level account. Your branding, your clients, your portal.' },
-              { step: '02', title: 'Invite your clients', desc: 'Each client gets their own Setra workspace. They manage day-to-day; you get read access + scheduled exports.' },
-              { step: '03', title: 'Set it and forget it', desc: 'Configure monthly P&L delivery, VAT pack schedules, and audit frequency per client. Setra runs on autopilot.' },
+              { step: '01', title: 'Email us', desc: 'We provision your firm-level account — your branding, your clients, your portal. Done same day.' },
+              { step: '02', title: 'Email your clients', desc: 'Each client gets their own Setra workspace. They manage day-to-day; you get read access and scheduled exports.' },
+              { step: '03', title: 'Email Chris if anything\'s not running', desc: 'On day 30 if a VAT pack hasn\'t auto-generated or a P&L delivery missed, email Chris directly. Not a ticket. A reply.' },
             ].map((item, i) => (
               <motion.div
                 key={item.step}

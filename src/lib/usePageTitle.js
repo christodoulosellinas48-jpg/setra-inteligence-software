@@ -28,6 +28,13 @@ const PAGE_TITLES = {
   '/Features': 'Features',
   '/Pricing': 'Pricing',
   '/AboutUs': 'About Us',
+  '/About': 'About',
+  '/about': 'About',
+  '/ForAccountants': 'For Accountants',
+  '/Accountants': 'For Accountants',
+  '/Integrations': 'Integrations',
+  '/Duplicates': 'Duplicate Detector',
+  '/Income': 'Income',
 };
 
 const APP_NAME = 'Setra — Intelligence Platform';

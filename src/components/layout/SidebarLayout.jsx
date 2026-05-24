@@ -152,7 +152,6 @@ export default function SidebarLayout({ children }) {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-semibold text-white">Operations Hub</p>
-                    <p className="text-xs text-[#C084FC]/70">All ops in one place</p>
                   </div>
                 </div>
               )}
@@ -195,7 +194,7 @@ export default function SidebarLayout({ children }) {
             ) : (
               <>
                 <ChevronLeft className="w-5 h-5 mr-2" />
-                <span className="text-sm">Close</span>
+                <span className="text-sm">Collapse sidebar</span>
               </>
             )}
           </Button>

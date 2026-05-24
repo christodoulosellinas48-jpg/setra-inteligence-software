@@ -100,21 +100,35 @@ const PLANS = [
 ];
 
 const COMPARISON = [
-  { label: 'Dashboard & Reports', starter: true, basic: true, pro: true, premium: true },
-  { label: 'Cost Control', starter: true, basic: true, pro: true, premium: true },
-  { label: 'Inventory & Waste', starter: false, basic: true, pro: true, premium: true },
-  { label: 'Budgeting', starter: false, basic: false, pro: true, premium: true },
-  { label: 'Forecasting', starter: false, basic: false, pro: true, premium: true },
-  { label: 'Menu Engineering', starter: false, basic: false, pro: true, premium: true },
-  { label: 'Vendor Management & POs', starter: false, basic: false, pro: true, premium: true },
-  { label: 'POS & Accounting Integrations', starter: false, basic: false, pro: true, premium: true },
-  { label: 'Cyprus VAT Management', starter: false, basic: false, pro: true, premium: true },
-  { label: 'AI Invoice Extraction', starter: false, basic: false, pro: false, premium: true },
-  { label: 'Bookkeeping Automation', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Dashboard (live P&L)', starter: true, basic: true, pro: true, premium: true },
+  { label: 'Income (monthly revenue snapshots)', starter: true, basic: true, pro: true, premium: true },
+  { label: 'Expenses (manual invoice upload)', starter: true, basic: true, pro: true, premium: true },
+  { label: 'Food / Staff / Fixed cost tracking', starter: true, basic: true, pro: true, premium: true },
+  { label: 'Stock level alerts', starter: true, basic: true, pro: true, premium: true },
+  { label: 'Reports — Basic P&L', starter: true, basic: true, pro: true, premium: true },
+  { label: 'Reports — Full (expense breakdown, trends)', starter: false, basic: true, pro: true, premium: true },
+  { label: 'Inventory management', starter: false, basic: true, pro: true, premium: true },
+  { label: 'Waste Management', starter: false, basic: true, pro: true, premium: true },
+  { label: 'Basic supplier directory', starter: false, basic: true, pro: true, premium: true },
+  { label: 'Vendors & Suppliers (full spend analysis)', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Purchase Orders', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Budget', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Forecast (6-month scenarios)', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Menu Engineering (matrix + heatmap)', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Recipe Manager (food cost per dish)', starter: false, basic: false, pro: true, premium: true },
+  { label: 'POS integrations (Square / Toast / Lightspeed)', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Accounting sync (Xero / QuickBooks / Sage)', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Cyprus VAT period management', starter: false, basic: false, pro: true, premium: true },
+  { label: 'Smart Upload (AI invoice extraction)', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Bookkeeping automation (bank reconciliation)', starter: false, basic: false, pro: false, premium: true },
   { label: 'Payroll', starter: false, basic: false, pro: false, premium: true },
-  { label: 'Audit & Compliance', starter: false, basic: false, pro: false, premium: true },
-  { label: 'AI Counselor Chat', starter: false, basic: false, pro: false, premium: true },
-  { label: 'Multi-venue (up to 5)', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Audit (AI-powered profit-leak findings)', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Duplicate Detector', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Full VAT & corporate tax compliance (Cyprus + EU)', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Ask Setra (AI assistant)', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Multi-venue (up to 5 venues)', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Accountant Portal', starter: false, basic: false, pro: false, premium: true },
+  { label: 'Direct line to founder (monthly check-in)', starter: false, basic: false, pro: false, premium: true },
 ];
 
 const FAQS = [
@@ -248,8 +262,10 @@ export default function Pricing() {
                         <span className="text-4xl font-bold text-white">€{price}</span>
                         <span className="text-slate-400 text-sm">/mo</span>
                       </div>
-                      {annual && (
+                      {annual ? (
                         <p className="text-xs text-[#C084FC]">€{plan.annualPrice}/year — 2 months free</p>
+                      ) : (
+                        <p className="text-xs text-slate-600">Or €{plan.annualPrice}/year — save €{plan.monthlyPrice * 2}</p>
                       )}
                       <p className="text-xs text-slate-500 mt-1.5">{plan.tagline}</p>
                       <p className="text-xs text-slate-400 mt-1 italic">{plan.description}</p>
@@ -311,8 +327,34 @@ export default function Pricing() {
         </div>
       </section>
 
+      {/* Talk to the founder — moved above comparison table */}
+      <section className="relative py-12 px-4 sm:px-6 border-t border-white/5">
+        <div className="max-w-2xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Talk to the founder</h2>
+            <p className="text-slate-400 mb-2">
+              I'm Chris, the person building Setra. I personally onboard every operator. If you have questions about pricing, integrations, or whether Setra is right for you — just email me directly.
+            </p>
+            <p className="text-slate-500 text-sm mb-8">No sales team. No ticket queue. Just a straight answer.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button asChild className="w-full sm:w-auto">
+                <a href="mailto:chris@setra.app">Email Chris</a>
+              </Button>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate('/Features')}>
+                View all features
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Comparison Table */}
-      <section className="relative py-16 px-4 sm:px-6">
+      <section className="relative py-16 px-4 sm:px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -347,35 +389,6 @@ export default function Pricing() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Talk to the founder */}
-      <section className="relative py-12 px-4 sm:px-6 border-t border-white/5">
-        <div className="max-w-2xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">Talk to the founder</h2>
-            <p className="text-slate-400 mb-2">
-              I'm Chris, the person building Setra. I personally onboard every operator. If you have questions about pricing, integrations, or whether Setra is right for you — just email me directly.
-            </p>
-            <p className="text-slate-500 text-sm mb-8">No sales team. No ticket queue. Just a straight answer.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button
-                asChild
-                className="w-full sm:w-auto"
-              >
-                <a href="mailto:chris@setra.app">Email Chris</a>
-              </Button>
-              <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate('/Features')}>
-                View all features
-              </Button>
             </div>
           </motion.div>
         </div>
