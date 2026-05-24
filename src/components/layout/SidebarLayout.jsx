@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useRealtimeSync from '@/hooks/useRealtimeSync';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LogoLink from '@/components/ui/LogoLink';
@@ -8,78 +8,135 @@ import BottomTabs from '@/components/layout/BottomTabs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
-  DollarSign,
-  Receipt,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  Plug,
-  MessageSquare,
-  Search
+  ChevronLeft, ChevronRight, MessageSquare, Search,
+  GripVertical, Pin, RotateCcw
 } from 'lucide-react';
-import { useCommandPalette } from '@/lib/CommandPaletteContext';
 import { useBusiness } from '@/components/business/BusinessContext';
+import { useSidebarLayout } from '@/lib/SidebarLayoutContext';
+import { MODULE_MAP, buildSidebarItems } from '@/lib/sidebarLayout';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
 import SmartUploadButton from '@/components/layout/SmartUploadButton';
 import CommandPalette from '@/components/CommandPalette';
+import SidebarResetModal from '@/components/sidebar/SidebarResetModal';
+import { useCommandPalette } from '@/lib/CommandPaletteContext';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
-const ALL_NAV_ITEMS = [
-  { label: 'Dashboard',         icon: LayoutDashboard, path: '/Dashboard',         permission: null },
-  { label: 'Money',             icon: DollarSign,      path: '/Money',             permission: null },
-  { label: 'VAT & Bookkeeping', icon: Receipt,         path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
-  { label: 'Integrations',      icon: Plug,            path: '/Integrations',      permission: null },
-];
+const SACRED_NON_DRAGGABLE = ['dashboard', 'ops_hub', 'settings'];
 
 export default function SidebarLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   useRealtimeSync();
 
-  const { hasPermission, isOwner } = useBusiness();
+  const { hasPermission, isOwner, currentBusiness } = useBusiness();
   const { setOpen: openPalette } = useCommandPalette();
+  const { pinnedIds, reorder, unpin, canEdit, vatLocked, contextGroupName } = useSidebarLayout();
 
-  // Close mobile sidebar on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  const navItems = ALL_NAV_ITEMS.filter(item =>
-    !item.permission || hasPermission(item.permission)
-  );
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const bottomItems = [
-    // Only owners see Settings
-    ...(isOwner() ? [{ label: 'Settings', icon: Settings, path: '/Settings' }] : []),
-  ];
-
-  const isActive = (path) => location.pathname === path;
-
-  // Determine if the current page is a top-level tab root (no Back button needed)
   const TAB_ROOTS = ['/Dashboard', '/Money', '/Expenses', '/Income', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll', '/MenuEngineering', '/RecipeManager', '/Dishes', '/Suppliers', '/Stock', '/Plan', '/Insights'];
   const isTopLevel = TAB_ROOTS.includes(location.pathname);
 
+  // Build ordered sidebar item ids
+  const orderedIds = buildSidebarItems(pinnedIds, vatLocked, isOwner());
+
+  // Pinnable items = those not sacred-position first/last (dashboard/settings/ops_hub)
+  const draggableIds = orderedIds.filter(id => !SACRED_NON_DRAGGABLE.includes(id));
+
+  const handleDragEnd = (result) => {
+    if (!result.destination || !canEdit) return;
+    const reordered = Array.from(draggableIds);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+    // reordered = the middle pinned items in new order
+    reorder(reordered.filter(id => !['vat'].includes(id) || !vatLocked ? true : true));
+  };
+
+  const handleUnpin = (e, id) => {
+    e.stopPropagation();
+    if (!canEdit) return;
+    if (id === 'vat' && vatLocked) return;
+    unpin(id);
+    toast.success(`Unpinned from ${contextGroupName}`, { duration: 2000 });
+  };
+
+  const renderNavItem = (id, idx, isDragging = false, dragHandleProps = null) => {
+    const mod = MODULE_MAP[id];
+    if (!mod) return null;
+
+    // Settings: only for owners
+    if (id === 'settings' && !isOwner()) return null;
+    // VAT: check permission
+    if (id === 'vat' && !hasPermission('manage_bookkeeping') && !isOwner()) return null;
+
+    const Icon = mod.icon;
+    const active = isActive(mod.path);
+    const isSacred = SACRED_NON_DRAGGABLE.includes(id) || (id === 'vat' && vatLocked);
+    const isPinnableItem = !['dashboard', 'ops_hub', 'settings'].includes(id);
+
+    return (
+      <div
+        key={id}
+        className={cn(
+          'group/item relative flex items-center rounded-xl transition-all duration-200 cursor-pointer',
+          active
+            ? 'bg-[#7B3BFF]/15 text-[#C084FC] shadow-[0_0_15px_rgba(123,59,255,0.3)]'
+            : 'text-slate-400 hover:text-white hover:bg-white/5',
+          collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+          isDragging && 'opacity-75 bg-[#7B3BFF]/10 border border-[#7B3BFF]/30'
+        )}
+        onClick={() => navigate(mod.path)}
+      >
+        {/* Drag handle */}
+        {!collapsed && canEdit && !isSacred && dragHandleProps && (
+          <span
+            {...dragHandleProps}
+            onClick={e => e.stopPropagation()}
+            className="opacity-0 group-hover/item:opacity-100 mr-1 cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 flex-shrink-0"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </span>
+        )}
+
+        <Icon className={cn('w-5 h-5 flex-shrink-0', !collapsed && 'mr-2.5')} />
+
+        {!collapsed && (
+          <span className="flex-1 text-sm font-medium truncate">{mod.label}</span>
+        )}
+
+        {/* Unpin button — only on pinnable, non-sacred items */}
+        {!collapsed && canEdit && isPinnableItem && !isSacred && (
+          <button
+            onClick={(e) => handleUnpin(e, id)}
+            title={`Unpin from sidebar`}
+            className="opacity-0 group-hover/item:opacity-100 ml-1 flex-shrink-0 text-slate-600 hover:text-slate-300 transition-opacity"
+          >
+            <Pin className="w-3 h-3 fill-[#A855F7]" />
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#0B0B12] flex">
-      {/* Mobile overlay backdrop */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 z-40 md:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-300 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
-          // Desktop behaviour
           'md:translate-x-0',
           collapsed ? 'md:w-16' : 'md:w-64',
-          // Mobile behaviour
           mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0',
-          // Always w-64 on mobile when open
           !collapsed && 'w-64'
         )}
       >
@@ -87,11 +144,11 @@ export default function SidebarLayout({ children }) {
         <div className="p-4 border-b border-white/5">
           {collapsed ? (
             <div className="w-10 h-10 mx-auto flex items-center justify-center group cursor-pointer">
-              <img 
+              <img
                 src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
                 alt="S"
                 className="w-10 h-10 object-contain transition-all duration-300 group-hover:scale-110"
-                style={{ filter: "drop-shadow(0 0 8px rgba(123,59,255,0.4))" }}
+                style={{ filter: 'drop-shadow(0 0 8px rgba(123,59,255,0.4))' }}
               />
             </div>
           ) : (
@@ -102,84 +159,65 @@ export default function SidebarLayout({ children }) {
           )}
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto flex flex-col">
-          <div className="space-y-1">
-          {navItems.map((item) => (
-            <Button
-              key={item.path}
-              variant="ghost"
-              onClick={() => navigate(item.path)}
-              className={cn(
-                'w-full justify-start text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200',
-                isActive(item.path) && 'bg-[#7B3BFF]/15 text-[#C084FC] border-l-3 border-[#7B3BFF] shadow-[0_0_15px_rgba(123,59,255,0.3)]',
-                collapsed && 'justify-center px-0'
-              )}
-            >
-              <item.icon className={cn('w-5 h-5', !collapsed && 'mr-3')} />
-              {!collapsed && <span>{item.label}</span>}
-            </Button>
-          ))}
-          </div>
+        {/* Nav */}
+        <nav className="flex-1 p-3 overflow-y-auto flex flex-col gap-1">
+          {/* Dashboard — always first, not draggable */}
+          {renderNavItem('dashboard', 0)}
 
-          {/* Operations Hub — Special CTA */}
-          <div className="mt-auto pt-3">
-            {!collapsed && <div className="h-px bg-white/5 mb-3" />}
-            <button
-              onClick={() => navigate('/OperationsHub')}
-              className={cn(
-                'w-full rounded-xl transition-all duration-200 group relative overflow-hidden',
-                collapsed ? 'p-2' : 'p-3',
-                isActive('/OperationsHub')
-                  ? 'bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] shadow-[0_0_24px_rgba(123,59,255,0.6)]'
-                  : 'bg-gradient-to-r from-[#7B3BFF]/20 to-[#A855F7]/10 hover:from-[#7B3BFF]/40 hover:to-[#A855F7]/25 border border-[#7B3BFF]/30 hover:border-[#7B3BFF]/60 hover:shadow-[0_0_20px_rgba(123,59,255,0.4)]'
-              )}
-            >
-              {collapsed ? (
-                <div className="flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-[#C084FC] group-hover:text-white transition-colors" />
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#7B3BFF]/30 flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-4 h-4 text-[#C084FC]" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-white">Operations Hub</p>
-                  </div>
+          {/* Operations Hub — always second, not draggable */}
+          {renderNavItem('ops_hub', 1)}
+
+          {/* Pinned middle items — draggable */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="sidebar-pinned" isDropDisabled={!canEdit || collapsed}>
+              {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-1">
+                  {draggableIds.map((id, idx) => (
+                    <Draggable key={id} draggableId={id} index={idx} isDragDisabled={!canEdit || collapsed}>
+                      {(drag, snapshot) => (
+                        <div ref={drag.innerRef} {...drag.draggableProps}>
+                          {renderNavItem(id, idx, snapshot.isDragging, drag.dragHandleProps)}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
               )}
-            </button>
-          </div>
+            </Droppable>
+          </DragDropContext>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Reset button — owner only, not collapsed */}
+          {canEdit && !collapsed && (
+            <>
+              <div className="h-px bg-white/5 my-1" />
+              <button
+                onClick={() => setShowResetModal(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-400 hover:bg-white/5 text-xs transition-all duration-200"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset layout
+              </button>
+            </>
+          )}
         </nav>
 
-        {/* Bottom Items */}
+        {/* Bottom Items (Settings) */}
         <div className="p-3 border-t border-white/5 space-y-1">
           <BottomLogoLink collapsed={collapsed} />
-          {bottomItems.map((item) => (
-            <Button
-              key={item.path}
-              variant="ghost"
-              onClick={() => navigate(item.path)}
-              className={cn(
-                'w-full justify-start text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200',
-                isActive(item.path) && 'bg-[#7B3BFF]/15 text-[#C084FC] border-l-3 border-[#7B3BFF] shadow-[0_0_15px_rgba(123,59,255,0.3)]',
-                collapsed && 'justify-center px-0'
-              )}
-            >
-              <item.icon className={cn('w-5 h-5', !collapsed && 'mr-3')} />
-              {!collapsed && <span>{item.label}</span>}
-            </Button>
-          ))}
+          {isOwner() && renderNavItem('settings', 99)}
         </div>
 
-        {/* Toggle Button */}
+        {/* Collapse Toggle */}
         <div className="p-3 border-t border-white/5">
           <Button
             variant="ghost"
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "w-full text-slate-400 hover:text-[#A855F7] hover:bg-white/5 transition-all duration-200",
+              'w-full text-slate-400 hover:text-[#A855F7] hover:bg-white/5 transition-all duration-200',
               collapsed ? 'justify-center px-0' : 'justify-start'
             )}
           >
@@ -196,20 +234,15 @@ export default function SidebarLayout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <main
-        className={cn(
-          'flex-1 transition-all duration-300 min-w-0',
-          collapsed ? 'md:ml-16' : 'md:ml-64'
-        )}
-      >
-        {/* Top Header with User Menu */}
+      <main className={cn('flex-1 transition-all duration-300 min-w-0', collapsed ? 'md:ml-16' : 'md:ml-64')}>
+        {/* Top Header */}
         <header className={cn(
           'fixed top-0 right-0 z-40 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]',
           'left-0',
           collapsed ? 'md:left-16' : 'md:left-64'
         )}>
           <div className="flex items-center gap-2">
-            {/* Search / Command Palette trigger */}
+            {/* Search */}
             <button
               onClick={() => openPalette(true)}
               title="Search (⌘K)"
@@ -217,27 +250,21 @@ export default function SidebarLayout({ children }) {
             >
               <Search className="w-4 h-4" />
             </button>
-            {/* Mobile hamburger — only shown on top-level pages */}
+
             {isTopLevel ? (
-              <button
-                className="md:hidden text-slate-400 hover:text-white p-1"
-                onClick={() => setMobileOpen(o => !o)}
-              >
+              <button className="md:hidden text-slate-400 hover:text-white p-1" onClick={() => setMobileOpen(o => !o)}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
             ) : (
-              /* Back button for non-root pages on mobile */
-              <button
-                className="md:hidden flex items-center gap-1.5 text-slate-400 hover:text-white p-1 text-sm"
-                onClick={() => navigate(-1)}
-              >
+              <button className="md:hidden flex items-center gap-1.5 text-slate-400 hover:text-white p-1 text-sm" onClick={() => navigate(-1)}>
                 <ChevronLeft className="w-5 h-5" />
                 <span>Back</span>
               </button>
             )}
           </div>
+
           <div className="flex items-center gap-2 ml-auto">
             <BusinessSwitcherPill />
             <SmartUploadButton />
@@ -252,16 +279,18 @@ export default function SidebarLayout({ children }) {
             <UserMenu />
           </div>
         </header>
+
         <div className="pt-16 pb-16 md:pb-0">
           {children}
         </div>
       </main>
 
-      {/* Mobile bottom tab bar */}
       <BottomTabs />
-
-      {/* Global command palette — rendered here so BusinessProvider is in scope */}
       <CommandPalette />
+
+      {showResetModal && (
+        <SidebarResetModal open={showResetModal} onClose={() => setShowResetModal(false)} />
+      )}
     </div>
   );
 }

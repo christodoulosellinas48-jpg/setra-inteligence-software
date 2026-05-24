@@ -14,8 +14,13 @@ import {
   Receipt, DollarSign, Activity, Zap,
   AlertTriangle, Target, Layers,
   Search, LayoutDashboard, Lightbulb,
-  Boxes, LineChart, ClipboardCheck
+  Boxes, LineChart, ClipboardCheck, Pin
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import PinButton from '@/components/sidebar/PinButton';
+import SidebarFullModal from '@/components/sidebar/SidebarFullModal';
+import { useSidebarLayout } from '@/lib/SidebarLayoutContext';
+import { toast } from 'sonner';
 
 const containerVariants = {
   hidden: {},
@@ -56,7 +61,7 @@ const SECTIONS = [
         }
       },
       {
-        id: 'vat', label: 'VAT & Bookkeeping', icon: Receipt, path: '/VATAndBookkeeping',
+        id: 'vat', sidebarId: 'vat', label: 'VAT & Bookkeeping', icon: Receipt, path: '/VATAndBookkeeping',
         description: 'Inbox, bank reconciliation, VAT periods, P&L, payroll, and exports.',
         badge: 'Compliance', badgeColor: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
         fetchStat: async () => null,
@@ -72,7 +77,7 @@ const SECTIONS = [
     borderColor: 'border-purple-500/20',
     modules: [
       {
-        id: 'dishes', label: 'Dishes', icon: UtensilsCrossed, path: '/Dishes',
+        id: 'dishes', sidebarId: 'dishes', label: 'Dishes', icon: UtensilsCrossed, path: '/Dishes',
         description: 'Menu items, recipes, food cost per plate, and the engineering matrix — all in one place.',
         badge: 'Menu', badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/20',
         fetchStat: async (biz) => {
@@ -93,7 +98,7 @@ const SECTIONS = [
     borderColor: 'border-cyan-500/20',
     modules: [
       {
-        id: 'stock', label: 'Stock', icon: Package, path: '/Stock',
+        id: 'stock', sidebarId: 'stock', label: 'Stock', icon: Package, path: '/Stock',
         description: 'Inventory levels, reorder alerts, and waste log — the full stock picture.',
         badge: 'Inventory', badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/20',
         fetchStat: async (biz) => {
@@ -104,7 +109,7 @@ const SECTIONS = [
         }
       },
       {
-        id: 'suppliers', label: 'Suppliers', icon: Store, path: '/Suppliers',
+        id: 'suppliers', sidebarId: 'suppliers', label: 'Suppliers', icon: Store, path: '/Suppliers',
         description: 'Supplier directory, purchase orders, and spend analysis — past and future orders.',
         badge: 'Procurement', badgeColor: 'bg-teal-500/15 text-teal-300 border-teal-500/20',
         fetchStat: async (biz) => {
@@ -125,7 +130,7 @@ const SECTIONS = [
     borderColor: 'border-amber-500/20',
     modules: [
       {
-        id: 'plan', label: 'Plan', icon: Target, path: '/Plan',
+        id: 'plan', sidebarId: 'plan', label: 'Plan', icon: Target, path: '/Plan',
         description: 'Set monthly budgets and run 6-month forecasts with optimistic/conservative scenarios.',
         badge: 'Forward', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
         fetchStat: async (biz) => {
@@ -136,7 +141,7 @@ const SECTIONS = [
         }
       },
       {
-        id: 'insights', label: 'Insights', icon: Lightbulb, path: '/Insights',
+        id: 'insights', sidebarId: 'insights', label: 'Insights', icon: Lightbulb, path: '/Insights',
         description: 'Performance reports, deep-dive audit findings, and an action plan to act on them.',
         badge: 'Analysis', badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/20',
         fetchStat: async (biz) => {
@@ -163,7 +168,7 @@ const SECTIONS = [
         fetchStat: async () => null,
       },
       {
-        id: 'payroll', label: 'Payroll', icon: Users, path: '/Payroll',
+        id: 'payroll', sidebarId: 'payroll', label: 'Payroll', icon: Users, path: '/Payroll',
         description: 'Employee contracts, shifts, labour costs, and Cyprus payroll tax breakdown.',
         badge: 'HR', badgeColor: 'bg-pink-500/15 text-pink-300 border-pink-500/20',
         fetchStat: async (biz) => {
@@ -177,9 +182,28 @@ const SECTIONS = [
   },
 ];
 
-function ModuleCard({ mod, stat }) {
+function ModuleCard({ mod, stat, onPinFull }) {
   const navigate = useNavigate();
   const Icon = mod.icon;
+  const { isPinned, canEdit, canPinMore, pin, unpin, vatLocked, contextGroupName } = useSidebarLayout();
+
+  const pinned = isPinned(mod.sidebarId || mod.id);
+  const SACRED = ['dashboard', 'ops_hub', 'settings'];
+  const isSacred = SACRED.includes(mod.sidebarId || mod.id);
+
+  const handlePinClick = (e) => {
+    e.stopPropagation();
+    const sid = mod.sidebarId || mod.id;
+    if (pinned) {
+      if (sid === 'vat' && vatLocked) return;
+      unpin(sid);
+      toast.success(`Unpinned from ${contextGroupName}`, { duration: 2000 });
+    } else {
+      if (!canPinMore) { onPinFull(); return; }
+      pin(sid);
+      toast.success(`Pinned to sidebar for ${contextGroupName}`, { duration: 2000 });
+    }
+  };
 
   return (
     <motion.div variants={itemVariants} whileHover={{ y: -2, transition: { duration: 0.15 } }}>
@@ -188,6 +212,22 @@ function ModuleCard({ mod, stat }) {
         onClick={() => navigate(mod.path)}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#7B3BFF]/0 to-[#7B3BFF]/0 group-hover:from-[#7B3BFF]/5 group-hover:to-[#A855F7]/3 transition-all duration-300 pointer-events-none" />
+
+        {/* Pin button top-right */}
+        {!isSacred && canEdit && (
+          <button
+            onClick={handlePinClick}
+            title={pinned ? `Unpin from sidebar` : `Pin to sidebar (${contextGroupName})`}
+            className={cn(
+              'absolute top-3 right-3 z-10 flex items-center justify-center w-6 h-6 rounded-md transition-all duration-150',
+              'opacity-0 group-hover:opacity-100',
+              pinned ? 'text-[#A855F7]' : 'text-slate-500 hover:text-slate-300'
+            )}
+          >
+            <Pin className={cn('w-3.5 h-3.5', pinned && 'fill-[#A855F7]')} />
+          </button>
+        )}
+
         <div className="p-5 flex flex-col h-full">
           <div className="flex items-start justify-between mb-3">
             <div className="w-10 h-10 rounded-xl bg-[#151528] border border-white/[0.06] flex items-center justify-center group-hover:border-[#7B3BFF]/30 transition-colors">
@@ -215,7 +255,7 @@ function ModuleCard({ mod, stat }) {
   );
 }
 
-function SectionBlock({ section, index, stats }) {
+function SectionBlock({ section, index, stats, onPinFull }) {
   const Icon = section.icon;
 
   return (
@@ -242,7 +282,7 @@ function SectionBlock({ section, index, stats }) {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
       >
         {section.modules.map((mod) => (
-          <ModuleCard key={mod.id} mod={mod} stat={stats[mod.id]} />
+          <ModuleCard key={mod.id} mod={mod} stat={stats[mod.id]} onPinFull={onPinFull} />
         ))}
       </motion.div>
     </motion.section>
@@ -255,6 +295,7 @@ export default function OperationsHub() {
   const { currentBusiness } = useBusiness();
   const { setOpen: openPalette } = useCommandPalette();
   const [stats, setStats] = useState({});
+  const [showFullModal, setShowFullModal] = useState(false);
 
 
   useEffect(() => {
@@ -368,12 +409,15 @@ export default function OperationsHub() {
         {/* 5 Sections */}
         <div className="space-y-8">
           {SECTIONS.map((section, index) => (
-            <SectionBlock key={section.id} section={section} index={index} stats={stats} />
+            <SectionBlock key={section.id} section={section} index={index} stats={stats} onPinFull={() => setShowFullModal(true)} />
           ))}
         </div>
 
       </div>
 
+      {showFullModal && (
+        <SidebarFullModal open={showFullModal} onClose={() => setShowFullModal(false)} />
+      )}
     </div>
   );
 }

@@ -13,6 +13,10 @@
     "description": {
       "type": "string",
       "description": "Optional description"
+    },
+    "sidebar_layout": {
+      "type": "string",
+      "description": "JSON array of pinned module ids in order, e.g. [\"money\",\"dishes\",\"plan\"]"
     }
   },
   "required": [

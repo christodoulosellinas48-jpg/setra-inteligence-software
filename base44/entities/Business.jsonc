@@ -143,6 +143,10 @@
     "chart_of_accounts_template": {
       "type": "string",
       "description": "JSON string with chart of accounts"
+    },
+    "sidebar_layout": {
+      "type": "string",
+      "description": "JSON array of pinned module ids for standalone venue layout"
     }
   },
   "required": [
