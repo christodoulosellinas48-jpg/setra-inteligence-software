@@ -219,9 +219,11 @@ function ModuleCard({ mod, stat, onPinFull }) {
             onClick={handlePinClick}
             title={pinned ? `Unpin from sidebar` : `Pin to sidebar (${contextGroupName})`}
             className={cn(
-              'absolute top-3 right-3 z-10 flex items-center justify-center w-6 h-6 rounded-md transition-all duration-150',
+              'absolute top-2.5 right-2.5 z-10 flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150',
               'opacity-0 group-hover:opacity-100',
-              pinned ? 'text-[#A855F7]' : 'text-slate-500 hover:text-slate-300'
+              pinned
+                ? 'bg-[#7B3BFF]/20 border border-[#7B3BFF]/50 text-[#A855F7]'
+                : 'bg-[#151528] border border-white/[0.06] text-slate-500 hover:bg-[#7B3BFF]/15 hover:border-[#7B3BFF]/40 hover:text-[#A855F7]'
             )}
           >
             <Pin className={cn('w-3.5 h-3.5', pinned && 'fill-[#A855F7]')} />
