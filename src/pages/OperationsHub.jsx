@@ -95,6 +95,17 @@ const CATEGORIES = [
           } catch { return null; }
         }
       },
+      {
+        id: 'income', label: 'Income', icon: TrendingUp, path: '/Income',
+        description: 'Record and review monthly revenue snapshots. Upload income reports or enter manually.',
+        badge: 'Revenue', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
+        fetchStat: async (biz) => {
+          try {
+            const snaps = await base44.entities.FinancialSnapshot.filter({ business_id: biz.id });
+            return snaps.length > 0 ? `${snaps.length} months` : null;
+          } catch { return null; }
+        }
+      },
     ]
   },
   {

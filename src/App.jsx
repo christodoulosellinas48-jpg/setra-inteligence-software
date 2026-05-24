@@ -21,6 +21,7 @@ import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import AboutUs from './pages/AboutUs';
 import Accountants from './pages/Accountants';
+import Income from './pages/Income';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -125,6 +126,11 @@ const AuthenticatedApp = () => {
       <Route path="/Payroll" element={
         <LayoutWrapper currentPageName="Payroll">
           <Payroll />
+        </LayoutWrapper>
+      } />
+      <Route path="/Income" element={
+        <LayoutWrapper currentPageName="Income">
+          <Income />
         </LayoutWrapper>
       } />
       <Route path="*" element={<PageNotFound />} />

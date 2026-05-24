@@ -20,24 +20,51 @@ const FIELDS = [
   { key: 'other_operating',    label: 'Other Operating',    placeholder: '0.00' },
 ];
 
-export default function SaveSnapshotModal({ open, onClose, business, userEmail, onSaved }) {
+export default function SaveSnapshotModal({ open, onClose, business, userEmail, onSaved, prefillSnapshot = null }) {
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 0-indexed
+
+  // If editing an existing snapshot, parse its period
+  const initYear = prefillSnapshot?.period_start
+    ? new Date(prefillSnapshot.period_start).getUTCFullYear()
+    : currentYear;
+  const initMonth = prefillSnapshot?.period_start
+    ? new Date(prefillSnapshot.period_start).getUTCMonth()
+    : new Date().getMonth();
+
+  const [selectedYear, setSelectedYear] = useState(initYear);
+  const [selectedMonth, setSelectedMonth] = useState(initMonth);
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState(false);
-  const [existingId, setExistingId] = useState(null);
+  const [existingId, setExistingId] = useState(prefillSnapshot?.id || null);
   const [loadingExisting, setLoadingExisting] = useState(false);
 
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
-  // When month/year changes, check for existing snapshot and pre-populate
+  // Reset internal state when modal opens / prefillSnapshot changes
   useEffect(() => {
-    if (!open || !business) return;
+    if (!open) return;
+    if (prefillSnapshot) {
+      const d = new Date(prefillSnapshot.period_start);
+      setSelectedYear(d.getUTCFullYear());
+      setSelectedMonth(d.getUTCMonth());
+      setExistingId(prefillSnapshot.id);
+      const prefill = {};
+      FIELDS.forEach(f => { if (prefillSnapshot[f.key] !== undefined) prefill[f.key] = prefillSnapshot[f.key]; });
+      setValues(prefill);
+    } else {
+      setSelectedYear(currentYear);
+      setSelectedMonth(new Date().getMonth());
+      setExistingId(null);
+      setValues({});
+    }
+  }, [open, prefillSnapshot]);
+
+  // When month/year changes (and not editing a fixed snapshot), check for existing
+  useEffect(() => {
+    if (!open || !business || prefillSnapshot) return;
     const load = async () => {
       setLoadingExisting(true);
       const periodStart = new Date(selectedYear, selectedMonth, 1).toISOString().split('T')[0];
-      const periodEnd = endOfMonth(new Date(selectedYear, selectedMonth, 1)).toISOString().split('T')[0];
       try {
         const all = await base44.entities.FinancialSnapshot.filter({ business_id: business.id }, '-period_start', 100);
         const match = all.find(s => s.period_start === periodStart);
@@ -48,7 +75,6 @@ export default function SaveSnapshotModal({ open, onClose, business, userEmail, 
           setValues(prefill);
         } else {
           setExistingId(null);
-          // Pre-populate from current business figures as a convenience
           setValues({
             monthly_revenue:    business.monthly_revenue    || '',
             rent_fixed_costs:   business.rent_fixed_costs   || '',
@@ -66,7 +92,7 @@ export default function SaveSnapshotModal({ open, onClose, business, userEmail, 
       }
     };
     load();
-  }, [open, business, selectedYear, selectedMonth]);
+  }, [open, business, selectedYear, selectedMonth, prefillSnapshot]);
 
   const handleSave = async () => {
     if (!business) return;
