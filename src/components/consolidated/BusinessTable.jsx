@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, Download, Layers } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AddToGroupModal from './AddToGroupModal';
 
 function fmtEur(val) {
@@ -153,15 +154,30 @@ export default function BusinessTable({ businesses, onViewBusiness, userEmail, g
                       {business.healthScore}
                     </span>
                   ) : (
-                    <span
-                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-slate-500 bg-white/5 cursor-help border border-white/10 hover:border-amber-500/30 hover:text-amber-400 transition-colors"
-                      title={business.missingFields?.length > 0
-                        ? `Missing: ${business.missingFields.join(', ')}\n\nGo to Settings → Business to complete your setup.`
-                        : 'Add financial data in your business settings to calculate health.'
-                      }
-                    >
-                      Setup needed
-                    </span>
+                    <TooltipProvider delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-slate-500 bg-white/5 cursor-help border border-white/10 hover:border-amber-500/40 hover:text-amber-400 transition-colors">
+                            Setup needed
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[220px] bg-[#1a1a2e] border border-white/10 text-white text-xs p-3">
+                          {business.missingFields?.length > 0 ? (
+                            <div>
+                              <p className="font-semibold text-amber-400 mb-1.5">Missing data:</p>
+                              <ul className="space-y-0.5">
+                                {business.missingFields.map(f => (
+                                  <li key={f} className="text-slate-300">• {f}</li>
+                                ))}
+                              </ul>
+                              <p className="text-slate-500 mt-2 text-[10px]">Go to Settings to complete your setup.</p>
+                            </div>
+                          ) : (
+                            <p className="text-slate-300">Add financial data in Settings to calculate health score.</p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </td>
                 <td className="py-3 px-4 text-right">
