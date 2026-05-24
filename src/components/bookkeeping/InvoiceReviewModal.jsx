@@ -100,7 +100,7 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
   const totalAutomated = automationResults
     ? 1 + // supplier
       (automationResults.ledger_entry ? 1 : 0) +
-      (automationResults.vat_line ? 1 : 0) +
+      (automationResults.vat_period_updated ? 1 : 0) +
       (automationResults.inventory_updates?.length || 0) +
       (automationResults.inventory_created?.length || 0) +
       (automationResults.purchase_records?.length || 0)

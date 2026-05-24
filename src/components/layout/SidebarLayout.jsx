@@ -21,7 +21,8 @@ import {
   Zap,
   FileStack,
   LayoutGrid,
-  ChefHat
+  ChefHat,
+  Plug
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
@@ -37,6 +38,7 @@ const ALL_NAV_ITEMS = [
   { label: 'VAT & Bookkeeping', icon: Receipt,     path: '/VATAndBookkeeping', permission: 'manage_bookkeeping' },
   { label: 'Menu Engineering', icon: LayoutGrid,  path: '/MenuEngineering',   permission: 'view_reports' },
   { label: 'Recipe Manager',  icon: ChefHat,     path: '/RecipeManager',     permission: 'view_reports' },
+  { label: 'Integrations',   icon: Plug,        path: '/Integrations',      permission: null },
 ];
 
 export default function SidebarLayout({ children }) {
@@ -63,7 +65,7 @@ export default function SidebarLayout({ children }) {
   const isActive = (path) => location.pathname === path;
 
   // Determine if the current page is a top-level tab root (no Back button needed)
-  const TAB_ROOTS = ['/Dashboard', '/Expenses', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll'];
+  const TAB_ROOTS = ['/Dashboard', '/Expenses', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll', '/MenuEngineering', '/RecipeManager'];
   const isTopLevel = TAB_ROOTS.includes(location.pathname);
 
   return (
