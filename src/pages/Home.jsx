@@ -4,11 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import MarketingHeader from '@/components/layout/MarketingHeader';
-import { 
-  Check,
-  Sparkles,
-  Zap
-} from 'lucide-react';
+import { Check, Zap } from 'lucide-react';
 
 const STARS = Array.from({ length: 50 }, (_, i) => ({
   left: `${(i * 37 + 13) % 100}%`,
@@ -18,46 +14,11 @@ const STARS = Array.from({ length: 50 }, (_, i) => ({
 
 export default function Home() {
   const navigate = useNavigate();
-  const [typedText1, setTypedText1] = useState('');
-  const [typedText2, setTypedText2] = useState('');
   const [breathCount, setBreathCount] = useState(0);
-  const text1 = 'The financial OS for';
-  const text2 = 'independent restaurants.';
-
-  useEffect(() => {
-    let index = 0;
-    const timer = setInterval(() => {
-      if (index <= text1.length) {
-        setTypedText1(text1.slice(0, index));
-        index++;
-      } else {
-        clearInterval(timer);
-      }
-    }, 50);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      let index = 0;
-      const timer = setInterval(() => {
-        if (index <= text2.length) {
-          setTypedText2(text2.slice(0, index));
-          index++;
-        } else {
-          clearInterval(timer);
-        }
-      }, 50);
-      return () => clearInterval(timer);
-    }, text1.length * 50 + 200);
-    return () => clearTimeout(delay);
-  }, []);
 
   useEffect(() => {
     if (breathCount < 5) {
-      const timer = setTimeout(() => {
-        setBreathCount(prev => prev + 1);
-      }, 800);
+      const timer = setTimeout(() => setBreathCount(prev => prev + 1), 800);
       return () => clearTimeout(timer);
     }
   }, [breathCount]);
@@ -99,13 +60,11 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
                   <span className="bg-gradient-to-r from-[#E9D5FF] via-white to-[#E9D5FF] bg-clip-text text-transparent">
-                    {typedText1}
-                    {typedText1.length < text1.length && <span className="animate-pulse">|</span>}
+                    The financial OS for
                   </span>
                   <br />
                   <span className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent">
-                    {typedText2}
-                    {typedText2.length > 0 && typedText2.length < text2.length && <span className="animate-pulse">|</span>}
+                    independent restaurants.
                   </span>
                 </motion.h1>
                 <p className="text-sm sm:text-base text-slate-400 mb-6 max-w-lg">
@@ -328,12 +287,6 @@ export default function Home() {
             <span className="text-slate-500 text-sm font-medium">Toast</span>
             <span className="text-slate-500 text-sm font-medium">Xero</span>
             <span className="text-slate-500 text-sm font-medium">QuickBooks</span>
-            <a
-              href="mailto:chris@setra.app?subject=Vote for next POS"
-              className="text-[#A855F7] text-xs border border-[#7B3BFF]/30 rounded-full px-3 py-1 hover:border-[#7B3BFF]/60 transition-colors"
-            >
-              Vote for the next POS →
-            </a>
           </div>
         </div>
       </section>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
@@ -10,10 +9,10 @@ export default function MarketingHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: 'Features',    page: 'Features' },
-    { label: 'For Accountants', page: 'Accountants' },
-    { label: 'Pricing',     page: 'Pricing' },
-    { label: 'About',       page: 'AboutUs' },
+    { label: 'Features',        path: '/Features' },
+    { label: 'For Accountants', path: '/Accountants' },
+    { label: 'Pricing',         path: '/Pricing' },
+    { label: 'About',           path: '/AboutUs' },
   ];
 
   return (
@@ -21,7 +20,7 @@ export default function MarketingHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div
-          onClick={() => { navigate(createPageUrl('Home')); setMenuOpen(false); }}
+          onClick={() => { navigate('/'); setMenuOpen(false); }}
           className="flex items-center gap-2 sm:gap-3 cursor-pointer"
         >
           <img
@@ -38,8 +37,8 @@ export default function MarketingHeader() {
         <div className="hidden md:flex items-center gap-6 text-sm">
           {navLinks.map(link => (
             <button
-              key={link.page}
-              onClick={() => navigate(createPageUrl(link.page))}
+              key={link.path}
+              onClick={() => navigate(link.path)}
               className="text-slate-400 hover:text-white transition-colors"
             >
               {link.label}
@@ -49,7 +48,7 @@ export default function MarketingHeader() {
 
         {/* Desktop Login */}
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate(createPageUrl('Dashboard'))} size="sm">
+          <Button variant="outline" onClick={() => navigate('/Dashboard')} size="sm">
             Login
           </Button>
         </div>
@@ -68,8 +67,8 @@ export default function MarketingHeader() {
         <div className="md:hidden border-t border-white/5 bg-[#0A0A14]/98 px-4 pb-4 space-y-1">
           {navLinks.map(link => (
             <button
-              key={link.page}
-              onClick={() => { navigate(createPageUrl(link.page)); setMenuOpen(false); }}
+              key={link.path}
+              onClick={() => { navigate(link.path); setMenuOpen(false); }}
               className="block w-full text-left py-3 text-slate-300 hover:text-white text-sm border-b border-white/5 last:border-0 transition-colors"
             >
               {link.label}
@@ -78,7 +77,7 @@ export default function MarketingHeader() {
           <div className="pt-3">
             <Button
               className="w-full"
-              onClick={() => { navigate(createPageUrl('Dashboard')); setMenuOpen(false); }}
+              onClick={() => { navigate('/Dashboard'); setMenuOpen(false); }}
             >
               Login
             </Button>
