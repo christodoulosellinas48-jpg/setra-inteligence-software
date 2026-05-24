@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -32,9 +32,10 @@ function getRangeMonths(range) {
 
 export default function ConsolidatedView() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [user, setUser] = React.useState(null);
   const [dateRange, setDateRange] = useState('this_month');
-  const [groupFilter, setGroupFilter] = useState('all'); // 'all' | group id
+  const [groupFilter, setGroupFilter] = useState(searchParams.get('group') || 'all'); // 'all' | group id
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});

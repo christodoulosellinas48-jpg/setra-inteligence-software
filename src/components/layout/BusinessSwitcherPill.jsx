@@ -31,7 +31,10 @@ export default function BusinessSwitcherPill() {
   const handleSelectGroup = (groupId) => {
     selectGroup(groupId);
     setOpen(false);
-    setTimeout(() => window.location.reload(), 50);
+    setTimeout(() => {
+      navigate(`/ConsolidatedView?group=${groupId}`);
+      window.location.href = `/ConsolidatedView?group=${groupId}`;
+    }, 50);
   };
 
   if (businesses.length === 0) return null;
