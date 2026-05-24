@@ -204,37 +204,52 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
   };
 
   const handleFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     e.target.value = '';
 
-    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    setExtracting(true);
+    setRows(null);
+    setParseError(null);
+    setText('');
 
-    if (isPDF) {
-      setExtracting(true);
-      setExtractFileName(file.name);
-      setRows(null);
-      setParseError(null);
-      setText('');
+    const allRows = [];
+    const fileNames = [];
+
+    for (const file of files) {
+      const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      fileNames.push(file.name);
       try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const aiRows = await extractWithAI(file_url, file.name);
-        const normalised = normaliseAIRows(aiRows);
-        if (!normalised.length) {
-          setParseError('AI could not find any monthly data in this document. Try a different file or paste data manually.');
+        if (isPDF) {
+          const { file_url } = await base44.integrations.Core.UploadFile({ file });
+          const aiRows = await extractWithAI(file_url, file.name);
+          const normalised = normaliseAIRows(aiRows);
+          allRows.push(...normalised);
         } else {
-          setRows(normalised);
+          const text = await file.text();
+          const { rows: parsed } = parseCSV(text);
+          if (parsed?.length) allRows.push(...parsed);
         }
       } catch (err) {
-        setParseError('AI extraction failed: ' + (err.message || 'Unknown error'));
-      } finally {
-        setExtracting(false);
+        console.error(`Failed to process ${file.name}:`, err);
       }
+    }
+
+    setExtracting(false);
+    setExtractFileName(fileNames.join(', '));
+
+    // Deduplicate by period (last file wins)
+    const seen = new Map();
+    for (const row of allRows) {
+      const key = `${row.period.year}-${row.period.month}`;
+      seen.set(key, row);
+    }
+    const merged = Array.from(seen.values());
+
+    if (!merged.length) {
+      setParseError('No monthly data found in the selected files. Try a different format or paste data manually.');
     } else {
-      // CSV / TSV / Excel-text
-      const reader = new FileReader();
-      reader.onload = ev => handlePaste(ev.target.result);
-      reader.readAsText(file);
+      setRows(merged);
     }
   };
 
@@ -310,15 +325,15 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
               </button>
             </div>
 
-            <input id="mass-upload-file" ref={fileRef} type="file" accept=".csv,.tsv,.txt,.pdf" className="hidden" onChange={handleFile} />
+            <input id="mass-upload-file" ref={fileRef} type="file" accept=".csv,.tsv,.txt,.pdf" multiple className="hidden" onChange={handleFile} />
 
             {/* AI extracting state */}
             {extracting && (
               <div className="flex items-center gap-3 p-4 rounded-xl bg-[#7B3BFF]/10 border border-[#7B3BFF]/20 mb-4">
                 <Loader2 className="w-5 h-5 text-[#C084FC] animate-spin shrink-0" />
                 <div>
-                  <p className="text-white text-sm font-medium">AI is reading your document…</p>
-                  <p className="text-slate-400 text-xs mt-0.5">{extractFileName}</p>
+                  <p className="text-white text-sm font-medium">AI is reading your documents…</p>
+                  <p className="text-slate-400 text-xs mt-0.5">Processing files, this may take a moment</p>
                 </div>
               </div>
             )}
