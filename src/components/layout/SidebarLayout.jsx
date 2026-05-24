@@ -21,6 +21,7 @@ import {
 import { useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
 import SmartUploadButton from '@/components/layout/SmartUploadButton';
+import CommandPalette from '@/components/CommandPalette';
 
 const ALL_NAV_ITEMS = [
   { label: 'Dashboard',         icon: LayoutDashboard, path: '/Dashboard',         permission: null },
@@ -247,6 +248,9 @@ export default function SidebarLayout({ children }) {
 
       {/* Mobile bottom tab bar */}
       <BottomTabs />
+
+      {/* Global command palette — rendered here so BusinessProvider is in scope */}
+      <CommandPalette />
     </div>
   );
 }

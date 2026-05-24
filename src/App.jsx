@@ -10,7 +10,6 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { CommandPaletteProvider } from '@/lib/CommandPaletteContext';
-import CommandPalette from '@/components/CommandPalette';
 import ConsolidatedView from './pages/ConsolidatedView';
 import Expenses from './pages/Expenses';
 import VATAndBookkeeping from './pages/VATAndBookkeeping';
@@ -199,9 +198,8 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <CommandPaletteProvider>
-            <NavigationTracker />
-            <AuthenticatedApp />
-            <CommandPalette />
+          <NavigationTracker />
+          <AuthenticatedApp />
           </CommandPaletteProvider>
         </Router>
         <Toaster />
