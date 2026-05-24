@@ -226,8 +226,8 @@ export default function SidebarLayout({ children }) {
 
         {/* Bottom Items (Settings) */}
         <div className="p-3 border-t border-white/5 space-y-1">
-          <BottomLogoLink collapsed={collapsed} />
           {renderNavItem('ops_hub', 98)}
+          <BottomLogoLink collapsed={collapsed} />
           {isOwner() && renderNavItem('settings', 99)}
         </div>
 
