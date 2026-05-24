@@ -13,7 +13,7 @@ import {
   ChefHat, Package, TrendingUp, Percent, BarChart2, Brain,
   Receipt, BookOpen, DollarSign, FileText, Activity, Zap,
   AlertTriangle, Target, CheckCircle2, Clock, Layers, PieChart,
-  Search, X
+  Search, X, Copy
 } from 'lucide-react';
 
 const containerVariants = {
@@ -105,6 +105,12 @@ const CATEGORIES = [
             return snaps.length > 0 ? `${snaps.length} months` : null;
           } catch { return null; }
         }
+      },
+      {
+        id: 'duplicates', label: 'Duplicate Detector', icon: Copy, path: '/Duplicates',
+        description: 'Find and remove duplicate invoices, menu items, and recipes across your business.',
+        badge: 'Hygiene', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/20',
+        fetchStat: async (biz) => null,
       },
     ]
   },
