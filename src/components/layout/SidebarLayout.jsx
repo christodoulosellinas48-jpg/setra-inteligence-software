@@ -81,6 +81,28 @@ export default function SidebarLayout({ children }) {
     const isSacred = SACRED_NON_DRAGGABLE.includes(id) || (id === 'vat' && vatLocked);
     const isPinnableItem = !['dashboard', 'ops_hub', 'settings'].includes(id);
 
+    // Special distinct style for Operations Hub
+    if (id === 'ops_hub') {
+      return (
+        <div
+          key={id}
+          className={cn(
+            'group/item relative flex items-center rounded-xl transition-all duration-200 cursor-pointer border',
+            active
+              ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/60 text-[#C084FC] shadow-[0_0_20px_rgba(123,59,255,0.35)]'
+              : 'border-[#7B3BFF]/25 bg-[#7B3BFF]/5 text-[#C084FC]/80 hover:bg-[#7B3BFF]/15 hover:border-[#7B3BFF]/50 hover:text-[#C084FC]',
+            collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+          )}
+          onClick={() => navigate(mod.path)}
+        >
+          <Icon className={cn('w-5 h-5 flex-shrink-0', !collapsed && 'mr-2.5')} />
+          {!collapsed && (
+            <span className="flex-1 text-sm font-semibold truncate">{mod.label}</span>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div
         key={id}
