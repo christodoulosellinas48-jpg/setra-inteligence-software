@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { X, Upload, Loader2, CheckCircle, AlertCircle, Download, Table } from 'lucide-react';
+import { X, Upload, Loader2, CheckCircle, AlertCircle, Download, Table, FileText, Sparkles } from 'lucide-react';
 import { endOfMonth } from 'date-fns';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const MONTHS_MAP = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
@@ -14,13 +16,11 @@ const MONTHS_MAP = {
 function parseMonthYear(raw) {
   if (!raw) return null;
   const s = raw.toString().trim();
-  // "Jan 2025" or "January 2025"
   const named = s.match(/^([a-zA-Z]+)\s+(\d{4})$/);
   if (named) {
     const m = MONTHS_MAP[named[1].toLowerCase()];
     if (m !== undefined) return { year: parseInt(named[2]), month: m };
   }
-  // "2025-01" or "01/2025"
   const iso = s.match(/^(\d{4})-(\d{2})$/);
   if (iso) return { year: parseInt(iso[1]), month: parseInt(iso[2]) - 1 };
   const slash = s.match(/^(\d{1,2})\/(\d{4})$/);
@@ -33,8 +33,6 @@ function parseCSV(text) {
   if (lines.length < 2) return { rows: [], error: 'Need at least a header row and one data row.' };
 
   const headers = lines[0].split(/[,\t;]/).map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'));
-
-  // Map flexible header names to canonical keys
   const HEADER_MAP = {
     period: 'period', month: 'period', date: 'period',
     revenue: 'monthly_revenue', monthly_revenue: 'monthly_revenue', sales: 'monthly_revenue',
@@ -57,7 +55,6 @@ function parseCSV(text) {
     const cells = lines[i].split(/[,\t;]/).map(c => c.trim().replace(/[€$"']/g, ''));
     const parsed = parseMonthYear(cells[periodIdx]);
     if (!parsed) continue;
-
     const row = { period: parsed };
     colMap.forEach((key, ci) => {
       if (!key || key === 'period') return;
@@ -66,8 +63,124 @@ function parseCSV(text) {
     });
     rows.push(row);
   }
-
   return { rows, error: null };
+}
+
+// Convert AI-extracted rows (period as "YYYY-MM" or "Mon YYYY") into the internal row format
+function normaliseAIRows(aiRows) {
+  return (aiRows || []).map(r => {
+    let period = null;
+    if (r.period) period = parseMonthYear(r.period);
+    if (!period && r.year && r.month) {
+      const m = typeof r.month === 'string' ? MONTHS_MAP[r.month.toLowerCase().slice(0, 3)] : r.month - 1;
+      if (m !== undefined) period = { year: parseInt(r.year), month: m };
+    }
+    if (!period) return null;
+    return {
+      period,
+      monthly_revenue: r.monthly_revenue ?? r.revenue ?? r.sales ?? 0,
+      rent_fixed_costs: r.rent_fixed_costs ?? r.rent ?? r.fixed_costs ?? 0,
+      staff_costs: r.staff_costs ?? r.staff ?? r.labour ?? r.labor ?? 0,
+      purchases_food_bev: r.purchases_food_bev ?? r.food_bev ?? r.food ?? r.food_beverage ?? 0,
+      utilities: r.utilities ?? r.util ?? 0,
+      other_operating: r.other_operating ?? r.other ?? 0,
+      total_covers: r.total_covers ?? r.covers,
+      days_open: r.days_open ?? r.days,
+      average_ticket: r.average_ticket ?? r.avg_ticket,
+    };
+  }).filter(Boolean);
+}
+
+async function extractWithAI(fileUrl, fileName) {
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt: `You are a financial data extractor for a hospitality business.
+Extract monthly financial snapshot data from this document (file: ${fileName}).
+The document may be a P&L report, income statement, management report, or summary spreadsheet.
+
+For EACH month found, extract:
+- period: "Mon YYYY" (e.g. "Jan 2025")
+- monthly_revenue: total revenue / sales for that month (number)
+- rent_fixed_costs: rent and fixed overhead costs (number)
+- staff_costs: staff / labour / payroll costs (number)
+- purchases_food_bev: food and beverage purchases / COGS (number)
+- utilities: utilities costs (number)
+- other_operating: other operating expenses (number)
+- total_covers: number of covers / guests (number, if available)
+- days_open: trading days (number, if available)
+- average_ticket: average spend per cover (number, if available)
+
+If a value is not present, omit it or set to 0.
+Return a JSON array of objects, one per month. Output ONLY valid JSON, no commentary.`,
+    file_urls: [fileUrl],
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        rows: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              period: { type: 'string' },
+              monthly_revenue: { type: 'number' },
+              rent_fixed_costs: { type: 'number' },
+              staff_costs: { type: 'number' },
+              purchases_food_bev: { type: 'number' },
+              utilities: { type: 'number' },
+              other_operating: { type: 'number' },
+              total_covers: { type: 'number' },
+              days_open: { type: 'number' },
+              average_ticket: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+  });
+  return result?.rows || [];
+}
+
+async function saveRows(rows, business, userEmail) {
+  const done = [], failed = [];
+  const existing = await base44.entities.FinancialSnapshot.filter({ business_id: business.id }, '-period_start', 100);
+
+  for (const row of rows) {
+    const periodStart = new Date(row.period.year, row.period.month, 1).toISOString().split('T')[0];
+    const periodEnd = endOfMonth(new Date(row.period.year, row.period.month, 1)).toISOString().split('T')[0];
+    const rev = row.monthly_revenue || 0;
+    const costs = (row.rent_fixed_costs || 0) + (row.staff_costs || 0) +
+      (row.purchases_food_bev || 0) + (row.utilities || 0) + (row.other_operating || 0);
+    const netProfit = rev - costs;
+    const profitMargin = rev > 0 ? (netProfit / rev) * 100 : 0;
+
+    const payload = {
+      business_id: business.id,
+      period_start: periodStart,
+      period_end: periodEnd,
+      period_type: 'monthly',
+      monthly_revenue: rev,
+      rent_fixed_costs: row.rent_fixed_costs ?? 0,
+      staff_costs: row.staff_costs ?? 0,
+      purchases_food_bev: row.purchases_food_bev ?? 0,
+      utilities: row.utilities ?? 0,
+      other_operating: row.other_operating ?? 0,
+      net_profit: netProfit,
+      profit_margin: profitMargin,
+      ...(row.total_covers !== undefined && row.total_covers !== null && { total_covers: row.total_covers }),
+      ...(row.days_open !== undefined && row.days_open !== null && { days_open: row.days_open }),
+      ...(row.average_ticket !== undefined && row.average_ticket !== null && { average_ticket: row.average_ticket }),
+      created_by_email: userEmail || '',
+    };
+
+    const match = existing.find(s => s.period_start === periodStart);
+    try {
+      if (match) await base44.entities.FinancialSnapshot.update(match.id, payload);
+      else await base44.entities.FinancialSnapshot.create(payload);
+      done.push(periodStart);
+    } catch {
+      failed.push(periodStart);
+    }
+  }
+  return { done, failed };
 }
 
 export default function MassUploadSnapshotsModal({ open, onClose, business, userEmail, onSaved }) {
@@ -75,12 +188,14 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
   const [rows, setRows] = useState(null);
   const [parseError, setParseError] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractFileName, setExtractFileName] = useState('');
   const [results, setResults] = useState(null);
   const fileRef = useRef();
 
   if (!open) return null;
 
-  const handleParse = (raw) => {
+  const handlePaste = (raw) => {
     setText(raw);
     const { rows: parsed, error } = parseCSV(raw);
     setParseError(error);
@@ -88,66 +203,47 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
     setResults(null);
   };
 
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => handleParse(ev.target.result);
-    reader.readAsText(file);
+    e.target.value = '';
+
+    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+    if (isPDF) {
+      setExtracting(true);
+      setExtractFileName(file.name);
+      setRows(null);
+      setParseError(null);
+      setText('');
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const aiRows = await extractWithAI(file_url, file.name);
+        const normalised = normaliseAIRows(aiRows);
+        if (!normalised.length) {
+          setParseError('AI could not find any monthly data in this document. Try a different file or paste data manually.');
+        } else {
+          setRows(normalised);
+        }
+      } catch (err) {
+        setParseError('AI extraction failed: ' + (err.message || 'Unknown error'));
+      } finally {
+        setExtracting(false);
+      }
+    } else {
+      // CSV / TSV / Excel-text
+      const reader = new FileReader();
+      reader.onload = ev => handlePaste(ev.target.result);
+      reader.readAsText(file);
+    }
   };
 
   const handleUpload = async () => {
     if (!rows?.length || !business) return;
     setUploading(true);
-    const done = [], failed = [];
-
-    // Fetch existing snapshots to handle overwrites
-    const existing = await base44.entities.FinancialSnapshot.filter({ business_id: business.id }, '-period_start', 100);
-
-    for (const row of rows) {
-      const periodStart = new Date(row.period.year, row.period.month, 1).toISOString().split('T')[0];
-      const periodEnd = endOfMonth(new Date(row.period.year, row.period.month, 1)).toISOString().split('T')[0];
-
-      const rev = row.monthly_revenue || 0;
-      const totalCosts = (row.rent_fixed_costs || 0) + (row.staff_costs || 0) +
-        (row.purchases_food_bev || 0) + (row.utilities || 0) + (row.other_operating || 0);
-      const netProfit = rev - totalCosts;
-      const profitMargin = rev > 0 ? (netProfit / rev) * 100 : 0;
-
-      const payload = {
-        business_id: business.id,
-        period_start: periodStart,
-        period_end: periodEnd,
-        period_type: 'monthly',
-        monthly_revenue: rev,
-        rent_fixed_costs: row.rent_fixed_costs ?? 0,
-        staff_costs: row.staff_costs ?? 0,
-        purchases_food_bev: row.purchases_food_bev ?? 0,
-        utilities: row.utilities ?? 0,
-        other_operating: row.other_operating ?? 0,
-        net_profit: netProfit,
-        profit_margin: profitMargin,
-        ...(row.total_covers !== undefined && { total_covers: row.total_covers }),
-        ...(row.days_open !== undefined && { days_open: row.days_open }),
-        ...(row.average_ticket !== undefined && { average_ticket: row.average_ticket }),
-        created_by_email: userEmail || '',
-      };
-
-      const match = existing.find(s => s.period_start === periodStart);
-      try {
-        if (match) {
-          await base44.entities.FinancialSnapshot.update(match.id, payload);
-        } else {
-          await base44.entities.FinancialSnapshot.create(payload);
-        }
-        done.push(periodStart);
-      } catch {
-        failed.push(periodStart);
-      }
-    }
-
+    const result = await saveRows(rows, business, userEmail);
     setUploading(false);
-    setResults({ done, failed });
+    setResults(result);
     onSaved?.();
   };
 
@@ -161,8 +257,6 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
     a.download = 'snapshot_template.csv';
     a.click();
   };
-
-  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
@@ -184,38 +278,81 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
 
         {!results ? (
           <>
-            {/* Actions row */}
-            <div className="flex gap-2 mb-4">
-              <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} className="gap-2">
-                <Upload className="w-3.5 h-3.5" /> Upload CSV / TSV
-              </Button>
-              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
-                <Download className="w-3.5 h-3.5" /> Download Template
-              </Button>
-              <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" className="hidden" onChange={handleFile} />
+            {/* Upload buttons */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/10 hover:border-[#7B3BFF]/50 hover:bg-[#7B3BFF]/5 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#7B3BFF]/10 flex items-center justify-center group-hover:bg-[#7B3BFF]/20 transition-colors">
+                  <FileText className="w-4 h-4 text-[#C084FC]" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white text-xs font-medium">Upload File</p>
+                  <p className="text-slate-500 text-xs">CSV, TSV, PDF</p>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] text-[#C084FC] bg-[#7B3BFF]/10 px-2 py-0.5 rounded-full">
+                  <Sparkles className="w-2.5 h-2.5" /> AI extraction for PDFs
+                </div>
+              </button>
+
+              <button
+                onClick={downloadTemplate}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-white/10 hover:border-[#7B3BFF]/50 hover:bg-[#7B3BFF]/5 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#7B3BFF]/10 flex items-center justify-center group-hover:bg-[#7B3BFF]/20 transition-colors">
+                  <Download className="w-4 h-4 text-[#C084FC]" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white text-xs font-medium">Download Template</p>
+                  <p className="text-slate-500 text-xs">CSV template</p>
+                </div>
+              </button>
             </div>
+
+            <input ref={fileRef} type="file" accept=".csv,.tsv,.txt,.pdf" className="hidden" onChange={handleFile} />
+
+            {/* AI extracting state */}
+            {extracting && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-[#7B3BFF]/10 border border-[#7B3BFF]/20 mb-4">
+                <Loader2 className="w-5 h-5 text-[#C084FC] animate-spin shrink-0" />
+                <div>
+                  <p className="text-white text-sm font-medium">AI is reading your document…</p>
+                  <p className="text-slate-400 text-xs mt-0.5">{extractFileName}</p>
+                </div>
+              </div>
+            )}
 
             {/* Paste area */}
-            <div className="mb-1">
-              <label className="text-xs text-slate-400 mb-1.5 block">Or paste data (CSV, TSV, or Excel copy-paste):</label>
-              <textarea
-                className="w-full h-40 bg-[#0B0B12] border border-white/10 rounded-xl text-slate-300 text-xs p-3 font-mono resize-none focus:outline-none focus:border-[#7B3BFF]/50"
-                placeholder={"period,revenue,rent,staff,food_bev,utilities,other\nJan 2025,42000,4200,11000,13000,1200,1800\nFeb 2025,38000,4200,10500,11800,1200,1600"}
-                value={text}
-                onChange={e => handleParse(e.target.value)}
-              />
-            </div>
+            {!extracting && (
+              <div className="mb-1">
+                <label className="text-xs text-slate-400 mb-1.5 block">Or paste data (CSV, TSV, or Excel copy-paste):</label>
+                <textarea
+                  className="w-full h-36 bg-[#0B0B12] border border-white/10 rounded-xl text-slate-300 text-xs p-3 font-mono resize-none focus:outline-none focus:border-[#7B3BFF]/50"
+                  placeholder={"period,revenue,rent,staff,food_bev,utilities,other\nJan 2025,42000,4200,11000,13000,1200,1800\nFeb 2025,38000,4200,10500,11800,1200,1600"}
+                  value={text}
+                  onChange={e => handlePaste(e.target.value)}
+                />
+              </div>
+            )}
 
             {parseError && (
-              <p className="text-rose-400 text-xs mb-3 flex items-center gap-1.5">
+              <p className="text-rose-400 text-xs mb-3 flex items-center gap-1.5 mt-2">
                 <AlertCircle className="w-3.5 h-3.5" /> {parseError}
               </p>
             )}
 
-            {/* Preview */}
-            {rows?.length > 0 && (
-              <div className="mb-4">
-                <p className="text-xs text-slate-400 mb-2">{rows.length} rows parsed — preview:</p>
+            {/* Preview table */}
+            {rows?.length > 0 && !extracting && (
+              <div className="mb-4 mt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-xs text-slate-400">{rows.length} months ready</p>
+                  {extractFileName && (
+                    <span className="text-[10px] text-[#C084FC] bg-[#7B3BFF]/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Sparkles className="w-2.5 h-2.5" /> AI extracted from {extractFileName}
+                    </span>
+                  )}
+                </div>
                 <div className="overflow-x-auto rounded-xl border border-white/5">
                   <table className="w-full text-xs">
                     <thead className="bg-[#0B0B12]/60">
@@ -254,30 +391,29 @@ export default function MassUploadSnapshotsModal({ open, onClose, business, user
               <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
               <Button
                 onClick={handleUpload}
-                disabled={!rows?.length || uploading}
+                disabled={!rows?.length || uploading || extracting}
                 className="flex-1 gap-2"
               >
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                {uploading ? 'Uploading…' : `Upload ${rows?.length || 0} Snapshots`}
+                {uploading ? 'Saving…' : `Save ${rows?.length || 0} Snapshots`}
               </Button>
             </div>
           </>
         ) : (
-          /* Results */
           <div className="space-y-4">
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1">
                 <CheckCircle className="w-5 h-5 text-emerald-400" />
                 <p className="text-emerald-300 font-semibold">{results.done.length} snapshots saved</p>
               </div>
               {results.failed.length > 0 && (
                 <p className="text-amber-400 text-sm mt-1 flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" /> {results.failed.length} failed
+                  <AlertCircle className="w-3.5 h-3.5" /> {results.failed.length} failed to save
                 </p>
               )}
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => { setText(''); setRows(null); setResults(null); }} className="flex-1">
+              <Button variant="outline" onClick={() => { setText(''); setRows(null); setResults(null); setExtractFileName(''); }} className="flex-1">
                 Upload More
               </Button>
               <Button onClick={onClose} className="flex-1">Done</Button>
