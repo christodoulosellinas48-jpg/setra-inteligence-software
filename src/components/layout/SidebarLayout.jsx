@@ -16,8 +16,10 @@ import {
   ChevronRight,
   Zap,
   Plug,
-  MessageSquare
+  MessageSquare,
+  Search
 } from 'lucide-react';
+import { useCommandPalette } from '@/lib/CommandPaletteContext';
 import { useBusiness } from '@/components/business/BusinessContext';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
 import SmartUploadButton from '@/components/layout/SmartUploadButton';
@@ -38,6 +40,7 @@ export default function SidebarLayout({ children }) {
   useRealtimeSync();
 
   const { hasPermission, isOwner } = useBusiness();
+  const { setOpen: openPalette } = useCommandPalette();
 
   // Close mobile sidebar on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -229,6 +232,13 @@ export default function SidebarLayout({ children }) {
           </div>
           <div className="flex items-center gap-2 ml-auto">
             <BusinessSwitcherPill />
+            <button
+              onClick={() => openPalette(true)}
+              title="Search (⌘K)"
+              className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+            >
+              <Search className="w-4 h-4" />
+            </button>
             <SmartUploadButton />
             <button
               onClick={() => navigate('/Dashboard')}
