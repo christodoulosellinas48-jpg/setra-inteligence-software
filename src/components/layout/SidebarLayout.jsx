@@ -89,15 +89,15 @@ export default function SidebarLayout({ children }) {
           className={cn(
             'group/item relative flex items-center rounded-xl transition-all duration-200 cursor-pointer border',
             active
-              ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/60 text-[#C084FC] shadow-[0_0_20px_rgba(123,59,255,0.35)]'
-              : 'border-[#7B3BFF]/25 bg-[#7B3BFF]/5 text-[#C084FC]/80 hover:bg-[#7B3BFF]/15 hover:border-[#7B3BFF]/50 hover:text-[#C084FC]',
+              ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/60 text-white shadow-[0_0_20px_rgba(123,59,255,0.35)]'
+              : 'border-[#7B3BFF]/25 bg-[#7B3BFF]/5 text-white hover:bg-[#7B3BFF]/15 hover:border-[#7B3BFF]/50',
             collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
           )}
           onClick={() => navigate(mod.path)}
         >
-          <Icon className={cn('w-5 h-5 flex-shrink-0', !collapsed && 'mr-2.5')} />
+          <Icon className={cn('w-5 h-5 flex-shrink-0 text-white', !collapsed && 'mr-2.5')} />
           {!collapsed && (
-            <span className="flex-1 text-sm font-semibold truncate">{mod.label}</span>
+            <span className="flex-1 text-sm font-semibold truncate text-white">{mod.label}</span>
           )}
         </div>
       );
@@ -183,11 +183,11 @@ export default function SidebarLayout({ children }) {
 
         {/* Nav */}
         <nav className="flex-1 p-3 overflow-y-auto flex flex-col gap-1">
-          {/* Dashboard — always first, not draggable */}
-          {renderNavItem('dashboard', 0)}
+          {/* Operations Hub — always first, not draggable */}
+          {renderNavItem('ops_hub', 0)}
 
-          {/* Operations Hub — always second, not draggable */}
-          {renderNavItem('ops_hub', 1)}
+          {/* Dashboard — always second, not draggable */}
+          {renderNavItem('dashboard', 1)}
 
           {/* Pinned middle items — draggable */}
           <DragDropContext onDragEnd={handleDragEnd}>
