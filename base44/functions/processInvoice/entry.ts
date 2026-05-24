@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
       due_date,
       invoice_number,
       expense_category: rawCategory,
+      reverse_charge,
       line_items,
       invoice_total,
       vat_included,
@@ -157,7 +158,41 @@ Deno.serve(async (req) => {
     results.ledger_entry = ledgerEntry.id;
 
     // 4. VAT period update
-    if (finalVatAmount > 0) {
+    // EU Reverse Charge: self-assess both output and input VAT (net effect = €0, but both must appear on VAT return)
+    const isReverseCharge = reverse_charge || expense_category === 'eu_acquisition';
+    const rcVatRate = vatRate || 19;
+    const rcVatAmount = isReverseCharge ? parseFloat((finalNetAmount * rcVatRate / 100).toFixed(2)) : 0;
+
+    if (isReverseCharge && rcVatAmount > 0) {
+      const vatPeriods = await base44.entities.VATPeriod.filter({ business_id, status: 'open' });
+      if (vatPeriods.length > 0) {
+        const vatPeriod = vatPeriods[0];
+        // Output VAT line (self-assessed — buyer acts as both seller and buyer for VAT purposes)
+        await base44.entities.VATSummaryLine.create({
+          vat_period_id: vatPeriod.id,
+          vat_rate_code: 'reverse_charge',
+          taxable_base: finalNetAmount,
+          vat_amount: rcVatAmount,
+          direction: 'output'
+        });
+        // Input VAT line (offsetting — reclaimable as normal input)
+        await base44.entities.VATSummaryLine.create({
+          vat_period_id: vatPeriod.id,
+          vat_rate_code: 'reverse_charge',
+          taxable_base: finalNetAmount,
+          vat_amount: rcVatAmount,
+          direction: 'input'
+        });
+        await base44.entities.VATPeriod.update(vatPeriod.id, {
+          // Output increases, input increases by same amount — net €0 effect
+          output_vat: (vatPeriod.output_vat || 0) + rcVatAmount,
+          input_vat: (vatPeriod.input_vat || 0) + rcVatAmount,
+          net_vat_payable: (vatPeriod.output_vat || 0) + rcVatAmount - ((vatPeriod.input_vat || 0) + rcVatAmount)
+        });
+        results.vat_period_updated = true;
+        results.reverse_charge_vat = rcVatAmount;
+      }
+    } else if (finalVatAmount > 0) {
       const vatPeriods = await base44.entities.VATPeriod.filter({ business_id, status: 'open' });
       if (vatPeriods.length > 0) {
         const vatPeriod = vatPeriods[0];
@@ -206,8 +241,11 @@ Deno.serve(async (req) => {
           results.document_lines.push(item.description);
         }
 
-        // Inventory tracking
-        const shouldTrackInventory = ['food_beverage', 'operating_expenses', 'packaging'].includes(expense_category);
+        // Inventory tracking — only for physical goods, never for services/rent/utilities/staff
+        // Also filter out descriptions that look like services, not physical stock items
+        const NON_STOCK_PATTERNS = /rent|lease|service|maintenance|subscription|insurance|electricity|water|gas|internet|phone|salary|wage|payroll|tax|fee|refund|credit|deposit|loan|interest|cleaning service|management|consulting/i;
+        const isNonStockDescription = NON_STOCK_PATTERNS.test(item.description);
+        const shouldTrackInventory = ['food_beverage', 'packaging'].includes(expense_category) && !isNonStockDescription;
         if (shouldTrackInventory) {
           const descLower = item.description.toLowerCase().trim();
           const match = allInventory.find(inv =>

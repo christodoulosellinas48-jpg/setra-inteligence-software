@@ -125,6 +125,9 @@ export default function SmartUploadButton() {
   const [open, setOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [bizDropOpen, setBizDropOpen] = useState(false);
+  // Venue confirmation: when a file's filename suggests a different venue, ask before committing
+  const [pendingConfirm, setPendingConfirm] = useState(null); // { file, resolvedBusiness, detectedVenueName }
+  const [confirmQueue, setConfirmQueue] = useState([]); // remaining files after confirmation
 
   // Multi-file state
   const [queue, setQueue] = useState([]); // [{ file, status: 'pending'|'processing'|'done'|'error', result, error }]
@@ -142,11 +145,40 @@ export default function SmartUploadButton() {
     setAllDone(false);
     setSelectedBusiness(null);
     setBizDropOpen(false);
+    setPendingConfirm(null);
+  };
+
+  // Try to detect a venue name hint from the filename (e.g. payslip_Mar2026_FORNO_...)
+  const detectVenueFromFilename = (filename) => {
+    if (!businesses?.length) return null;
+    const upper = filename.toUpperCase();
+    return businesses.find(b => {
+      // Check if any word in the business name appears in the filename
+      const words = b.name.toUpperCase().split(/\s+/).filter(w => w.length > 3);
+      return words.some(w => upper.includes(w));
+    }) || null;
   };
 
   const handleFiles = async (files) => {
     if (!files?.length || !activeBusiness) return;
     const fileArray = Array.from(files);
+
+    // Check first file for venue mismatch before starting
+    const suggestedBusiness = detectVenueFromFilename(fileArray[0].name);
+    if (suggestedBusiness && suggestedBusiness.id !== activeBusiness.id) {
+      // Pause and ask for confirmation
+      setPendingConfirm({
+        files: fileArray,
+        suggestedBusiness,
+        currentBusiness: activeBusiness,
+      });
+      return;
+    }
+
+    await processFileArray(fileArray, activeBusiness);
+  };
+
+  const processFileArray = async (fileArray, targetBusiness) => {
     const initialQueue = fileArray.map(f => ({ file: f, status: 'pending', result: null, error: null }));
     setQueue(initialQueue);
     setProcessing(true);
@@ -157,7 +189,7 @@ export default function SmartUploadButton() {
       updatedQueue[i] = { ...updatedQueue[i], status: 'processing' };
       setQueue([...updatedQueue]);
       try {
-        const res = await processFile(fileArray[i], activeBusiness);
+        const res = await processFile(fileArray[i], targetBusiness);
         updatedQueue[i] = { ...updatedQueue[i], status: 'done', result: res };
       } catch (err) {
         updatedQueue[i] = { ...updatedQueue[i], status: 'error', error: err.message || 'Failed' };
@@ -238,8 +270,43 @@ export default function SmartUploadButton() {
               </div>
             )}
 
-            {/* Drop zone — only shown when idle */}
-            {isIdle && (
+            {/* Venue mismatch confirmation */}
+            {pendingConfirm && (
+              <div className="space-y-4">
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                  <p className="text-amber-300 text-sm font-medium mb-1">⚠ Venue mismatch detected</p>
+                  <p className="text-slate-400 text-xs leading-relaxed">
+                    The filename suggests this may belong to <span className="text-white font-medium">"{pendingConfirm.suggestedBusiness.name}"</span>, but you're currently working in <span className="text-white font-medium">"{pendingConfirm.currentBusiness.name}"</span>.
+                  </p>
+                  <p className="text-slate-500 text-xs mt-1">Save to which venue?</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => { setPendingConfirm(null); processFileArray(pendingConfirm.files, pendingConfirm.suggestedBusiness); }}
+                    className="px-3 py-2.5 rounded-xl bg-[#7B3BFF]/20 border border-[#7B3BFF]/40 hover:bg-[#7B3BFF]/30 text-white text-xs font-medium text-center transition-colors"
+                  >
+                    {pendingConfirm.suggestedBusiness.name}
+                    <span className="block text-[#C084FC] text-[10px] mt-0.5">From filename</span>
+                  </button>
+                  <button
+                    onClick={() => { setPendingConfirm(null); processFileArray(pendingConfirm.files, pendingConfirm.currentBusiness); }}
+                    className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs font-medium text-center transition-colors"
+                  >
+                    {pendingConfirm.currentBusiness.name}
+                    <span className="block text-slate-500 text-[10px] mt-0.5">Currently selected</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => setPendingConfirm(null)}
+                  className="w-full text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Drop zone — only shown when idle and no pending confirm */}
+            {isIdle && !pendingConfirm && (
               <div
                 className="border-2 border-dashed border-white/10 hover:border-[#7B3BFF]/50 rounded-xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-all group"
                 onClick={() => fileRef.current?.click()}
@@ -263,6 +330,7 @@ export default function SmartUploadButton() {
                 />
               </div>
             )}
+
 
             {/* File queue progress */}
             {queue.length > 0 && (

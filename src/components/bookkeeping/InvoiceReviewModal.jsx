@@ -22,10 +22,22 @@ const CATEGORIES = [
   { value: 'fixed_costs', label: 'Fixed Costs / Rent' },
   { value: 'staff_costs', label: 'Staff Costs' },
   { value: 'operating_expenses', label: 'Operating Expenses' },
+  { value: 'eu_acquisition', label: 'EU Acquisition (Reverse Charge)' },
   { value: 'other', label: 'Other' },
 ];
 
+// Detect if a supplier VAT number is from an EU country outside Cyprus
+function isEUNonCyprusVAT(vatNumber) {
+  if (!vatNumber) return false;
+  const s = vatNumber.trim().toUpperCase();
+  // Cyprus starts with CY — all others are EU reverse charge candidates
+  const EU_PREFIXES = ['AT','BE','BG','HR','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE'];
+  return EU_PREFIXES.some(p => s.startsWith(p));
+}
+
 export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
+  // Auto-detect reverse charge from supplier VAT on open
+  const detectedRC = isEUNonCyprusVAT(doc.supplier_vat_number);
   const [form, setForm] = useState({
     supplier_name: doc.supplier_name || '',
     supplier_vat_number: doc.supplier_vat_number || '',
@@ -35,13 +47,25 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
     gross_total: doc.gross_total || 0,
     net_total: doc.net_total || 0,
     vat_total: doc.vat_total || 0,
-    expense_category: doc.expense_category || 'other',
+    expense_category: detectedRC ? 'eu_acquisition' : (doc.expense_category || 'other'),
+    reverse_charge: detectedRC,
     line_items: doc.line_items || []
   });
   const [processing, setProcessing] = useState(false);
   const [automationResults, setAutomationResults] = useState(null);
 
   const updateField = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
+
+  // When supplier VAT changes, auto-detect reverse charge
+  const handleVatNumberChange = (val) => {
+    const rc = isEUNonCyprusVAT(val);
+    setForm(prev => ({
+      ...prev,
+      supplier_vat_number: val,
+      reverse_charge: rc,
+      expense_category: rc ? 'eu_acquisition' : (prev.expense_category === 'eu_acquisition' ? 'other' : prev.expense_category)
+    }));
+  };
 
   const handleApprove = async () => {
     setProcessing(true);
@@ -55,6 +79,7 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
         due_date: form.due_date,
         invoice_number: form.invoice_number,
         expense_category: form.expense_category,
+        reverse_charge: form.reverse_charge,
         line_items: form.line_items,
         invoice_total: parseFloat(form.gross_total) || 0,
         vat_amount: parseFloat(form.vat_total) || 0,
@@ -110,7 +135,7 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
                 <div className="space-y-1 text-sm text-emerald-400/80">
                   {automationResults.supplier && (
                     <p className="flex items-center gap-2">
-                      <Building2 className="w-3 h-3" /> Supplier '{typeof automationResults.supplier === 'string' ? automationResults.supplier : automationResults.supplier?.name || form.supplier_name}' {automationResults.supplier_action === 'created' ? 'added to' : 'updated in'} Vendors
+                      <Building2 className="w-3 h-3" /> Supplier "{form.supplier_name}" {automationResults.supplier_action === 'created' ? 'added to' : 'updated in'} Vendors
                     </p>
                   )}
                   {automationResults.ledger_entry && (
@@ -121,6 +146,11 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
                   {automationResults.vat_line && (
                     <p className="flex items-center gap-2">
                       <Percent className="w-3 h-3" /> Input VAT recorded in open VAT period
+                    </p>
+                  )}
+                  {automationResults.reverse_charge_vat && (
+                    <p className="flex items-center gap-2 text-amber-300">
+                      <Percent className="w-3 h-3" /> Reverse Charge: Output + Input VAT self-assessed (net €0)
                     </p>
                   )}
                   {automationResults.inventory_created?.length > 0 && (
@@ -161,10 +191,15 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
               <Label className="text-slate-400 text-xs mb-1">Supplier VAT Number</Label>
               <Input
                 value={form.supplier_vat_number}
-                onChange={e => updateField('supplier_vat_number', e.target.value)}
-                placeholder="CY12345678X"
+                onChange={e => handleVatNumberChange(e.target.value)}
+                placeholder="CY12345678X or FR/IT/DE…"
                 className="bg-white/5 border-white/10 text-white"
               />
+              {form.reverse_charge && (
+                <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
+                  ⚡ EU supplier detected — Reverse Charge applies
+                </p>
+              )}
             </div>
           </div>
 
@@ -261,6 +296,7 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
               {form.expense_category === 'packaging' && '→ Will update Inventory & Suppliers'}
               {form.expense_category === 'operating_expenses' && '→ Will update Inventory & Suppliers'}
               {['utilities', 'fixed_costs', 'staff_costs'].includes(form.expense_category) && '→ Will update Suppliers & Ledger'}
+              {form.expense_category === 'eu_acquisition' && '→ Reverse Charge: records self-assessed Output VAT + Input VAT (net €0 effect)'}
               {form.expense_category === 'other' && '→ Will update Suppliers & Ledger'}
             </p>
           </div>
@@ -290,15 +326,22 @@ export default function InvoiceReviewModal({ doc, onClose, onApproved }) {
                 <Sparkles className="w-3.5 h-3.5" /> When you approve, we'll automatically:
               </p>
               <div className="grid grid-cols-2 gap-1 text-xs text-slate-400">
-                <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Create/update Supplier record</span>
-                <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Post to Ledger / P&L</span>
+              <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Create/update Supplier record</span>
+              <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Post to Ledger / P&L</span>
+              {form.expense_category === 'eu_acquisition' ? (
+                <>
+                  <span className="flex items-center gap-1 text-amber-400"><ChevronRight className="w-3 h-3 text-amber-400" /> Self-assess Output VAT (RC)</span>
+                  <span className="flex items-center gap-1 text-amber-400"><ChevronRight className="w-3 h-3 text-amber-400" /> Record matching Input VAT (RC)</span>
+                </>
+              ) : (
                 <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Record Input VAT in open period</span>
-                {['food_beverage', 'packaging', 'operating_expenses'].includes(form.expense_category) && (
-                  <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Update Inventory stock levels</span>
-                )}
-                {form.expense_category === 'food_beverage' && (
-                  <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Log Purchase records</span>
-                )}
+              )}
+              {['food_beverage', 'packaging', 'operating_expenses'].includes(form.expense_category) && (
+                <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Update Inventory stock levels</span>
+              )}
+              {form.expense_category === 'food_beverage' && (
+                <span className="flex items-center gap-1"><ChevronRight className="w-3 h-3 text-[#A855F7]" /> Log Purchase records</span>
+              )}
               </div>
             </Card>
           )}
