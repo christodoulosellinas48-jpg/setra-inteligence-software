@@ -208,10 +208,11 @@ function ModuleCard({ mod, stat, onPinFull }) {
   return (
     <motion.div variants={itemVariants} whileHover={{ y: -2, transition: { duration: 0.15 } }}>
       <Card
-        className="group relative bg-[#0F0F1E]/80 border-white/[0.06] hover:border-[#7B3BFF]/40 transition-all duration-200 cursor-pointer overflow-hidden h-full"
+        className="group relative bg-[#0D0D1A]/90 border-[#7B3BFF]/10 hover:border-[#7B3BFF]/45 hover:shadow-[0_0_24px_rgba(123,59,255,0.18)] transition-all duration-200 cursor-pointer overflow-hidden h-full"
         onClick={() => navigate(mod.path)}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#7B3BFF]/0 to-[#7B3BFF]/0 group-hover:from-[#7B3BFF]/5 group-hover:to-[#A855F7]/3 transition-all duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#7B3BFF]/0 to-[#7B3BFF]/0 group-hover:from-[#7B3BFF]/7 group-hover:to-[#A855F7]/4 transition-all duration-300 pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#7B3BFF]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Pin button top-right */}
         {!isSacred && canEdit && (
@@ -232,7 +233,7 @@ function ModuleCard({ mod, stat, onPinFull }) {
 
         <div className="p-5 flex flex-col h-full">
           <div className="flex items-start justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-[#151528] border border-white/[0.06] flex items-center justify-center group-hover:border-[#7B3BFF]/30 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-[#0F0F20] border border-[#7B3BFF]/15 flex items-center justify-center group-hover:border-[#7B3BFF]/40 group-hover:shadow-[0_0_12px_rgba(123,59,255,0.2)] transition-all duration-200">
               <Icon className="w-4.5 h-4.5 text-[#C084FC]" style={{ width: '1.1rem', height: '1.1rem' }} />
             </div>
             <Badge className={`text-[10px] px-2 py-0.5 border ${mod.badgeColor}`}>
@@ -334,7 +335,7 @@ export default function OperationsHub() {
   const lowStockCount = inventoryItems.filter(i => i.current_stock <= i.reorder_threshold).length;
 
   return (
-    <div className="min-h-screen bg-[#0B0B12]">
+    <div className="min-h-screen bg-[#07070F]">
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
         {/* Page Header */}
@@ -374,9 +375,10 @@ export default function OperationsHub() {
           </div>
 
           {/* Hero banner */}
-          <div className="relative overflow-hidden rounded-2xl border border-[#7B3BFF]/20 bg-gradient-to-br from-[#0F0B1E] via-[#10102A] to-[#0B0B12] p-6">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-[#7B3BFF]/8 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-20 w-48 h-48 bg-[#A855F7]/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="relative overflow-hidden rounded-2xl border border-[#7B3BFF]/25 bg-gradient-to-br from-[#0D0920] via-[#0E0E28] to-[#07070F] p-6 shadow-[0_0_40px_rgba(123,59,255,0.12)]">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#7B3BFF]/12 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-20 w-56 h-56 bg-[#A855F7]/8 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 bg-[#6B2EE8]/5 rounded-full blur-3xl pointer-events-none" />
             <div className="relative flex flex-col gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">

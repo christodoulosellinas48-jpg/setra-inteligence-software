@@ -109,8 +109,8 @@ export default function SidebarLayout({ children }) {
         className={cn(
           'group/item relative flex items-center rounded-xl transition-all duration-200 cursor-pointer',
           active
-            ? 'bg-[#7B3BFF]/15 text-[#C084FC] shadow-[0_0_15px_rgba(123,59,255,0.3)]'
-            : 'text-slate-400 hover:text-white hover:bg-white/5',
+            ? 'bg-[#7B3BFF]/20 text-[#C084FC] shadow-[0_0_18px_rgba(123,59,255,0.35)] border border-[#7B3BFF]/25'
+            : 'text-slate-500 hover:text-white hover:bg-[#7B3BFF]/8 border border-transparent',
           collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
           isDragging && 'opacity-75 bg-[#7B3BFF]/10 border border-[#7B3BFF]/30'
         )}
@@ -155,7 +155,7 @@ export default function SidebarLayout({ children }) {
 
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen bg-[#0B0B12]/98 border-r border-white/5 backdrop-blur-2xl transition-all duration-300 z-50 flex flex-col shadow-[0_0_60px_rgba(123,59,255,0.2)]',
+          'fixed left-0 top-0 h-screen bg-[#07070F]/98 border-r border-[#7B3BFF]/10 backdrop-blur-2xl transition-all duration-300 z-50 flex flex-col shadow-[0_0_80px_rgba(123,59,255,0.25),inset_-1px_0_0_rgba(123,59,255,0.08)]',
           'md:translate-x-0',
           collapsed ? 'md:w-16' : 'md:w-64',
           mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0',
@@ -163,7 +163,7 @@ export default function SidebarLayout({ children }) {
         )}
       >
         {/* Logo */}
-        <div className="p-4 border-b border-white/5">
+        <div className="p-4 border-b border-[#7B3BFF]/10">
           {collapsed ? (
             <div className="w-10 h-10 mx-auto flex items-center justify-center group cursor-pointer">
               <img
@@ -225,14 +225,14 @@ export default function SidebarLayout({ children }) {
         </nav>
 
         {/* Bottom Items (Settings) */}
-        <div className="p-3 border-t border-white/5 space-y-1">
+        <div className="p-3 border-t border-[#7B3BFF]/10 space-y-1">
           {renderNavItem('ops_hub', 98)}
           <BottomLogoLink collapsed={collapsed} />
           {isOwner() && renderNavItem('settings', 99)}
         </div>
 
         {/* Collapse Toggle */}
-        <div className="p-3 border-t border-white/5">
+        <div className="p-3 border-t border-[#7B3BFF]/10">
           <Button
             variant="ghost"
             onClick={() => setCollapsed(!collapsed)}
@@ -257,7 +257,7 @@ export default function SidebarLayout({ children }) {
       <main className={cn('flex-1 transition-all duration-300 min-w-0', collapsed ? 'md:ml-16' : 'md:ml-64')}>
         {/* Top Header */}
         <header className={cn(
-          'fixed top-0 right-0 z-40 h-16 border-b border-white/5 bg-[#0B0B12]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_30px_rgba(123,59,255,0.1)]',
+          'fixed top-0 right-0 z-40 h-16 border-b border-[#7B3BFF]/10 bg-[#07070F]/95 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6 shadow-[0_4px_40px_rgba(123,59,255,0.15)]',
           'left-0',
           collapsed ? 'md:left-16' : 'md:left-64'
         )}>
