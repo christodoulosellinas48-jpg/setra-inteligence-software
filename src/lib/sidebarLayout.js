@@ -9,7 +9,7 @@
  */
 
 import {
-  LayoutDashboard, DollarSign, Receipt, UtensilsCrossed,
+  LayoutDashboard, TrendingUp, Receipt, UtensilsCrossed,
   Package, Store, Target, Lightbulb, Users, Plug, Zap, Settings
 } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export const ALL_MODULES = [
   { id: 'settings',    label: 'Settings',            icon: Settings,        path: '/Settings',          sacred: true,  sacredPosition: 'last', ownerOnly: true },
 
   // Pinnable
-  { id: 'money',       label: 'Money',               icon: DollarSign,      path: '/Money',             sacred: false },
+  { id: 'money',       label: 'Financial Data',      icon: TrendingUp,      path: '/Money',             sacred: false },
   { id: 'dishes',      label: 'Dishes',              icon: UtensilsCrossed, path: '/Dishes',            sacred: false },
   { id: 'stock',       label: 'Stock',               icon: Package,         path: '/Stock',             sacred: false },
   { id: 'suppliers',   label: 'Suppliers',           icon: Store,           path: '/Suppliers',         sacred: false },
