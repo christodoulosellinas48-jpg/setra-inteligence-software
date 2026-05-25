@@ -7,10 +7,10 @@ import AlertsPanel from '@/components/today/AlertsPanel.jsx';
 import PortfolioGlance from '@/components/today/PortfolioGlance.jsx';
 import ShortcutRow from '@/components/today/ShortcutRow.jsx';
 import { Sun } from 'lucide-react';
-import { usePageTitle } from '@/lib/usePageTitle';
+import usePageTitle from '@/lib/usePageTitle';
 
 export default function Today() {
-  usePageTitle('Today | Setra — Intelligence Platform');
+  usePageTitle();
 
   const { currentBusiness, businesses, switchBusiness } = useBusiness();
   const queryClient = useQueryClient();
