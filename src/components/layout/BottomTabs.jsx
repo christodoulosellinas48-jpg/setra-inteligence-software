@@ -1,9 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, DollarSign, Receipt, Zap } from 'lucide-react';
+import { LayoutDashboard, DollarSign, Receipt, Zap, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TABS = [
+  { label: 'Today',     icon: Sun,             path: '/Today' },
   { label: 'Dashboard', icon: LayoutDashboard, path: '/Dashboard' },
   { label: 'Money',     icon: DollarSign,      path: '/Money' },
   { label: 'Ops Hub',   icon: Zap,             path: '/OperationsHub' },

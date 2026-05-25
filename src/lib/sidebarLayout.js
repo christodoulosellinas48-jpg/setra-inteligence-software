@@ -10,12 +10,13 @@
 
 import {
   LayoutDashboard, TrendingUp, Receipt, UtensilsCrossed,
-  Package, Store, Target, Lightbulb, Users, Plug, Zap, Settings
+  Package, Store, Target, Lightbulb, Users, Plug, Zap, Settings, Sun
 } from 'lucide-react';
 
 export const ALL_MODULES = [
   // Sacred — always in sidebar, not pinnable
-  { id: 'dashboard',   label: 'Dashboard',          icon: LayoutDashboard, path: '/Dashboard',         sacred: true,  sacredPosition: 'first' },
+  { id: 'today',       label: 'Today',               icon: Sun,             path: '/Today',             sacred: true,  sacredPosition: 'first' },
+  { id: 'dashboard',   label: 'Dashboard',           icon: LayoutDashboard, path: '/Dashboard',         sacred: true,  sacredPosition: 'first' },
   { id: 'ops_hub',     label: 'Operations Hub',      icon: Zap,             path: '/OperationsHub',     sacred: true },
   { id: 'vat',         label: 'VAT & Bookkeeping',   icon: Receipt,         path: '/VATAndBookkeeping', sacred: 'vat_condition' },
   { id: 'integrations',label: 'Integrations',        icon: Plug,            path: '/Integrations',      sacred: false },
@@ -63,13 +64,14 @@ export const MAX_SIDEBAR_ITEMS = 10; // including sacred
  * Sacred items are injected around the pinned list.
  */
 export function buildSidebarItems(pinnedIds, isVatRegistered, isOwner) {
-  const sacred = ['dashboard', 'ops_hub'];
+  const sacred = ['today', 'dashboard', 'ops_hub'];
   if (isVatRegistered) sacred.push('vat');
 
   // pinned = user-ordered pinnable items (filter out any sacred ids that slipped in)
-  const pinned = (pinnedIds || []).filter(id => !['dashboard', 'ops_hub', 'settings'].includes(id));
+  const pinned = (pinnedIds || []).filter(id => !['today', 'dashboard', 'ops_hub', 'settings'].includes(id));
 
   const items = [
+    'today',
     'dashboard',
     ...pinned,
     ...(isOwner ? ['settings'] : []),

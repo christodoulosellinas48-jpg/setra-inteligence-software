@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, MessageSquare, Search,
   GripVertical, Pin, RotateCcw
 } from 'lucide-react';
+import AlertsBell from '@/components/today/AlertsBell';
 import { useBusiness } from '@/components/business/BusinessContext';
 import { useSidebarLayout } from '@/lib/SidebarLayoutContext';
 import { MODULE_MAP, buildSidebarItems } from '@/lib/sidebarLayout';
@@ -23,7 +24,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
-const SACRED_NON_DRAGGABLE = ['dashboard', 'ops_hub', 'settings'];
+const SACRED_NON_DRAGGABLE = ['today', 'dashboard', 'ops_hub', 'settings'];
 
 export default function SidebarLayout({ children }) {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function SidebarLayout({ children }) {
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const TAB_ROOTS = ['/Dashboard', '/Money', '/Expenses', '/Income', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll', '/MenuEngineering', '/RecipeManager', '/Dishes', '/Suppliers', '/Stock', '/Plan', '/Insights'];
+  const TAB_ROOTS = ['/Today', '/Dashboard', '/Money', '/Expenses', '/Income', '/OperationsHub', '/VATAndBookkeeping', '/Settings', '/Reports', '/Budgeting', '/Forecasting', '/Audit', '/Invitations', '/CreateBusiness', '/ConsolidatedView', '/Vendors', '/Integrations', '/MenuHeatmap', '/Payroll', '/MenuEngineering', '/RecipeManager', '/Dishes', '/Suppliers', '/Stock', '/Plan', '/Insights'];
   const isTopLevel = TAB_ROOTS.includes(location.pathname);
 
   // Build ordered sidebar item ids
@@ -183,7 +184,10 @@ export default function SidebarLayout({ children }) {
 
         {/* Nav */}
         <nav className="flex-1 p-3 overflow-y-auto flex flex-col gap-1">
-          {/* Dashboard — always first, not draggable */}
+          {/* Today — always first, not draggable */}
+          {renderNavItem('today', -1)}
+
+          {/* Dashboard — always second, not draggable */}
           {renderNavItem('dashboard', 0)}
 
           {/* Pinned middle items — draggable */}
@@ -286,6 +290,7 @@ export default function SidebarLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
+            <AlertsBell businessId={currentBusiness?.id} userId={undefined} />
             <BusinessSwitcherPill />
             <SmartUploadButton />
             <button

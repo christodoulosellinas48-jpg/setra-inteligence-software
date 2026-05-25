@@ -26,6 +26,8 @@ import Income from './pages/Income';
 import Duplicates from './pages/Duplicates';
 import Money from './pages/Money';
 import FinancialData from './pages/FinancialData';
+import Today from './pages/Today';
+import TodayAlerts from './pages/TodayAlerts';
 import Dishes from './pages/Dishes';
 import Suppliers from './pages/Suppliers';
 import Stock from './pages/Stock';
@@ -52,10 +54,10 @@ const AuthenticatedApp = () => {
     }
   }, [isLoadingAuth, authError]);
 
-  // Redirect Dashboard (/) to OperationsHub after login
+  // Redirect root (/) to Today after login
   React.useEffect(() => {
     if (!isLoadingAuth && !authError && location.pathname === '/') {
-      navigate('/OperationsHub', { replace: true });
+      navigate('/Today', { replace: true });
     }
   }, [isLoadingAuth, authError, location.pathname, navigate]);
 
@@ -134,6 +136,18 @@ const AuthenticatedApp = () => {
       <Route path="/Duplicates" element={
         <LayoutWrapper currentPageName="Duplicates">
           <Duplicates />
+        </LayoutWrapper>
+      } />
+
+      {/* ── Today (post-login landing) ── */}
+      <Route path="/Today" element={
+        <LayoutWrapper currentPageName="Today">
+          <Today />
+        </LayoutWrapper>
+      } />
+      <Route path="/Today/alerts" element={
+        <LayoutWrapper currentPageName="TodayAlerts">
+          <TodayAlerts />
         </LayoutWrapper>
       } />
 
