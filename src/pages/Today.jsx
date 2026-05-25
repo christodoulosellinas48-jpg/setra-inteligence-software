@@ -6,10 +6,11 @@ import BriefingCore from '@/components/today/BriefingCore.jsx';
 import AlertsPanel from '@/components/today/AlertsPanel.jsx';
 import PortfolioGlance from '@/components/today/PortfolioGlance.jsx';
 import ShortcutRow from '@/components/today/ShortcutRow.jsx';
+import HealthIndicator from '@/components/today/HealthIndicator.jsx';
 import usePageTitle from '@/lib/usePageTitle';
 import GuidedTour from '@/components/onboarding/GuidedTour.jsx';
+import { Sun } from 'lucide-react';
 
-// Sort alerts: time-sensitive first (vat_deadline, payroll_deadline), then by severity, then by date
 function sortAlerts(alerts) {
   const timeSensitiveTypes = ['vat_deadline', 'payroll_deadline'];
   const severityOrder = { high: 0, medium: 1, info: 2 };
@@ -26,7 +27,6 @@ function sortAlerts(alerts) {
 
 export default function Today() {
   usePageTitle();
-
   const { currentBusiness, businesses, switchBusiness } = useBusiness();
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
@@ -53,7 +53,7 @@ export default function Today() {
     enabled: !!bizId,
   });
 
-  const setupProgress = React.useMemo(() => {
+  const setupProgress = useMemo(() => {
     if (!currentBusiness) return 0;
     let count = 0;
     if (currentBusiness.name && currentBusiness.industry_group) count++;
@@ -86,18 +86,34 @@ export default function Today() {
     queryClient.invalidateQueries({ queryKey: ['members-today'] });
   }, [switchBusiness, queryClient]);
 
+  // Derive a simple health score from alerts
+  const healthScore = useMemo(() => {
+    if (!allAlerts.length) return 92;
+    const highCount = allAlerts.filter(a => a.severity === 'high').length;
+    const medCount = allAlerts.filter(a => a.severity === 'medium').length;
+    const score = Math.max(30, 100 - (highCount * 18) - (medCount * 7));
+    return score;
+  }, [allAlerts]);
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0B12]">
       {/* Page Header */}
-      <div className="border-b border-slate-200 bg-white/90 backdrop-blur-xl sticky top-16 z-30">
+      <div className="border-b border-white/[0.06] bg-[#0B0B12]/95 backdrop-blur-xl sticky top-16 z-30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-base font-bold text-slate-800">Today</h1>
-              <p className="text-xs text-slate-400">
-                {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/15 border border-amber-500/25 flex items-center justify-center">
+                <Sun className="w-4 h-4 text-amber-400" />
+              </div>
+              <div>
+                <h1 className="text-base font-bold text-white">Today</h1>
+                <p className="text-xs text-slate-500">
+                  {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
             </div>
+            {/* Health indicator in header */}
+            <HealthIndicator score={healthScore} />
           </div>
         </div>
       </div>
@@ -110,6 +126,7 @@ export default function Today() {
             user={user}
             business={currentBusiness}
             setupProgress={setupProgress}
+            alerts={allAlerts}
           />
         </div>
 
