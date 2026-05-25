@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 
 export default function LogoLink({ className = "h-10" }) {
   return (
-    <Link to={createPageUrl('Home')} className="flex items-center gap-3 group">
+    <Link to="/Today" className="flex items-center gap-3 group">
       <img 
         src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png"
         alt="SETRA"
