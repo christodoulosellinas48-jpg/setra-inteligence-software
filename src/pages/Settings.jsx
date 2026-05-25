@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   ArrowLeft, Settings as SettingsIcon, Building2, Users, Trash2, Loader2, LogOut, FileSpreadsheet,
@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '@/components/business/BusinessContext';
 import TeamManagement from '@/components/business/TeamManagement';
+import BillingSection from '@/components/settings/BillingSection';
+import NotificationsSection from '@/components/settings/NotificationsSection';
+import SecuritySection from '@/components/settings/SecuritySection';
 
 const COUNTRIES = [
   { value: 'CY', label: '🇨🇾 Cyprus', vat: 19, corporateTax: 12.5 },
@@ -47,6 +50,8 @@ function SettingsContent() {
   const [deleteBusinessConfirm, setDeleteBusinessConfirm] = useState('');
   const [deleteAccountConfirm, setDeleteAccountConfirm] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [showDeleteBusiness, setShowDeleteBusiness] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   // Group state
   const [groups, setGroups] = useState([]);
@@ -179,7 +184,7 @@ function SettingsContent() {
   };
 
   const handleDeleteAccount = async () => {
-    if (deleteAccountConfirm !== 'DELETE MY ACCOUNT') return;
+    if (deleteAccountConfirm !== 'DELETE') return;
 
     setDeletingAccount(true);
     const ownedBusinesses = await base44.entities.Business.filter({ owner_email: user.email });
@@ -493,23 +498,21 @@ function SettingsContent() {
           </Card>
         )}
 
-        {/* Billing (Placeholder) */}
+        {/* Billing */}
         <Card className="bg-[#151528]/80 border-white/5 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Subscription</h3>
-              <p className="text-xs text-slate-500">Manage your Setra plan</p>
+              <h3 className="text-lg font-semibold text-white">Billing & Subscription</h3>
+              <p className="text-xs text-slate-500">Manage your Setra plan and payment method</p>
             </div>
           </div>
-          <div className="p-4 bg-white/[0.03] rounded-xl">
-            <p className="text-slate-400 text-sm">Billing management coming soon. Contact hello@setra.app to manage your subscription.</p>
-          </div>
+          <BillingSection />
         </Card>
 
-        {/* Security (Placeholder) */}
+        {/* Security */}
         <Card className="bg-[#151528]/80 border-white/5 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
@@ -520,14 +523,10 @@ function SettingsContent() {
               <p className="text-xs text-slate-500">Protect your account</p>
             </div>
           </div>
-          <div className="space-y-2 text-sm">
-            <p className="text-slate-400">🔐 Two-factor authentication coming soon</p>
-            <p className="text-slate-400">📜 Login history and active sessions coming soon</p>
-            <p className="text-slate-400">🔗 Connected providers — manage OAuth connections coming soon</p>
-          </div>
+          <SecuritySection />
         </Card>
 
-        {/* Notifications (Placeholder) */}
+        {/* Notifications */}
         <Card className="bg-[#151528]/80 border-white/5 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
@@ -538,10 +537,7 @@ function SettingsContent() {
               <p className="text-xs text-slate-500">Configure alerts and digests</p>
             </div>
           </div>
-          <div className="space-y-2 text-sm">
-            <p className="text-slate-400">📧 Email digests, real-time alerts, and delivery preferences coming soon</p>
-            <p className="text-slate-400">Get weekly summaries, margin alerts, VAT deadline reminders, and more.</p>
-          </div>
+          <NotificationsSection user={user} businessId={currentBusiness?.id} />
         </Card>
 
         {/* Accountant Access (Placeholder) */}
@@ -599,44 +595,42 @@ function SettingsContent() {
             <p className="text-slate-400 text-sm mb-4">
               Permanently remove <strong>{currentBusiness.name}</strong> and all its data (invoices, budgets, reports, audit history).
             </p>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <Dialog open={showDeleteBusiness} onOpenChange={setShowDeleteBusiness}>
+              <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="border-rose-500/50 text-rose-400 hover:bg-rose-500/10">
                   <Trash2 className="w-4 h-4 mr-2" /> Delete this business
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-[#1A1A30] border-rose-500/30">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-white">Delete "{currentBusiness.name}"?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-slate-400">
-                    This will permanently delete all invoices, budgets, reports, and team access for this business. This cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="space-y-3 py-4">
-                  <p className="text-sm text-slate-300">
-                    Type <strong>{currentBusiness.name}</strong> to confirm:
-                  </p>
-                  <Input
-                    value={deleteBusinessConfirm}
-                    onChange={(e) => setDeleteBusinessConfirm(e.target.value)}
-                    placeholder={currentBusiness.name}
-                    className="bg-[#0B0B12] border-white/10 text-white"
-                  />
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-transparent border-white/10 text-slate-300 hover:bg-white/5">
+              </DialogTrigger>
+              <DialogContent className="bg-[#1A1A30] border-rose-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Delete "{currentBusiness.name}"?</DialogTitle>
+                </DialogHeader>
+                <p className="text-slate-400 text-sm">
+                  This will permanently delete <strong>{currentBusiness.name}</strong> and all its data (invoices, budgets, reports, audit history). This cannot be undone.
+                </p>
+                <p className="text-sm text-slate-300 mt-4">
+                  To confirm, type the business name below:
+                </p>
+                <Input
+                  value={deleteBusinessConfirm}
+                  onChange={(e) => setDeleteBusinessConfirm(e.target.value)}
+                  placeholder={currentBusiness.name}
+                  className="bg-[#0B0B12] border-white/10 text-white"
+                />
+                <div className="flex gap-2 justify-end mt-6">
+                  <Button variant="ghost" onClick={() => { setShowDeleteBusiness(false); setDeleteBusinessConfirm(''); }} className="text-slate-400">
                     Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteBusiness}
+                  </Button>
+                  <Button
+                    onClick={() => { handleDeleteBusiness(); setShowDeleteBusiness(false); }}
                     disabled={deleteBusinessConfirm !== currentBusiness.name}
                     className="bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50"
                   >
                     Delete permanently
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </Card>
         )}
 
@@ -654,45 +648,43 @@ function SettingsContent() {
           <p className="text-slate-400 text-sm mb-4">
             This will delete your account ({user?.email}), all {businesses?.length || 1} business(es) you own, and every piece of associated data. This cannot be reversed.
           </p>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+          <Dialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
+            <DialogTrigger asChild>
               <Button className="bg-rose-600 hover:bg-rose-700 text-white" disabled={deletingAccount}>
                 {deletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserX className="w-4 h-4 mr-2" />}
                 Delete my account
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-[#1A1A30] border-rose-500/30">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">Delete your entire account?</AlertDialogTitle>
-                <AlertDialogDescription className="text-slate-400">
-                  This will permanently delete your account, all {businesses?.length || 1} business(es), and all associated data. You will be logged out immediately.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="space-y-3 py-4">
-                <p className="text-sm text-slate-300">
-                  Type <strong>DELETE MY ACCOUNT</strong> to confirm:
-                </p>
-                <Input
-                  value={deleteAccountConfirm}
-                  onChange={(e) => setDeleteAccountConfirm(e.target.value)}
-                  placeholder="DELETE MY ACCOUNT"
-                  className="bg-[#0B0B12] border-white/10 text-white font-mono"
-                />
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="bg-transparent border-white/10 text-slate-300 hover:bg-white/5">
+            </DialogTrigger>
+            <DialogContent className="bg-[#1A1A30] border-rose-500/30">
+              <DialogHeader>
+                <DialogTitle className="text-white">Delete your entire account?</DialogTitle>
+              </DialogHeader>
+              <p className="text-slate-400 text-sm">
+                This will permanently delete your account, all {businesses?.length || 1} business(es), and all associated data. You will be logged out immediately.
+              </p>
+              <p className="text-sm text-slate-300 mt-4">
+                To confirm, type <strong>DELETE</strong> below (case-sensitive):
+              </p>
+              <Input
+                value={deleteAccountConfirm}
+                onChange={(e) => setDeleteAccountConfirm(e.target.value)}
+                placeholder="DELETE"
+                className="bg-[#0B0B12] border-white/10 text-white font-mono"
+              />
+              <div className="flex gap-2 justify-end mt-6">
+                <Button variant="ghost" onClick={() => { setShowDeleteAccount(false); setDeleteAccountConfirm(''); }} className="text-slate-400">
                   Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteAccount}
-                  disabled={deleteAccountConfirm !== 'DELETE MY ACCOUNT'}
+                </Button>
+                <Button
+                  onClick={() => { handleDeleteAccount(); setShowDeleteAccount(false); }}
+                  disabled={deleteAccountConfirm !== 'DELETE'}
                   className="bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-50"
                 >
                   Permanently delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </Card>
       </main>
     </div>

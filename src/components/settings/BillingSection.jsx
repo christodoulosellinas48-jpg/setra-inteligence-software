@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CreditCard, Check, ChevronDown, ChevronUp, ExternalLink, Download, Loader2, Zap } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { CreditCard, Check, ChevronDown, ChevronUp, ExternalLink, Download, Loader2, Zap, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const PLANS = [
@@ -33,18 +34,42 @@ function PlanSwitcherModal({ current, onClose }) {
   const [billing, setBilling] = useState('monthly');
   const [selected, setSelected] = useState(current);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleConfirm = async () => {
     if (selected === current) { onClose(); return; }
+    
+    // Check if running in iframe (published app warning)
+    if (window.self !== window.top) {
+      setError('Checkout only works from a published app. Open in a new tab to continue.');
+      return;
+    }
+
     setLoading(true);
-    // In production: call a Stripe Checkout backend function here
-    // await base44.functions.invoke('createStripeCheckout', { plan: selected, billing })
-    setTimeout(() => { setLoading(false); onClose(); }, 1500);
+    setError('');
+    try {
+      const res = await base44.functions.invoke('createStripeCheckout', { plan: selected, billing });
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        setError('Failed to create checkout session');
+      }
+    } catch (err) {
+      setError(err.message || 'Checkout error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-[#151528] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl p-6">
+      <div className="bg-[#151528] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+        {error && (
+          <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/25 rounded-lg flex gap-2 items-start">
+            <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-rose-300">{error}</p>
+          </div>
+        )}
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-white font-semibold text-lg">Choose a plan</h3>
           <div className="flex items-center gap-1 bg-white/[0.05] rounded-xl p-1">
