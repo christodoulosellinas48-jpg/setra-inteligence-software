@@ -74,6 +74,21 @@ export default function ConsolidatedView() {
     staleTime: 5 * 60 * 1000
   });
 
+  // Fetch latest financial snapshot per business to get real revenue
+  const { data: allSnapshots = [] } = useQuery({
+    queryKey: ['allLatestSnapshots', user?.email],
+    queryFn: async () => {
+      const ids = [...ownedBusinesses, ...memberBusinesses].map(b => b.id);
+      if (ids.length === 0) return [];
+      const results = await Promise.all(
+        ids.map(id => base44.entities.FinancialSnapshot.filter({ business_id: id }, '-period_start', 1))
+      );
+      return results.flat();
+    },
+    enabled: ownedBusinesses.length > 0,
+    staleTime: 0,
+  });
+
   const handleGroupSaved = () => {
     refetchBusinesses();
     refetchGroups();
@@ -105,9 +120,13 @@ export default function ConsolidatedView() {
     const businessPerformance = [];
 
     filteredBusinesses.forEach(business => {
-      const financials = calculateFinancials(business, business.industry_group || business.business_type);
-      // Use actual stored monthly_revenue — no annualisation multiplier
-      const revenue = business.monthly_revenue || 0;
+      // Use the most recent snapshot revenue if available, fall back to business field
+      const latestSnapshot = allSnapshots.find(s => s.business_id === business.id);
+      const effectiveRevenue = latestSnapshot?.monthly_revenue ?? business.monthly_revenue;
+      const businessWithRevenue = effectiveRevenue !== undefined ? { ...business, monthly_revenue: effectiveRevenue } : business;
+
+      const financials = calculateFinancials(businessWithRevenue, business.industry_group || business.business_type);
+      const revenue = effectiveRevenue || 0;
       const profit = financials ? financials.netProfit : null;
       const margin = financials ? financials.profitMargin : null;
 
@@ -117,7 +136,7 @@ export default function ConsolidatedView() {
       const industryKey = business.industry_group || business.business_type;
       // Determine what's missing for the tooltip — only flag if truly not set (null/undefined), not if set to 0
       const missingFields = [];
-      if (business.monthly_revenue == null || business.monthly_revenue === undefined) missingFields.push('Monthly revenue');
+      if (effectiveRevenue == null) missingFields.push('Monthly revenue');
       if (business.purchases_food_bev == null || business.purchases_food_bev === undefined) missingFields.push('Food & beverage costs');
       if (business.staff_costs == null || business.staff_costs === undefined) missingFields.push('Staff costs');
       if (business.rent_fixed_costs == null || business.rent_fixed_costs === undefined) missingFields.push('Rent & fixed costs');
@@ -158,7 +177,7 @@ export default function ConsolidatedView() {
       businessPerformance: businessPerformance.sort((a, b) => (b.profit ?? -Infinity) - (a.profit ?? -Infinity)),
       dateRangeLabel: DATE_RANGE_OPTIONS.find(o => o.value === dateRange)?.label || 'This month',
     };
-  }, [filteredBusinesses, groups, dateRange]);
+  }, [filteredBusinesses, groups, dateRange, allSnapshots]);
 
   const handleViewBusiness = (business) => {
     if (business.id) {
