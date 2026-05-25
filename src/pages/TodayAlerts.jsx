@@ -5,7 +5,7 @@ import { useBusiness } from '@/components/business/BusinessContext';
 import { Bell, AlertTriangle, Info, ArrowRight, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { usePageTitle } from '@/lib/usePageTitle';
+import usePageTitle from '@/lib/usePageTitle';
 
 const SEVERITY_OPTS = ['all', 'high', 'medium', 'info'];
 const TYPE_OPTS = [
@@ -26,7 +26,7 @@ function SeverityIcon({ severity }) {
 }
 
 export default function TodayAlerts() {
-  usePageTitle('Alerts | Setra');
+  usePageTitle();
   const { currentBusiness } = useBusiness();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
