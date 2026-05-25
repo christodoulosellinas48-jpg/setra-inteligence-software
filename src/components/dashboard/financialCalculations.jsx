@@ -69,11 +69,12 @@ export const BENCHMARKS = {
 // "Complete enough" = revenue is set. Without revenue, ratios and margins
 // are mathematically undefined and the dashboard would show misleading KPIs.
 export function hasData(data) {
-  return (data?.monthly_revenue || 0) > 0;
+  // Only return false when revenue is truly absent (null/undefined), not when it's legitimately 0
+  return data?.monthly_revenue != null;
 }
 
 export function calculateFinancials(data, businessType) {
-  // Guard: don't calculate when revenue is missing
+  // Guard: don't calculate when revenue has never been set
   if (!hasData(data)) return null;
 
   const benchmarks = BENCHMARKS[businessType] || BENCHMARKS.coffee_shop;

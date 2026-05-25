@@ -115,12 +115,12 @@ export default function ConsolidatedView() {
       if (profit !== null) totalProfit += profit;
 
       const industryKey = business.industry_group || business.business_type;
-      // Determine what's missing for the tooltip
+      // Determine what's missing for the tooltip — only flag if truly not set (null/undefined), not if set to 0
       const missingFields = [];
-      if (!business.monthly_revenue) missingFields.push('Monthly revenue');
-      if (!business.purchases_food_bev) missingFields.push('Food & beverage costs');
-      if (!business.staff_costs) missingFields.push('Staff costs');
-      if (!business.rent_fixed_costs) missingFields.push('Rent & fixed costs');
+      if (business.monthly_revenue == null || business.monthly_revenue === undefined) missingFields.push('Monthly revenue');
+      if (business.purchases_food_bev == null || business.purchases_food_bev === undefined) missingFields.push('Food & beverage costs');
+      if (business.staff_costs == null || business.staff_costs === undefined) missingFields.push('Staff costs');
+      if (business.rent_fixed_costs == null || business.rent_fixed_costs === undefined) missingFields.push('Rent & fixed costs');
 
       businessPerformance.push({
         name: business.name,
