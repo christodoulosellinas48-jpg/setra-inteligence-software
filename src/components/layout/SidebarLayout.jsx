@@ -95,9 +95,9 @@ export default function SidebarLayout({ children }) {
           )}
           onClick={() => navigate(mod.path)}
         >
-          <Icon className={cn('w-5 h-5 flex-shrink-0 transition-all group-hover/item:scale-110', !collapsed && 'mr-2.5')} />
+          <Icon className={cn('w-5 h-5 flex-shrink-0 transition-all duration-300 group-hover/item:scale-125 group-hover/item:text-[#C084FC]', !collapsed && 'mr-2.5', active && 'text-[#C084FC] drop-shadow-[0_0_8px_rgba(192,132,252,0.5)]')} />
           {!collapsed && (
-            <span className="flex-1 text-sm font-semibold truncate group-hover/item:text-white transition-all">{mod.label}</span>
+            <span className={cn('flex-1 text-sm font-bold truncate transition-all duration-300', active && 'text-[#C084FC] drop-shadow-[0_0_6px_rgba(192,132,252,0.4)]', 'group-hover/item:text-white group-hover/item:drop-shadow-[0_0_6px_rgba(192,132,252,0.6)]')}>{mod.label}</span>
           )}
         </div>
       );
@@ -121,16 +121,16 @@ export default function SidebarLayout({ children }) {
           <span
             {...dragHandleProps}
             onClick={e => e.stopPropagation()}
-            className="opacity-0 group-hover/item:opacity-100 mr-1 cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 flex-shrink-0"
+            className="opacity-0 group-hover/item:opacity-100 mr-1 cursor-grab active:cursor-grabbing text-[#7B3BFF]/60 hover:text-[#A855F7] flex-shrink-0 transition-all duration-200 group-hover/item:scale-110"
           >
             <GripVertical className="w-3.5 h-3.5" />
           </span>
         )}
 
-        <Icon className={cn('w-5 h-5 flex-shrink-0 transition-all group-hover/item:scale-110', !collapsed && 'mr-2.5')} />
+        <Icon className={cn('w-5 h-5 flex-shrink-0 transition-all duration-300 group-hover/item:scale-125 group-hover/item:text-[#C084FC]', !collapsed && 'mr-2.5', active && 'text-[#C084FC] drop-shadow-[0_0_8px_rgba(192,132,252,0.5)]')} />
 
         {!collapsed && (
-          <span className="flex-1 text-sm font-medium truncate">{mod.label}</span>
+          <span className={cn('flex-1 text-sm font-bold truncate transition-all duration-300', active && 'text-[#C084FC] drop-shadow-[0_0_6px_rgba(192,132,252,0.4)]', 'group-hover/item:text-white group-hover/item:drop-shadow-[0_0_6px_rgba(192,132,252,0.6)]')}>{mod.label}</span>
         )}
 
         {/* Unpin button — only on pinnable, non-sacred items */}
@@ -138,7 +138,7 @@ export default function SidebarLayout({ children }) {
           <button
             onClick={(e) => handleUnpin(e, id)}
             title={`Unpin from sidebar`}
-            className="opacity-0 group-hover/item:opacity-100 ml-1 flex-shrink-0 text-slate-600 hover:text-slate-300 transition-opacity"
+            className="opacity-0 group-hover/item:opacity-100 ml-1 flex-shrink-0 text-[#7B3BFF]/60 hover:text-[#C084FC] transition-all duration-200 group-hover/item:scale-110"
           >
             <Pin className="w-3 h-3 fill-[#A855F7]" />
           </button>
