@@ -7,6 +7,14 @@ import { useBusiness } from '@/components/business/BusinessContext';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
+import SavedViews from '@/components/shared/SavedViews';
+
+const FINANCIAL_DEFAULT_VIEWS = [
+  { name: 'This month',          filters: { period: 'month' } },
+  { name: 'This quarter',        filters: { period: 'quarter' } },
+  { name: 'Last 12 months',      filters: { period: 'year' } },
+  { name: 'Food & Beverage only',filters: { category: 'food_beverage' } },
+];
 
 const TABS = [
   { id: 'expenses', label: 'Out — Expenses', icon: TrendingDown },
@@ -67,7 +75,8 @@ export default function FinancialData() {
   }, []);
 
   const location = useLocation();
-  const { currentBusiness } = useBusiness();
+  const { currentBusiness, user } = useBusiness();
+  const [activeFilters, setActiveFilters] = useState({});
 
   const getInitialTab = () => {
     const tab = new URLSearchParams(location.search).get('tab');
@@ -88,7 +97,19 @@ export default function FinancialData() {
     <div className="min-h-screen bg-[#0B0B12]">
       {/* Tab bar */}
       <div className="border-b border-white/5 bg-[#0B0B12]/95 sticky top-16 z-30">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {/* Saved views row */}
+          <div className="pt-3 pb-1">
+            <SavedViews
+              pageKey="financial_data"
+              currentFilters={activeFilters}
+              onApplyView={setActiveFilters}
+              defaultViews={FINANCIAL_DEFAULT_VIEWS}
+              hasActiveFilters={Object.keys(activeFilters).length > 0}
+              userId={user?.id}
+              businessId={currentBusiness?.id}
+            />
+          </div>
           <div className="flex items-center gap-1 py-1 overflow-x-auto">
             <div className="flex items-center gap-2 mr-4 shrink-0">
               <DollarSign className="w-4 h-4 text-[#C084FC]" />

@@ -17,13 +17,15 @@ import { useSidebarLayout } from '@/lib/SidebarLayoutContext';
 import { MODULE_MAP, buildSidebarItems } from '@/lib/sidebarLayout';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
 import SmartUploadButton from '@/components/layout/SmartUploadButton';
-import QuickActionChips from '@/components/layout/QuickActionChips';
 import CommandPalette from '@/components/CommandPalette';
 import SidebarResetModal from '@/components/sidebar/SidebarResetModal';
 import { useCommandPalette } from '@/lib/CommandPaletteContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import HelpDrawer from '@/components/layout/HelpDrawer';
+import QuickActionChips from '@/components/layout/QuickActionChips';
+import NextBestAction from '@/components/layout/NextBestAction';
 
 const SACRED_NON_DRAGGABLE = ['today', 'dashboard', 'ops_hub', 'settings'];
 
@@ -35,7 +37,7 @@ export default function SidebarLayout({ children }) {
   const [showResetModal, setShowResetModal] = useState(false);
   useRealtimeSync();
 
-  const { hasPermission, isOwner, currentBusiness, loading: bizLoading } = useBusiness();
+  const { hasPermission, isOwner, currentBusiness } = useBusiness();
   const { setOpen: openPalette } = useCommandPalette();
   const { pinnedIds, reorder, unpin, canEdit, vatLocked, contextGroupName } = useSidebarLayout();
 
@@ -73,11 +75,12 @@ export default function SidebarLayout({ children }) {
     const mod = MODULE_MAP[id];
     if (!mod) return null;
 
-    // Settings: only for owners — hide once biz data is confirmed loaded and user is NOT owner
-    if (id === 'settings' && !bizLoading && !isOwner()) return null;
-    // VAT: hide only once confirmed non-owner AND no permission
-    if (id === 'vat' && !bizLoading && !hasPermission('manage_bookkeeping') && !isOwner()) return null;
+    // Settings: only for owners
+    if (id === 'settings' && !isOwner()) return null;
+    // VAT: check permission
+    if (id === 'vat' && !hasPermission('manage_bookkeeping') && !isOwner()) return null;
 
+    const dataTour = id === 'vat' ? 'vat-sidebar' : undefined;
     const Icon = mod.icon;
     const active = isActive(mod.path);
     const isSacred = SACRED_NON_DRAGGABLE.includes(id) || (id === 'vat' && vatLocked);
@@ -88,6 +91,7 @@ export default function SidebarLayout({ children }) {
       return (
         <div
           key={id}
+          data-tour={dataTour}
           className={cn(
             'group/item relative flex items-center rounded-xl transition-all duration-300 cursor-pointer border overflow-hidden',
             active
@@ -108,6 +112,7 @@ export default function SidebarLayout({ children }) {
     return (
       <div
         key={id}
+        data-tour={dataTour}
         className={cn(
           'group/item relative flex items-center rounded-xl transition-all duration-300 cursor-pointer overflow-hidden border',
           active
@@ -290,15 +295,11 @@ export default function SidebarLayout({ children }) {
             )}
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto" data-tour="topbar">
             <AlertsBell businessId={currentBusiness?.id} userId={undefined} />
-            {bizLoading ? (
-              <div className="w-28 h-8 rounded-xl bg-white/[0.05] animate-pulse" />
-            ) : (
-              <BusinessSwitcherPill />
-            )}
-            <QuickActionChips />
+            <BusinessSwitcherPill />
             <SmartUploadButton />
+            <QuickActionChips />
             <button
               onClick={() => navigate('/Dashboard')}
               title="Ask Setra"
@@ -307,6 +308,7 @@ export default function SidebarLayout({ children }) {
               <MessageSquare className="w-4 h-4" />
               <span className="hidden sm:inline">Ask Setra</span>
             </button>
+            <HelpDrawer />
             <UserMenu />
           </div>
         </header>
@@ -316,6 +318,7 @@ export default function SidebarLayout({ children }) {
         </div>
       </main>
 
+      <NextBestAction />
       <BottomTabs />
       <CommandPalette />
 

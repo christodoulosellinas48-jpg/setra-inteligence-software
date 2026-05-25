@@ -8,6 +8,7 @@ import PortfolioGlance from '@/components/today/PortfolioGlance.jsx';
 import ShortcutRow from '@/components/today/ShortcutRow.jsx';
 import { Sun } from 'lucide-react';
 import usePageTitle from '@/lib/usePageTitle';
+import GuidedTour from '@/components/onboarding/GuidedTour.jsx';
 
 export default function Today() {
   usePageTitle();
@@ -100,22 +101,28 @@ export default function Today() {
         </div>
       </div>
 
+      <GuidedTour user={user} />
+
       {/* Main content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-4">
         {/* Widget 1: Briefing Core */}
-        <BriefingCore
-          user={user}
-          business={currentBusiness}
-          setupProgress={setupProgress}
-        />
+        <div data-tour="briefing">
+          <BriefingCore
+            user={user}
+            business={currentBusiness}
+            setupProgress={setupProgress}
+          />
+        </div>
 
         {/* Widget 2: Alerts Panel */}
-        <AlertsPanel
-          alerts={allAlerts}
-          totalCount={allAlerts.length}
-          onDismiss={handleDismiss}
-          loading={alertsLoading}
-        />
+        <div data-tour="checklist">
+          <AlertsPanel
+            alerts={allAlerts}
+            totalCount={allAlerts.length}
+            onDismiss={handleDismiss}
+            loading={alertsLoading}
+          />
+        </div>
 
         {/* Widget 3: Portfolio Glance (2+ businesses only) */}
         <PortfolioGlance

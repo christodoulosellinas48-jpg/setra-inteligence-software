@@ -4,13 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { Upload, X, CheckCircle, AlertCircle, FileText, Receipt, Users, BookOpen, Building2, ChevronDown, TrendingUp, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const DOC_TYPES = {
-  invoice:       { label: 'Invoice',       icon: Receipt,     color: 'text-blue-400',    route: '/Expenses',           destination: 'Expenses' },
+  invoice:       { label: 'Invoice',       icon: Receipt,     color: 'text-blue-400',    route: '/FinancialData',      destination: 'Financial Data' },
   payslip:       { label: 'Payslip',       icon: Users,       color: 'text-emerald-400', route: '/Payroll',            destination: 'Payroll' },
   menu:          { label: 'Menu',          icon: BookOpen,    color: 'text-orange-400',  route: '/MenuEngineering',    destination: 'Menu Engineering' },
-  receipt:       { label: 'Receipt',       icon: Receipt,     color: 'text-yellow-400',  route: '/Expenses',           destination: 'Expenses' },
-  income_report: { label: 'Income Report', icon: TrendingUp,  color: 'text-violet-400',  route: '/Reports',            destination: 'Reports' },
+  receipt:       { label: 'Receipt',       icon: Receipt,     color: 'text-yellow-400',  route: '/FinancialData',      destination: 'Financial Data' },
+  income_report: { label: 'Income Report', icon: TrendingUp,  color: 'text-violet-400',  route: '/FinancialData?tab=income', destination: 'Income' },
   document:      { label: 'Document',      icon: FileText,    color: 'text-slate-400',   route: '/VATAndBookkeeping',  destination: 'Bookkeeping Inbox' },
 };
 
@@ -209,11 +210,8 @@ export default function SmartUploadButton() {
   const errorCount = queue.filter(q => q.status === 'error').length;
   const totalCount = queue.length;
 
-  // Primary route — invoices/receipts go to FinancialData with highlight
-  const invoiceDoneItems = queue.filter(q => q.status === 'done' && (q.result?.docType === 'invoice' || q.result?.docType === 'receipt'));
-  const primaryRoute = invoiceDoneItems.length > 0
-    ? '/FinancialData?tab=out'
-    : (queue.find(q => q.result?.typeConfig?.route)?.result?.typeConfig?.route || '/Expenses');
+  // Primary route to navigate to after completion
+  const primaryRoute = queue.find(q => q.result?.typeConfig?.route)?.result?.typeConfig?.route || '/Expenses';
 
   const isIdle = queue.length === 0;
 
@@ -385,23 +383,25 @@ export default function SmartUploadButton() {
                   })}
                 </div>
 
-                {/* Done CTA */}
+                {/* Done CTA — auto-route invoices */}
                 {allDone && (
                   <div className="pt-2 flex gap-2">
                     <button
                       onClick={() => {
+                        const invoiceDone = queue.find(q => q.status === 'done' && (q.result?.docType === 'invoice' || q.result?.docType === 'receipt'));
+                        const supplier = invoiceDone?.result?.classification?.supplier_name;
+                        const amount = invoiceDone?.result?.classification?.invoice_total;
+                        if (invoiceDone) {
+                          const extra = doneCount > 1 ? ` +${doneCount - 1} more added` : '';
+                          toast.success(`${supplier ? `Invoice from ${supplier}` : 'Invoice'} added${amount ? ` · €${amount}` : ''}${extra}`, { duration: 2000 });
+                        }
+                        navigate(primaryRoute);
                         setOpen(false);
                         reset();
-                        navigate(primaryRoute);
                       }}
                       className="flex-1 px-4 py-2 rounded-xl bg-[#7B3BFF] hover:bg-[#6d2ff7] text-white text-sm font-medium transition-colors"
                     >
-                      {invoiceDoneItems.length > 0
-                        ? (invoiceDoneItems.length === 1
-                            ? `View invoice in Financial Data →`
-                            : `View ${invoiceDoneItems.length} invoices in Financial Data →`)
-                        : (doneCount === 1 ? `View in ${queue.find(q => q.status === 'done')?.result?.typeConfig?.destination || 'app'} →` : `View results →`)
-                      }
+                      {doneCount === 1 ? `View in ${queue.find(q => q.status === 'done')?.result?.typeConfig?.destination || 'app'} →` : `View results →`}
                     </button>
                     <button
                       onClick={() => { reset(); }}

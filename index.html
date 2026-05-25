@@ -14,81 +14,31 @@
     <meta name="twitter:title" content="Setra — Financial Intelligence for Hospitality" />
     <meta name="twitter:description" content="The financial OS for independent restaurants. See your real profitability, fix what's bleeding, and grow with confidence." />
     <meta name="twitter:card" content="summary_large_image" />
-    <style>
-      #setra-splash {
-        position: fixed;
-        inset: 0;
-        background: #07070F;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        z-index: 9999;
-        transition: opacity 0.2s ease;
-      }
-      #setra-splash.fade-out {
-        opacity: 0;
-        pointer-events: none;
-      }
-      #setra-splash img {
-        width: 56px;
-        height: 56px;
-        filter: drop-shadow(0 0 16px rgba(123,59,255,0.5));
-      }
-      #setra-splash .wordmark {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: rgba(148,130,204,0.7);
-      }
-      #setra-splash .progress-wrap {
-        width: 120px;
-        height: 3px;
-        background: rgba(123,59,255,0.15);
-        border-radius: 99px;
-        overflow: hidden;
-        margin-top: 4px;
-      }
-      #setra-splash .progress-bar {
-        height: 100%;
-        width: 40%;
-        background: linear-gradient(90deg, #7B3BFF, #C084FC);
-        border-radius: 99px;
-        animation: splash-pulse 1.4s ease-in-out infinite;
-      }
-      @keyframes splash-pulse {
-        0%   { transform: translateX(-100%); opacity: 0.6; }
-        50%  { opacity: 1; }
-        100% { transform: translateX(350%); opacity: 0.6; }
-      }
-    </style>
   </head>
   <body>
-    <!-- Branded splash — renders before any JS loads -->
-    <div id="setra-splash">
-      <img src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png" alt="Setra" />
-      <div class="wordmark">Intelligence Platform</div>
-      <div class="progress-wrap"><div class="progress-bar"></div></div>
+    <!-- Branded splash — renders before JS bundle loads -->
+    <div id="setra-splash" style="position:fixed;inset:0;z-index:99999;background:#07070F;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity 0.2s ease;">
+      <img src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png" alt="Setra" style="width:64px;height:64px;filter:drop-shadow(0 0 20px rgba(123,59,255,0.6));" />
+      <div style="text-align:center;">
+        <div style="color:#fff;font-size:20px;font-weight:700;letter-spacing:0.05em;font-family:system-ui,sans-serif;">SETRA</div>
+        <div style="color:#6B7280;font-size:12px;letter-spacing:0.12em;font-family:system-ui,sans-serif;margin-top:4px;">INTELLIGENCE PLATFORM</div>
+      </div>
+      <div style="width:160px;height:3px;background:#1a1a30;border-radius:99px;overflow:hidden;">
+        <div id="setra-splash-bar" style="height:100%;background:linear-gradient(90deg,#7B3BFF,#A855F7);border-radius:99px;animation:setra-pulse 1.2s ease-in-out infinite alternate;"></div>
+      </div>
     </div>
+    <style>
+      @keyframes setra-pulse { from { width: 30%; opacity: 0.7; } to { width: 90%; opacity: 1; } }
+    </style>
+    <script>
+      // Fade out splash once React mounts
+      window.__hideSplash = function() {
+        var s = document.getElementById('setra-splash');
+        if (s) { s.style.opacity = '0'; setTimeout(function(){ s.remove(); }, 220); }
+      };
+    </script>
 
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>
-      // Fade out splash as soon as React mounts
-      document.addEventListener('DOMContentLoaded', function() {
-        var splash = document.getElementById('setra-splash');
-        var observer = new MutationObserver(function() {
-          if (document.getElementById('root').children.length > 0) {
-            splash.classList.add('fade-out');
-            setTimeout(function() { splash.remove(); }, 220);
-            observer.disconnect();
-          }
-        });
-        observer.observe(document.getElementById('root'), { childList: true });
-      });
-    </script>
   </body>
 </html>
