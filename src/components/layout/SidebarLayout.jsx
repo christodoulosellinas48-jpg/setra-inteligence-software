@@ -87,10 +87,10 @@ export default function SidebarLayout({ children }) {
         <div
           key={id}
           className={cn(
-            'group/item relative flex items-center rounded-xl transition-all duration-200 cursor-pointer border',
+            'group/item relative flex items-center rounded-xl transition-all duration-300 cursor-pointer border overflow-hidden',
             active
-              ? 'bg-[#7B3BFF]/20 border-[#7B3BFF]/60 text-white shadow-[0_0_20px_rgba(123,59,255,0.35)]'
-              : 'border-[#7B3BFF]/25 bg-[#7B3BFF]/5 text-[#C084FC] hover:bg-[#7B3BFF]/15 hover:border-[#7B3BFF]/50 hover:text-white',
+              ? 'bg-gradient-to-r from-[#7B3BFF]/30 to-[#A855F7]/20 border-[#7B3BFF]/70 text-white shadow-[0_0_24px_rgba(123,59,255,0.45)] hover:shadow-[0_0_32px_rgba(123,59,255,0.55)]'
+              : 'border-[#7B3BFF]/30 bg-[#7B3BFF]/8 text-[#C084FC] hover:bg-[#7B3BFF]/18 hover:border-[#7B3BFF]/60 hover:text-white hover:shadow-[0_0_20px_rgba(123,59,255,0.3)]',
             collapsed ? 'justify-center px-0 py-3' : 'px-3 py-3',
           )}
           onClick={() => navigate(mod.path)}
@@ -107,12 +107,12 @@ export default function SidebarLayout({ children }) {
       <div
         key={id}
         className={cn(
-          'group/item relative flex items-center rounded-xl transition-all duration-200 cursor-pointer',
+          'group/item relative flex items-center rounded-xl transition-all duration-300 cursor-pointer overflow-hidden border',
           active
-            ? 'bg-[#7B3BFF]/20 text-[#C084FC] shadow-[0_0_18px_rgba(123,59,255,0.35)] border border-[#7B3BFF]/25'
-            : 'text-slate-500 hover:text-white hover:bg-[#7B3BFF]/8 border border-transparent',
+            ? 'bg-gradient-to-r from-[#7B3BFF]/25 to-[#A855F7]/15 text-[#C084FC] shadow-[0_0_22px_rgba(123,59,255,0.4)] border-[#7B3BFF]/60 hover:shadow-[0_0_28px_rgba(123,59,255,0.5)]'
+            : 'text-slate-400 hover:text-white hover:bg-[#7B3BFF]/12 hover:border-[#7B3BFF]/50 hover:shadow-[0_0_16px_rgba(123,59,255,0.25)] border-[#7B3BFF]/20',
           collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
-          isDragging && 'opacity-75 bg-[#7B3BFF]/10 border border-[#7B3BFF]/30'
+          isDragging && 'opacity-75 bg-[#7B3BFF]/15 border-[#7B3BFF]/40 shadow-[0_0_20px_rgba(123,59,255,0.35)]'
         )}
         onClick={() => navigate(mod.path)}
       >
