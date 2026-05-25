@@ -212,10 +212,10 @@ export default function SidebarLayout({ children }) {
           {/* Reset button — owner only, not collapsed */}
           {canEdit && !collapsed && (
             <>
-              <div className="h-px bg-white/5 my-1" />
+              <div className="h-px bg-gradient-to-r from-transparent via-[#7B3BFF]/20 to-transparent my-2" />
               <button
                 onClick={() => setShowResetModal(true)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:text-slate-400 hover:bg-white/5 text-xs transition-all duration-200"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#7B3BFF]/10 border border-[#7B3BFF]/30 text-[#A855F7] hover:bg-[#7B3BFF]/20 hover:border-[#7B3BFF]/50 hover:shadow-[0_0_16px_rgba(123,59,255,0.25)] text-xs font-semibold transition-all duration-200 active:scale-95"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset layout
@@ -234,10 +234,10 @@ export default function SidebarLayout({ children }) {
         {/* Collapse Toggle */}
         <div className="p-3 border-t border-[#7B3BFF]/10">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              'w-full text-slate-400 hover:text-[#A855F7] hover:bg-white/5 transition-all duration-200',
+              'w-full border-[#7B3BFF]/40 hover:border-[#7B3BFF]/70 hover:shadow-[0_0_16px_rgba(123,59,255,0.3)] font-semibold',
               collapsed ? 'justify-center px-0' : 'justify-start'
             )}
           >
