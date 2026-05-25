@@ -92,8 +92,10 @@ export default function ConsolidatedView() {
   const allBusinessIds = useMemo(() => allBusinesses.map(b => b.id), [allBusinesses]);
 
   // Fetch latest financial snapshot per business to get real revenue
+  // Use a stable string key to avoid React Query treating arrays as never-equal
+  const businessIdsKey = allBusinessIds.join(',');
   const { data: allSnapshots = [] } = useQuery({
-    queryKey: ['allLatestSnapshots', allBusinessIds],
+    queryKey: ['allLatestSnapshots', businessIdsKey],
     queryFn: async () => {
       if (allBusinessIds.length === 0) return [];
       const results = await Promise.all(
@@ -123,7 +125,10 @@ export default function ConsolidatedView() {
     filteredBusinesses.forEach(business => {
       // Use the most recent snapshot revenue if available, fall back to business field
       const latestSnapshot = allSnapshots.find(s => s.business_id === business.id);
-      const effectiveRevenue = latestSnapshot?.monthly_revenue ?? business.monthly_revenue;
+      const snapshotRevenue = latestSnapshot?.monthly_revenue;
+      const effectiveRevenue = (snapshotRevenue != null && snapshotRevenue > 0)
+        ? snapshotRevenue
+        : (business.monthly_revenue || 0);
       const businessWithRevenue = effectiveRevenue !== undefined ? { ...business, monthly_revenue: effectiveRevenue } : business;
 
       const financials = calculateFinancials(businessWithRevenue, business.industry_group || business.business_type);
