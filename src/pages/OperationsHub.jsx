@@ -5,15 +5,15 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useBusiness } from '@/components/business/BusinessContext';
-import { useCommandPalette } from '@/lib/CommandPaletteContext';
+
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import {
   UtensilsCrossed, Store, Users, ArrowRight,
   Package, BarChart2,
-  Receipt, DollarSign, Activity, Zap,
+  Receipt, DollarSign,
   AlertTriangle, Target, Layers,
-  Search, LayoutDashboard, Lightbulb,
+  LayoutDashboard, Lightbulb,
   Boxes, LineChart, ClipboardCheck, Pin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -50,7 +50,7 @@ const SECTIONS = [
         fetchStat: async () => null,
       },
       {
-        id: 'money', label: 'Money', icon: DollarSign, path: '/Money',
+        id: 'money', label: 'Financial Data', icon: DollarSign, path: '/FinancialData',
         description: 'All money in (revenue) and money out (expenses) in one view.',
         badge: 'Cash Flow', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/20',
         fetchStat: async (biz) => {
@@ -296,7 +296,6 @@ function SectionBlock({ section, index, stats, onPinFull }) {
 export default function OperationsHub() {
   const navigate = useNavigate();
   const { currentBusiness } = useBusiness();
-  const { setOpen: openPalette } = useCommandPalette();
   const [stats, setStats] = useState({});
   const [showFullModal, setShowFullModal] = useState(false);
 
@@ -343,7 +342,7 @@ export default function OperationsHub() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="space-y-6"
+          className=""
         >
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
@@ -374,38 +373,6 @@ export default function OperationsHub() {
             </div>
           </div>
 
-          {/* Hero banner */}
-          <div className="relative overflow-hidden rounded-2xl border border-[#7B3BFF]/25 bg-gradient-to-br from-[#0D0920] via-[#0E0E28] to-[#07070F] p-6 shadow-[0_0_40px_rgba(123,59,255,0.12)]">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[#7B3BFF]/12 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-20 w-56 h-56 bg-[#A855F7]/8 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 bg-[#6B2EE8]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="relative flex flex-col gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-4 h-4 text-[#C084FC]" />
-                  <span className="text-xs font-semibold text-[#C084FC] uppercase tracking-widest">Command Centre</span>
-                </div>
-                <h2 className="text-xl font-bold text-white mb-2">
-                  Everything you need to run a profitable operation
-                </h2>
-                <p className="text-slate-400 text-sm leading-relaxed max-w-2xl">
-                  From ingredient costs to VAT compliance, menu engineering to supplier spend — Setra connects every part of your business into one intelligent operating system.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Button size="sm" onClick={() => navigate('/Dashboard')} className="text-sm">
-                  <Activity className="w-4 h-4 mr-2" /> View Dashboard
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => navigate('/Insights')} className="text-sm">
-                  <BarChart2 className="w-4 h-4 mr-2" /> Open Insights
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => openPalette(true)} className="text-slate-400 gap-1.5">
-                  <Search className="w-4 h-4" />
-                  <kbd className="hidden sm:inline text-xs bg-white/10 px-1.5 py-0.5 rounded">⌘K</kbd>
-                </Button>
-              </div>
-            </div>
-          </div>
         </motion.div>
 
         <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />

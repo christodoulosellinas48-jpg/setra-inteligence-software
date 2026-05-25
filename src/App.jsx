@@ -25,6 +25,7 @@ import Accountants from './pages/Accountants';
 import Income from './pages/Income';
 import Duplicates from './pages/Duplicates';
 import Money from './pages/Money';
+import FinancialData from './pages/FinancialData';
 import Dishes from './pages/Dishes';
 import Suppliers from './pages/Suppliers';
 import Stock from './pages/Stock';
@@ -136,12 +137,15 @@ const AuthenticatedApp = () => {
         </LayoutWrapper>
       } />
 
-      {/* ── Merged module routes ── */}
-      <Route path="/Money" element={
-        <LayoutWrapper currentPageName="Money">
-          <Money />
+      {/* ── Financial Data (canonical) ── */}
+      <Route path="/FinancialData" element={
+        <LayoutWrapper currentPageName="FinancialData">
+          <FinancialData />
         </LayoutWrapper>
       } />
+
+      {/* ── Merged module routes ── */}
+      <Route path="/Money" element={<Navigate to="/FinancialData" replace />} />
       <Route path="/Dishes" element={
         <LayoutWrapper currentPageName="Dishes">
           <Dishes />
@@ -169,8 +173,8 @@ const AuthenticatedApp = () => {
       } />
 
       {/* ── Legacy redirects ── */}
-      <Route path="/Expenses" element={<Navigate to="/Money" replace />} />
-      <Route path="/Income" element={<Navigate to="/Money?tab=income" replace />} />
+      <Route path="/Expenses" element={<Navigate to="/FinancialData" replace />} />
+      <Route path="/Income" element={<Navigate to="/FinancialData?tab=income" replace />} />
       <Route path="/RecipeManager" element={<Navigate to="/Dishes" replace />} />
       <Route path="/MenuEngineering" element={<Navigate to="/Dishes?tab=matrix" replace />} />
       <Route path="/Vendor" element={<Navigate to="/Suppliers" replace />} />
