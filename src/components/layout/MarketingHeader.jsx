@@ -4,6 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
+async function handleLogin(navigate) {
+  const authed = await base44.auth.isAuthenticated();
+  if (authed) {
+    navigate('/Today');
+  } else {
+    base44.auth.redirectToLogin('/Today');
+  }
+}
+
 
 export default function MarketingHeader() {
   const navigate = useNavigate();
@@ -49,7 +58,7 @@ export default function MarketingHeader() {
 
         {/* Desktop Login */}
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" onClick={() => base44.auth.redirectToLogin('/Today')} size="sm">
+          <Button variant="outline" onClick={() => handleLogin(navigate)} size="sm">
             Login
           </Button>
         </div>
@@ -78,7 +87,7 @@ export default function MarketingHeader() {
           <div className="pt-3">
             <Button
               className="w-full"
-              onClick={() => { base44.auth.redirectToLogin('/Today'); setMenuOpen(false); }}
+              onClick={() => { handleLogin(navigate); setMenuOpen(false); }}
             >
               Login
             </Button>
