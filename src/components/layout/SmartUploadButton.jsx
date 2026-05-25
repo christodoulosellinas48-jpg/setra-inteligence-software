@@ -209,8 +209,11 @@ export default function SmartUploadButton() {
   const errorCount = queue.filter(q => q.status === 'error').length;
   const totalCount = queue.length;
 
-  // Primary route to navigate to after completion
-  const primaryRoute = queue.find(q => q.result?.typeConfig?.route)?.result?.typeConfig?.route || '/Expenses';
+  // Primary route — invoices/receipts go to FinancialData with highlight
+  const invoiceDoneItems = queue.filter(q => q.status === 'done' && (q.result?.docType === 'invoice' || q.result?.docType === 'receipt'));
+  const primaryRoute = invoiceDoneItems.length > 0
+    ? '/FinancialData?tab=out'
+    : (queue.find(q => q.result?.typeConfig?.route)?.result?.typeConfig?.route || '/Expenses');
 
   const isIdle = queue.length === 0;
 
@@ -386,10 +389,19 @@ export default function SmartUploadButton() {
                 {allDone && (
                   <div className="pt-2 flex gap-2">
                     <button
-                      onClick={() => { navigate(primaryRoute); setOpen(false); reset(); }}
+                      onClick={() => {
+                        setOpen(false);
+                        reset();
+                        navigate(primaryRoute);
+                      }}
                       className="flex-1 px-4 py-2 rounded-xl bg-[#7B3BFF] hover:bg-[#6d2ff7] text-white text-sm font-medium transition-colors"
                     >
-                      {doneCount === 1 ? `View in ${queue.find(q => q.status === 'done')?.result?.typeConfig?.destination || 'app'} →` : `View results →`}
+                      {invoiceDoneItems.length > 0
+                        ? (invoiceDoneItems.length === 1
+                            ? `View invoice in Financial Data →`
+                            : `View ${invoiceDoneItems.length} invoices in Financial Data →`)
+                        : (doneCount === 1 ? `View in ${queue.find(q => q.status === 'done')?.result?.typeConfig?.destination || 'app'} →` : `View results →`)
+                      }
                     </button>
                     <button
                       onClick={() => { reset(); }}

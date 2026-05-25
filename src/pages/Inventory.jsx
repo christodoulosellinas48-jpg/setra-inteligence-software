@@ -14,6 +14,7 @@ import { useBusiness } from '@/components/business/BusinessContext';
 import { Plus, AlertTriangle, Package, DollarSign, Trash2, Edit2, RefreshCw, ClipboardList, Link2 } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import StockTakeModal from '@/components/inventory/StockTakeModal';
+import SkeletonRows from '@/components/ui/SkeletonRows';
 
 const CATEGORIES = [
   { value: 'produce',      label: 'Produce' },
@@ -180,7 +181,7 @@ function InventoryContent() {
 
         {/* Items Table */}
         {isLoading ? (
-          <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 text-[#7B3BFF] animate-spin" /></div>
+          <SkeletonRows count={5} />
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={Package}

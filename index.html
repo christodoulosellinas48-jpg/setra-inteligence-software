@@ -14,9 +14,81 @@
     <meta name="twitter:title" content="Setra — Financial Intelligence for Hospitality" />
     <meta name="twitter:description" content="The financial OS for independent restaurants. See your real profitability, fix what's bleeding, and grow with confidence." />
     <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      #setra-splash {
+        position: fixed;
+        inset: 0;
+        background: #07070F;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        z-index: 9999;
+        transition: opacity 0.2s ease;
+      }
+      #setra-splash.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #setra-splash img {
+        width: 56px;
+        height: 56px;
+        filter: drop-shadow(0 0 16px rgba(123,59,255,0.5));
+      }
+      #setra-splash .wordmark {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(148,130,204,0.7);
+      }
+      #setra-splash .progress-wrap {
+        width: 120px;
+        height: 3px;
+        background: rgba(123,59,255,0.15);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      #setra-splash .progress-bar {
+        height: 100%;
+        width: 40%;
+        background: linear-gradient(90deg, #7B3BFF, #C084FC);
+        border-radius: 99px;
+        animation: splash-pulse 1.4s ease-in-out infinite;
+      }
+      @keyframes splash-pulse {
+        0%   { transform: translateX(-100%); opacity: 0.6; }
+        50%  { opacity: 1; }
+        100% { transform: translateX(350%); opacity: 0.6; }
+      }
+    </style>
   </head>
   <body>
+    <!-- Branded splash — renders before any JS loads -->
+    <div id="setra-splash">
+      <img src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/50df0face_EEEE413D-A65A-4B84-A6CE-9F681EADF652.png" alt="Setra" />
+      <div class="wordmark">Intelligence Platform</div>
+      <div class="progress-wrap"><div class="progress-bar"></div></div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Fade out splash as soon as React mounts
+      document.addEventListener('DOMContentLoaded', function() {
+        var splash = document.getElementById('setra-splash');
+        var observer = new MutationObserver(function() {
+          if (document.getElementById('root').children.length > 0) {
+            splash.classList.add('fade-out');
+            setTimeout(function() { splash.remove(); }, 220);
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById('root'), { childList: true });
+      });
+    </script>
   </body>
 </html>

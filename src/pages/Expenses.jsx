@@ -20,6 +20,7 @@ import EmailIngestBanner from '@/components/expenses/EmailIngestBanner';
 import DateRangeFilter from '@/components/expenses/DateRangeFilter';
 import usePullToRefresh from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+import SkeletonRows from '@/components/ui/SkeletonRows';
 import { isWithinInterval, parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 const STATUS_CONFIG = {
@@ -308,8 +309,8 @@ export default function Expenses() {
       {/* Table */}
       <Card className="overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-6 h-6 text-[#C084FC] animate-spin" />
+          <div className="p-4">
+            <SkeletonRows count={5} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">

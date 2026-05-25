@@ -17,6 +17,7 @@ import { useSidebarLayout } from '@/lib/SidebarLayoutContext';
 import { MODULE_MAP, buildSidebarItems } from '@/lib/sidebarLayout';
 import BusinessSwitcherPill from '@/components/layout/BusinessSwitcherPill';
 import SmartUploadButton from '@/components/layout/SmartUploadButton';
+import QuickActionChips from '@/components/layout/QuickActionChips';
 import CommandPalette from '@/components/CommandPalette';
 import SidebarResetModal from '@/components/sidebar/SidebarResetModal';
 import { useCommandPalette } from '@/lib/CommandPaletteContext';
@@ -34,7 +35,7 @@ export default function SidebarLayout({ children }) {
   const [showResetModal, setShowResetModal] = useState(false);
   useRealtimeSync();
 
-  const { hasPermission, isOwner, currentBusiness } = useBusiness();
+  const { hasPermission, isOwner, currentBusiness, loading: bizLoading } = useBusiness();
   const { setOpen: openPalette } = useCommandPalette();
   const { pinnedIds, reorder, unpin, canEdit, vatLocked, contextGroupName } = useSidebarLayout();
 
@@ -72,10 +73,10 @@ export default function SidebarLayout({ children }) {
     const mod = MODULE_MAP[id];
     if (!mod) return null;
 
-    // Settings: only for owners
-    if (id === 'settings' && !isOwner()) return null;
-    // VAT: check permission
-    if (id === 'vat' && !hasPermission('manage_bookkeeping') && !isOwner()) return null;
+    // Settings: only for owners — hide once biz data is confirmed loaded and user is NOT owner
+    if (id === 'settings' && !bizLoading && !isOwner()) return null;
+    // VAT: hide only once confirmed non-owner AND no permission
+    if (id === 'vat' && !bizLoading && !hasPermission('manage_bookkeeping') && !isOwner()) return null;
 
     const Icon = mod.icon;
     const active = isActive(mod.path);
@@ -291,7 +292,12 @@ export default function SidebarLayout({ children }) {
 
           <div className="flex items-center gap-2 ml-auto">
             <AlertsBell businessId={currentBusiness?.id} userId={undefined} />
-            <BusinessSwitcherPill />
+            {bizLoading ? (
+              <div className="w-28 h-8 rounded-xl bg-white/[0.05] animate-pulse" />
+            ) : (
+              <BusinessSwitcherPill />
+            )}
+            <QuickActionChips />
             <SmartUploadButton />
             <button
               onClick={() => navigate('/Dashboard')}
