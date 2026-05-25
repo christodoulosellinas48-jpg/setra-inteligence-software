@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 
 export default function MarketingHeader() {
@@ -48,7 +49,7 @@ export default function MarketingHeader() {
 
         {/* Desktop Login */}
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate('/Dashboard')} size="sm">
+          <Button variant="outline" onClick={() => base44.auth.redirectToLogin('/Today')} size="sm">
             Login
           </Button>
         </div>
@@ -77,7 +78,7 @@ export default function MarketingHeader() {
           <div className="pt-3">
             <Button
               className="w-full"
-              onClick={() => { navigate('/Dashboard'); setMenuOpen(false); }}
+              onClick={() => { base44.auth.redirectToLogin('/Today'); setMenuOpen(false); }}
             >
               Login
             </Button>
