@@ -89,15 +89,15 @@ export default function SidebarLayout({ children }) {
           className={cn(
             'group/item relative flex items-center rounded-xl transition-all duration-300 cursor-pointer border overflow-hidden',
             active
-              ? 'bg-gradient-to-r from-[#7B3BFF]/30 to-[#A855F7]/20 border-[#7B3BFF]/70 text-white shadow-[0_0_24px_rgba(123,59,255,0.45)] hover:shadow-[0_0_32px_rgba(123,59,255,0.55)]'
-              : 'border-[#7B3BFF]/30 bg-[#7B3BFF]/8 text-[#C084FC] hover:bg-[#7B3BFF]/18 hover:border-[#7B3BFF]/60 hover:text-white hover:shadow-[0_0_20px_rgba(123,59,255,0.3)]',
+              ? 'bg-gradient-to-br from-[#8B4BFF]/40 via-[#7B3BFF]/35 to-[#9D4EFF]/25 border-[#7B3BFF]/80 text-white shadow-[0_0_32px_rgba(123,59,255,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(123,59,255,0.65),inset_0_1px_0_rgba(255,255,255,0.15)]'
+              : 'border-[#7B3BFF]/40 bg-gradient-to-br from-[#7B3BFF]/12 to-[#A855F7]/6 text-[#C084FC] hover:bg-gradient-to-br hover:from-[#7B3BFF]/22 hover:to-[#A855F7]/12 hover:border-[#7B3BFF]/70 hover:text-white hover:shadow-[0_0_28px_rgba(123,59,255,0.4)]',
             collapsed ? 'justify-center px-0 py-3' : 'px-3 py-3',
           )}
           onClick={() => navigate(mod.path)}
         >
-          <Icon className={cn('w-5 h-5 flex-shrink-0', !collapsed && 'mr-2.5')} />
+          <Icon className={cn('w-5 h-5 flex-shrink-0 transition-all group-hover/item:scale-110', !collapsed && 'mr-2.5')} />
           {!collapsed && (
-            <span className="flex-1 text-sm font-semibold truncate group-hover/item:text-white transition-colors">{mod.label}</span>
+            <span className="flex-1 text-sm font-semibold truncate group-hover/item:text-white transition-all">{mod.label}</span>
           )}
         </div>
       );
@@ -109,10 +109,10 @@ export default function SidebarLayout({ children }) {
         className={cn(
           'group/item relative flex items-center rounded-xl transition-all duration-300 cursor-pointer overflow-hidden border',
           active
-            ? 'bg-gradient-to-r from-[#7B3BFF]/25 to-[#A855F7]/15 text-[#C084FC] shadow-[0_0_22px_rgba(123,59,255,0.4)] border-[#7B3BFF]/60 hover:shadow-[0_0_28px_rgba(123,59,255,0.5)]'
-            : 'text-slate-400 hover:text-white hover:bg-[#7B3BFF]/12 hover:border-[#7B3BFF]/50 hover:shadow-[0_0_16px_rgba(123,59,255,0.25)] border-[#7B3BFF]/20',
+            ? 'bg-gradient-to-br from-[#8B4BFF]/32 via-[#7B3BFF]/28 to-[#9D4EFF]/18 text-[#C084FC] shadow-[0_0_28px_rgba(123,59,255,0.48),inset_0_1px_0_rgba(255,255,255,0.08)] border-[#7B3BFF]/70 hover:shadow-[0_0_36px_rgba(123,59,255,0.6),inset_0_1px_0_rgba(255,255,255,0.12)]'
+            : 'text-slate-400 hover:text-white hover:bg-gradient-to-br hover:from-[#7B3BFF]/16 hover:to-[#A855F7]/8 hover:border-[#7B3BFF]/60 hover:shadow-[0_0_24px_rgba(123,59,255,0.35)] border-[#7B3BFF]/30',
           collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
-          isDragging && 'opacity-75 bg-[#7B3BFF]/15 border-[#7B3BFF]/40 shadow-[0_0_20px_rgba(123,59,255,0.35)]'
+          isDragging && 'opacity-75 bg-gradient-to-r from-[#7B3BFF]/20 to-[#A855F7]/12 border-[#7B3BFF]/50 shadow-[0_0_24px_rgba(123,59,255,0.45)]'
         )}
         onClick={() => navigate(mod.path)}
       >
@@ -127,7 +127,7 @@ export default function SidebarLayout({ children }) {
           </span>
         )}
 
-        <Icon className={cn('w-5 h-5 flex-shrink-0', !collapsed && 'mr-2.5')} />
+        <Icon className={cn('w-5 h-5 flex-shrink-0 transition-all group-hover/item:scale-110', !collapsed && 'mr-2.5')} />
 
         {!collapsed && (
           <span className="flex-1 text-sm font-medium truncate">{mod.label}</span>
