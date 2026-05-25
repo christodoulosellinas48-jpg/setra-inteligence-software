@@ -74,21 +74,6 @@ export default function ConsolidatedView() {
     staleTime: 5 * 60 * 1000
   });
 
-  // Fetch latest financial snapshot per business to get real revenue
-  const { data: allSnapshots = [] } = useQuery({
-    queryKey: ['allLatestSnapshots', user?.email],
-    queryFn: async () => {
-      const ids = [...ownedBusinesses, ...memberBusinesses].map(b => b.id);
-      if (ids.length === 0) return [];
-      const results = await Promise.all(
-        ids.map(id => base44.entities.FinancialSnapshot.filter({ business_id: id }, '-period_start', 1))
-      );
-      return results.flat();
-    },
-    enabled: ownedBusinesses.length > 0,
-    staleTime: 0,
-  });
-
   const handleGroupSaved = () => {
     refetchBusinesses();
     refetchGroups();
@@ -103,6 +88,22 @@ export default function ConsolidatedView() {
       return true;
     });
   }, [ownedBusinesses, memberBusinesses]);
+
+  const allBusinessIds = useMemo(() => allBusinesses.map(b => b.id), [allBusinesses]);
+
+  // Fetch latest financial snapshot per business to get real revenue
+  const { data: allSnapshots = [] } = useQuery({
+    queryKey: ['allLatestSnapshots', allBusinessIds],
+    queryFn: async () => {
+      if (allBusinessIds.length === 0) return [];
+      const results = await Promise.all(
+        allBusinessIds.map(id => base44.entities.FinancialSnapshot.filter({ business_id: id }, '-period_start', 1))
+      );
+      return results.flat();
+    },
+    enabled: allBusinessIds.length > 0,
+    staleTime: 0,
+  });
 
   // No multiplier — always show actual snapshot data, never annualize
   const rangeMonths = getRangeMonths(dateRange);
