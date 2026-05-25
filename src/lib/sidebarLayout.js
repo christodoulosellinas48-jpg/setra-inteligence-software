@@ -34,10 +34,11 @@ export const ALL_MODULES = [
 export const MODULE_MAP = Object.fromEntries(ALL_MODULES.map(m => [m.id, m]));
 
 // Default pinned ids by context (excludes sacred items which are auto-injected)
-const DEFAULT_GROUP      = ['money', 'integrations'];
-const DEFAULT_RESTAURANT = ['money', 'dishes', 'insights', 'integrations'];
-const DEFAULT_FOOD_TO_GO = ['money', 'dishes', 'integrations'];
-const DEFAULT_COFFEE_SHOP= ['money', 'integrations'];
+// Starter plan baseline: dashboard, money, vat, stock — included in all defaults
+const DEFAULT_GROUP      = ['money', 'vat', 'stock', 'integrations'];
+const DEFAULT_RESTAURANT = ['money', 'vat', 'stock', 'dishes', 'insights', 'integrations'];
+const DEFAULT_FOOD_TO_GO = ['money', 'vat', 'stock', 'dishes', 'integrations'];
+const DEFAULT_COFFEE_SHOP= ['money', 'vat', 'stock', 'integrations'];
 
 export function getDefaultPinned(industryGroup) {
   if (industryGroup === 'restaurant') return DEFAULT_RESTAURANT;
