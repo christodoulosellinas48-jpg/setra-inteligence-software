@@ -1,0 +1,32 @@
+{
+  "name": "NotificationPreference",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the user"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "prefs_json": {
+      "type": "string",
+      "description": "JSON blob of alert_type -> {in_app, email} toggles"
+    },
+    "digest_day": {
+      "type": "string",
+      "default": "Monday",
+      "description": "Day of week for digest delivery"
+    },
+    "digest_hour": {
+      "type": "number",
+      "default": 9,
+      "description": "Hour (24h) for digest delivery"
+    }
+  },
+  "required": [
+    "user_id",
+    "business_id"
+  ]
+}
