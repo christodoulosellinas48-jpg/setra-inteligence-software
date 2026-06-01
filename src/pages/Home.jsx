@@ -249,7 +249,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             viewport={{ once: true }}
-            className="relative"
+            className="relative max-w-2xl mx-auto"
           >
             {/* Glow behind the card */}
             <div className="absolute inset-0 blur-[80px] opacity-30 pointer-events-none">
