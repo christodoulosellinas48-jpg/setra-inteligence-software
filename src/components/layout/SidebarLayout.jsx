@@ -37,7 +37,7 @@ export default function SidebarLayout({ children }) {
   const [showResetModal, setShowResetModal] = useState(false);
   useRealtimeSync();
 
-  const { hasPermission, isOwner, currentBusiness } = useBusiness();
+  const { hasPermission, isOwner, currentBusiness, user } = useBusiness();
   const { setOpen: openPalette } = useCommandPalette();
   const { pinnedIds, reorder, unpin, canEdit, vatLocked, contextGroupName } = useSidebarLayout();
 
@@ -296,7 +296,7 @@ export default function SidebarLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-2 ml-auto" data-tour="topbar">
-            <AlertsBell businessId={currentBusiness?.id} userId={undefined} />
+            <AlertsBell businessId={currentBusiness?.id} userId={user?.id} />
             <BusinessSwitcherPill />
             <SmartUploadButton />
             <QuickActionChips />

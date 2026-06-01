@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMemberPermissions } from './permissions';
 
@@ -49,10 +49,11 @@ export function BusinessProvider({ children }) {
       let memberBusinesses = [];
       
       if (memberBusinessIds.length > 0) {
-        const allBusinesses = await base44.entities.Business.list();
-        memberBusinesses = allBusinesses.filter(b => 
-          memberBusinessIds.includes(b.id) && b.owner_email !== currentUser.email
+        // Fetch only the specific businesses the user is a member of — avoids loading the entire table
+        const fetched = await Promise.all(
+          memberBusinessIds.map(id => base44.entities.Business.filter({ id }))
         );
+        memberBusinesses = fetched.flat().filter(b => b.owner_email !== currentUser.email);
       }
 
       const allUserBusinesses = [...ownedBusinesses, ...memberBusinesses];
@@ -120,9 +121,9 @@ export function BusinessProvider({ children }) {
     await loadUserAndBusinesses();
   };
 
-  const canEdit = () => ['owner', 'manager'].includes(userRole);
-  const canManageTeam = () => userRole === 'owner';
-  const isOwner = () => userRole === 'owner';
+  const canEdit = useCallback(() => ['owner', 'manager'].includes(userRole), [userRole]);
+  const canManageTeam = useCallback(() => userRole === 'owner', [userRole]);
+  const isOwner = useCallback(() => userRole === 'owner', [userRole]);
 
   // Granular permission check
   const hasPermission = (permission) => {

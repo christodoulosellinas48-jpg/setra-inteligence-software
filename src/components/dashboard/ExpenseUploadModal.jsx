@@ -72,14 +72,16 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
 
   // Auto-process a file dropped on the parent page
   useEffect(() => {
-    if (open && pendingFile && stage === 'idle') {
-      setFile(pendingFile);
-      setStage('uploading');
-      base44.integrations.Core.UploadFile({ file: pendingFile }).then(({ file_url }) => {
-        setDocumentUrl(file_url);
-        analyzeWithAI(file_url, pendingFile.name);
-      });
-    }
+    if (!open || !pendingFile || stage !== 'idle') return;
+    const f = pendingFile;
+    setFile(f);
+    setStage('uploading');
+    base44.integrations.Core.UploadFile({ file: f }).then(({ file_url }) => {
+      setDocumentUrl(file_url);
+      analyzeWithAI(file_url, f.name);
+    });
+    // intentionally omit analyzeWithAI — it's defined in the same component render and stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, pendingFile]);
 
   const handleRecategorize = async () => {

@@ -14,14 +14,12 @@ const STARS = Array.from({ length: 50 }, (_, i) => ({
 
 export default function Home() {
   const navigate = useNavigate();
-  const [breathCount, setBreathCount] = useState(0);
+  const [introComplete, setIntroComplete] = useState(false);
 
   useEffect(() => {
-    if (breathCount < 5) {
-      const timer = setTimeout(() => setBreathCount(prev => prev + 1), 800);
-      return () => clearTimeout(timer);
-    }
-  }, [breathCount]);
+    const timer = setTimeout(() => setIntroComplete(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0A0A14] relative overflow-hidden">
@@ -39,7 +37,7 @@ export default function Home() {
       </div>
 
       {/* Navigation */}
-      <MarketingHeader breathCount={breathCount} />
+      <MarketingHeader breathCount={introComplete ? 5 : 0} />
 
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center px-4 sm:px-6 py-12 sm:py-20">
@@ -125,20 +123,14 @@ export default function Home() {
                   alt="SETRA 3D"
                   className="relative h-48 sm:h-64 mx-auto opacity-90"
                   animate={{
-                    filter: breathCount < 5 
-                      ? [
-                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))",
-                          "drop-shadow(0 0 60px rgba(123,59,255,1)) drop-shadow(0 0 30px rgba(168,85,247,0.8)) drop-shadow(0 0 15px rgba(192,132,252,0.6))",
-                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
-                        ]
-                      : [
-                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))",
-                          "drop-shadow(0 0 50px rgba(123,59,255,0.85)) drop-shadow(0 0 25px rgba(168,85,247,0.65)) drop-shadow(0 0 12px rgba(192,132,252,0.5))",
-                          "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
-                        ]
+                    filter: [
+                      "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))",
+                      "drop-shadow(0 0 50px rgba(123,59,255,0.85)) drop-shadow(0 0 25px rgba(168,85,247,0.65)) drop-shadow(0 0 12px rgba(192,132,252,0.5))",
+                      "drop-shadow(0 0 40px rgba(123,59,255,0.7)) drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 10px rgba(192,132,252,0.4))"
+                    ]
                   }}
                   transition={{
-                    duration: breathCount < 5 ? 0.8 : 3,
+                    duration: 3,
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
