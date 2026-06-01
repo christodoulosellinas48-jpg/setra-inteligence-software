@@ -135,20 +135,32 @@ function ReportsContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {snapshots.slice(0, 12).map((snapshot, idx) => (
-                        <motion.tr key={snapshot.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.04 }} className="border-b border-white/5 hover:bg-white/5">
-                          <td className="py-3 px-4 text-slate-300">
-                            {new Date(snapshot.period_start).toLocaleDateString()} – {new Date(snapshot.period_end).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-4 text-slate-400 capitalize">{snapshot.period_type}</td>
-                          <td className="py-3 px-4 text-right text-emerald-400 font-mono">€{(snapshot.monthly_revenue || 0).toLocaleString()}</td>
-                          <td className={`py-3 px-4 text-right font-mono ${(snapshot.net_profit || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            €{(snapshot.net_profit || 0).toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 text-right text-slate-300">{(snapshot.profit_margin || 0).toFixed(1)}%</td>
-                        </motion.tr>
-                      ))}
+                      {snapshots.slice(0, 12).map((snapshot, idx) => {
+                          const rev = snapshot.monthly_revenue || 0;
+                          const totalExpenses = (snapshot.purchases_food_bev || 0)
+                            + (snapshot.staff_costs || 0)
+                            + (snapshot.rent_fixed_costs || 0)
+                            + (snapshot.utilities || 0)
+                            + (snapshot.other_operating || 0);
+                          // Recompute to fix any snapshots saved with wrong net_profit
+                          const computedNetProfit = rev - totalExpenses;
+                          const computedMargin = rev > 0 ? (computedNetProfit / rev) * 100 : 0;
+
+                          return (
+                          <motion.tr key={snapshot.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.04 }} className="border-b border-white/5 hover:bg-white/5">
+                            <td className="py-3 px-4 text-slate-300">
+                              {new Date(snapshot.period_start).toLocaleDateString()} – {new Date(snapshot.period_end).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 capitalize">{snapshot.period_type}</td>
+                            <td className="py-3 px-4 text-right text-emerald-400 font-mono">€{rev.toLocaleString()}</td>
+                            <td className={`py-3 px-4 text-right font-mono ${computedNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              €{computedNetProfit.toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 text-right text-slate-300">{computedMargin.toFixed(1)}%</td>
+                          </motion.tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>

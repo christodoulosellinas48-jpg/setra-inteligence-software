@@ -6,12 +6,16 @@ import { format } from 'date-fns';
 export default function RevenueTrendChart({ snapshots }) {
   const chartData = snapshots
     .sort((a, b) => new Date(a.period_start) - new Date(b.period_start))
-    .map(s => ({
-      period: format(new Date(s.period_start), 'MMM yyyy'),
-      revenue: s.monthly_revenue || 0,
-      profit: s.net_profit || 0,
-      costs: (s.purchases_food_bev || 0) + (s.staff_costs || 0) + (s.rent_fixed_costs || 0) + (s.utilities || 0) + (s.other_operating || 0)
-    }));
+    .map(s => {
+      const revenue = s.monthly_revenue || 0;
+      const costs = (s.purchases_food_bev || 0) + (s.staff_costs || 0) + (s.rent_fixed_costs || 0) + (s.utilities || 0) + (s.other_operating || 0);
+      return {
+        period: format(new Date(s.period_start), 'MMM yyyy'),
+        revenue,
+        profit: revenue - costs,
+        costs,
+      };
+    });
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
