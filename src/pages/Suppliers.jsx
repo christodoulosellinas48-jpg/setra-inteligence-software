@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Store } from 'lucide-react';
 import VendorsPage from './Vendors';
 import PurchaseOrdersPage from './PurchaseOrders';
+import SupplierInsights from '@/components/suppliers/SupplierInsights';
 import { useBusiness } from '@/components/business/BusinessContext';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -97,6 +98,7 @@ const TABS = [
   { id: 'directory', label: 'Directory' },
   { id: 'orders',    label: 'Purchase Orders' },
   { id: 'spend',     label: 'Spend Analysis' },
+  { id: 'insights',  label: 'Supplier Insights' },
 ];
 
 export default function Suppliers() {
@@ -105,8 +107,9 @@ export default function Suppliers() {
 
   const getInitialTab = () => {
     const param = new URLSearchParams(location.search).get('tab');
-    if (param === 'orders') return 'orders';
-    if (param === 'spend')  return 'spend';
+    if (param === 'orders')   return 'orders';
+    if (param === 'spend')    return 'spend';
+    if (param === 'insights') return 'insights';
     return 'directory';
   };
 
@@ -114,8 +117,9 @@ export default function Suppliers() {
 
   useEffect(() => {
     const param = new URLSearchParams(location.search).get('tab');
-    if (param === 'orders') setActiveTab('orders');
-    else if (param === 'spend') setActiveTab('spend');
+    if (param === 'orders')        setActiveTab('orders');
+    else if (param === 'spend')    setActiveTab('spend');
+    else if (param === 'insights') setActiveTab('insights');
   }, [location.search]);
 
   return (
@@ -147,6 +151,7 @@ export default function Suppliers() {
       {activeTab === 'directory' && <VendorsPage />}
       {activeTab === 'orders'    && <PurchaseOrdersPage />}
       {activeTab === 'spend'     && <SpendAnalysis currentBusiness={currentBusiness} />}
+      {activeTab === 'insights'  && <SupplierInsights />}
     </div>
   );
 }
