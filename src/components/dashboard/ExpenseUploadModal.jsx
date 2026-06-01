@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,7 +45,7 @@ function ConfidencePill({ score }) {
   return <Badge className={`text-xs ${color}`}>{pct}% confidence</Badge>;
 }
 
-export default function ExpenseUploadModal({ open, onOpenChange, onSave, businessId, userEmail }) {
+export default function ExpenseUploadModal({ open, onOpenChange, onSave, businessId, userEmail, pendingFile }) {
   const [file, setFile] = useState(null);
   const [stage, setStage] = useState('idle'); // idle | uploading | analyzing | ready
   const [documentUrl, setDocumentUrl] = useState('');
@@ -69,6 +69,18 @@ export default function ExpenseUploadModal({ open, onOpenChange, onSave, busines
   });
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  // Auto-process a file dropped on the parent page
+  useEffect(() => {
+    if (open && pendingFile && stage === 'idle') {
+      setFile(pendingFile);
+      setStage('uploading');
+      base44.integrations.Core.UploadFile({ file: pendingFile }).then(({ file_url }) => {
+        setDocumentUrl(file_url);
+        analyzeWithAI(file_url, pendingFile.name);
+      });
+    }
+  }, [open, pendingFile]);
 
   const handleRecategorize = async () => {
     if (!form.supplier_name) return;

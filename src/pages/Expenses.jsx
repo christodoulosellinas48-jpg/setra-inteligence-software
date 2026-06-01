@@ -81,6 +81,8 @@ export default function Expenses() {
   const [showUpload, setShowUpload] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showManual, setShowManual] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -157,6 +159,17 @@ export default function Expenses() {
     return next;
   });
 
+  const handlePageDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const droppedFile = e.dataTransfer?.files?.[0];
+    if (!droppedFile || !canEdit()) return;
+    const isValid = droppedFile.type.match(/pdf|image/);
+    if (!isValid) return;
+    setPendingFile(droppedFile);
+    setShowUpload(true);
+  };
+
   const toggleSelectAll = () => {
     if (selected.size === filtered.length) {
       setSelected(new Set());
@@ -174,7 +187,29 @@ export default function Expenses() {
   }
 
   return (
-    <div ref={containerRef} className="p-6 max-w-7xl mx-auto space-y-6">
+    <div
+      ref={containerRef}
+      className="p-6 max-w-7xl mx-auto space-y-6 relative"
+      onDragOver={(e) => { e.preventDefault(); if (canEdit()) setIsDragOver(true); }}
+      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsDragOver(false); }}
+      onDrop={handlePageDrop}
+    >
+      {/* Full-page drag overlay */}
+      <AnimatePresence>
+        {isDragOver && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#7B3BFF]/20 backdrop-blur-sm border-4 border-dashed border-[#7B3BFF]/60 flex flex-col items-center justify-center pointer-events-none"
+          >
+            <Upload className="w-16 h-16 text-[#C084FC] mb-4" />
+            <p className="text-2xl font-bold text-white">Drop invoice to process</p>
+            <p className="text-slate-400 mt-1">AI will extract all fields automatically</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
 
       {/* Header */}
@@ -215,6 +250,24 @@ export default function Expenses() {
           </div>
         )}
       </div>
+
+      {/* Inline Drop Zone — visible when no expenses yet, always accepts drops */}
+      {canEdit() && expenses.length === 0 && !isLoading && (
+        <div
+          onClick={() => setShowUpload(true)}
+          onDragOver={(e) => e.preventDefault()}
+          className="border-2 border-dashed border-[#7B3BFF]/30 hover:border-[#7B3BFF]/60 rounded-2xl p-10 text-center cursor-pointer transition-all group bg-[#7B3BFF]/5 hover:bg-[#7B3BFF]/10"
+        >
+          <div className="w-14 h-14 rounded-2xl bg-[#7B3BFF]/15 border border-[#7B3BFF]/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+            <Upload className="w-6 h-6 text-[#C084FC]" />
+          </div>
+          <p className="text-white font-semibold text-lg">Drop your first invoice here</p>
+          <p className="text-slate-400 text-sm mt-1">or click to browse — AI will extract vendor, amount & date automatically</p>
+          <div className="flex items-center justify-center gap-3 mt-4 text-xs text-slate-500">
+            <span>PDF</span><span>·</span><span>JPG</span><span>·</span><span>PNG</span>
+          </div>
+        </div>
+      )}
 
       {/* Email Ingest Banner */}
       <EmailIngestBanner business={currentBusiness} />
@@ -437,10 +490,11 @@ export default function Expenses() {
         <>
           <ExpenseUploadModal
             open={showUpload}
-            onOpenChange={setShowUpload}
+            onOpenChange={(v) => { setShowUpload(v); if (!v) setPendingFile(null); }}
             onSave={() => queryClient.invalidateQueries(['expenses-full', currentBusiness?.id])}
             businessId={currentBusiness?.id}
             userEmail={user?.email}
+            pendingFile={pendingFile}
           />
           <BulkUploadModal
             open={showBulkUpload}
