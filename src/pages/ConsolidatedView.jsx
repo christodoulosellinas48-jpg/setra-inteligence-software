@@ -227,15 +227,23 @@ export default function ConsolidatedView() {
     );
   }
 
-  // Group filter yields no results
-  if (!isLoading && user && filteredBusinesses.length === 0 && groupFilter !== 'all') {
-    return (
-      <div className="min-h-screen bg-[#0B0B12]">
-        <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-3"><Building2 className="w-6 h-6 text-[#C084FC]" />Consolidated View</h1>
-            </div>
+  // Shared sub-header used in both the empty-group and main render
+  const SubHeader = () => (
+    <div className="border-b border-white/5 bg-[#0B0B12]/95 sticky top-16 z-30 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Building2 className="w-5 h-5 text-[#C084FC]" />
+          <div>
+            <h1 className="text-base font-bold text-white">Consolidated View</h1>
+            {consolidatedMetrics && (
+              <p className="text-xs text-slate-500">
+                Portfolio analytics across {consolidatedMetrics.businessCount} {consolidatedMetrics.businessCount === 1 ? 'business' : 'businesses'}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {groups.length > 0 && (
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-slate-400" />
               <Select value={groupFilter} onValueChange={setGroupFilter}>
@@ -246,8 +254,28 @@ export default function ConsolidatedView() {
                 </SelectContent>
               </Select>
             </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-slate-400" />
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {DATE_RANGE_OPTIONS.map(o => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </header>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Group filter yields no results
+  if (!isLoading && user && filteredBusinesses.length === 0 && groupFilter !== 'all') {
+    return (
+      <div className="min-h-screen bg-[#0B0B12]">
+        <SubHeader />
         <div className="flex items-center justify-center p-12">
           <div className="text-center">
             <Layers className="w-12 h-12 text-slate-600 mx-auto mb-3" />
@@ -261,51 +289,7 @@ export default function ConsolidatedView() {
 
   return (
     <div className="min-h-screen bg-[#0B0B12]">
-      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <Building2 className="w-6 h-6 text-[#C084FC]" />
-              Consolidated View
-            </h1>
-            <p className="text-slate-500 text-sm">
-              Portfolio analytics across {consolidatedMetrics?.businessCount} {consolidatedMetrics?.businessCount === 1 ? 'business' : 'businesses'}
-            </p>
-          </div>
-          {/* Filters */}
-          <div className="flex items-center gap-3 flex-wrap">
-            {groups.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-slate-400" />
-                <Select value={groupFilter} onValueChange={setGroupFilter}>
-                  <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All venues</SelectItem>
-                    {groups.map(g => (
-                      <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-400" />
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="w-44 bg-[#151528]/80 border-white/10 text-white text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DATE_RANGE_OPTIONS.map(o => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SubHeader />
 
       {/* Data completeness disclaimer — never annualise */}
       {rangeMonths > 1 && (
