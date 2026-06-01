@@ -151,7 +151,12 @@ export default function Expenses() {
 
   const totalGross = filtered.reduce((s, e) => s + (e.invoice_total || 0), 0);
   const totalVAT   = filtered.reduce((s, e) => s + (e.vat_amount || 0), 0);
+  // Net: use stored net_amount if present, otherwise fall back to gross (VAT-exempt rows like payroll)
+  const totalNet   = filtered.reduce((s, e) => s + (e.net_amount != null ? e.net_amount : (e.invoice_total || 0)), 0);
   const postedCount = expenses.filter(e => e.status === 'posted').length;
+
+  // Helper: is this a staff/payroll entry with no VAT?
+  const isPayrollNoVAT = (exp) => exp.expense_category === 'staff_costs' && !exp.vat_amount && !exp.net_amount;
 
   const toggleSelect = (id) => setSelected(prev => {
     const next = new Set(prev);
@@ -273,10 +278,11 @@ export default function Expenses() {
       <EmailIngestBanner business={currentBusiness} />
 
       {/* Summary KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Total Documents', value: filtered.length },
           { label: 'Gross Total', value: `${currencySymbol}${totalGross.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
+          { label: 'Net Total', value: `${currencySymbol}${totalNet.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, tooltip: 'Net = Gross for VAT-exempt rows (e.g. payroll)' },
           { label: 'Total VAT (Input)', value: `${currencySymbol}${totalVAT.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
           { label: 'Posted', value: postedCount, suffix: `/ ${expenses.length}`, tooltip: `${postedCount} of ${expenses.length} invoices have been posted to your accounting system` },
         ].map((s, i) => (
@@ -435,10 +441,18 @@ export default function Expenses() {
                           <span className="text-slate-300 text-xs">{CATEGORY_LABELS[exp.expense_category] || exp.expense_category || '—'}</span>
                         </td>
                         <td className="px-4 py-3.5 text-right text-slate-300">
-                          {exp.net_amount ? `${currencySymbol}${exp.net_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
+                          {exp.net_amount != null
+                            ? `${currencySymbol}${exp.net_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                            : isPayrollNoVAT(exp)
+                              ? `${currencySymbol}${(exp.invoice_total || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                              : '—'}
                         </td>
                         <td className="px-4 py-3.5 text-right text-slate-400 text-xs">
-                          {exp.vat_amount ? `${currencySymbol}${exp.vat_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
+                          {exp.vat_amount
+                            ? `${currencySymbol}${exp.vat_amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                            : isPayrollNoVAT(exp)
+                              ? <span title="No VAT on payroll" className="text-slate-600 cursor-help">N/A</span>
+                              : '—'}
                         </td>
                         <td className="px-4 py-3.5 text-right text-white font-semibold">
                           {exp.invoice_total ? `${currencySymbol}${exp.invoice_total.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—'}
