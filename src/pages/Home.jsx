@@ -227,6 +227,74 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Product Showcase Band */}
+      <section className="relative py-16 sm:py-24 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto">
+          {/* Section heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-10 sm:mb-14"
+          >
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white">
+              See your numbers the moment you open.
+            </h2>
+          </motion.div>
+
+          {/* Screenshot card */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            {/* Glow behind the card */}
+            <div className="absolute inset-0 blur-[80px] opacity-30 pointer-events-none">
+              <div className="w-full h-full bg-gradient-to-br from-[#7B3BFF] via-[#A855F7] to-transparent rounded-3xl" />
+            </div>
+            {/* The card */}
+            <div className="relative rounded-2xl border border-[#7B3BFF]/40 bg-[#0D0D1A]/80 backdrop-blur-xl overflow-hidden shadow-[0_0_60px_rgba(123,59,255,0.2)]">
+              {/* Fake window chrome */}
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/5 bg-[#0A0A14]/60">
+                <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                <span className="ml-3 text-xs text-slate-500">setra.app / Today</span>
+              </div>
+              <img
+                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/ac7d3cc0c_generated_image.png"
+                alt="Setra Today — daily briefing screen"
+                className="w-full block"
+              />
+            </div>
+          </motion.div>
+
+          {/* Three captions */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8 sm:mt-10 text-center"
+          >
+            {[
+              { icon: '✦', label: 'Your daily briefing', desc: 'An AI summary of what happened and what needs your attention today.' },
+              { icon: '⚡', label: 'Alerts with €-impact', desc: 'Ranked by financial severity so you fix the costliest problems first.' },
+              { icon: '💬', label: 'Ask Setra anything', desc: 'Chat with your numbers — no dashboard hunting, just answers.' },
+            ].map(({ icon, label, desc }) => (
+              <div key={label} className="flex flex-col items-center gap-2">
+                <span className="text-[#A855F7] text-lg">{icon}</span>
+                <span className="text-white font-semibold text-sm">{label}</span>
+                <span className="text-slate-400 text-xs leading-relaxed max-w-xs">{desc}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Built for Cyprus — Trust Band */}
       <section className="relative py-8 sm:py-10 px-4 sm:px-6 border-t border-white/5 bg-[#0D0D1A]/60">
         <div className="max-w-5xl mx-auto">
