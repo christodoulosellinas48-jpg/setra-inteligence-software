@@ -22,7 +22,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0A0A14] relative overflow-hidden">
+    <div className="min-h-screen bg-[#0A0A14] relative">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#1a0f2e] via-[#0A0A14] to-[#0A0A14]" />
