@@ -51,49 +51,45 @@ export default function Home() {
                 transition={{ duration: 0.8 }}
               >
                 <motion.h1
-                  className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 tracking-wide uppercase"
-                  style={{ fontFamily: 'system-ui, -apple-system, sans-serif', letterSpacing: '0.12em' }}
+                  className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3 tracking-tight"
+                  style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <span className="bg-gradient-to-r from-[#E9D5FF] via-white to-[#E9D5FF] bg-clip-text text-transparent">
-                    The financial OS for
-                  </span>
-                  <br />
-                  <span className="bg-gradient-to-r from-[#7B3BFF] via-[#A855F7] to-[#C084FC] bg-clip-text text-transparent">
-                    independent restaurants.
+                  <span className="text-white">
+                    Know exactly where your venue makes — and loses — money.
                   </span>
                 </motion.h1>
-                <p className="text-sm sm:text-base text-slate-400 mb-6 max-w-lg">
-                  See your real profitability, fix what's bleeding, and grow with confidence — without hiring a CFO.
+                <p className="text-sm sm:text-base text-slate-300 mb-6 max-w-lg leading-relaxed">
+                  Setra is the financial brain for independent HoReCa businesses — hotels, restaurants, cafés and bars. It turns your invoices, sales and payroll into clear daily answers, so you protect every margin and hit every Cyprus VAT deadline. From a single café to a whole hotel's P&L. No CFO, no spreadsheets, no chasing.
                 </p>
                 <div className="space-y-3 mb-7">
-                  <div className="flex items-center gap-2 text-[#C084FC]">
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium">See which dishes actually make you money</span>
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[#A855F7]" />
+                    <span className="text-xs sm:text-sm font-medium">See exactly which parts of your business make money — and which leak it</span>
                   </div>
-                  <div className="flex items-center gap-2 text-[#C084FC]">
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium">Hit VAT and bookkeeping deadlines automatically</span>
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[#A855F7]" />
+                    <span className="text-xs sm:text-sm font-medium">Hit every VAT and bookkeeping deadline — automatically</span>
                   </div>
-                  <div className="flex items-center gap-2 text-[#C084FC]">
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium">Forecast cashflow before it's a problem</span>
+                  <div className="flex items-center gap-2 text-slate-200">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-[#A855F7]" />
+                    <span className="text-xs sm:text-sm font-medium">Catch cashflow problems before they happen</span>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => navigate('/Dashboard')}
-                    className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-[#7B3BFF] to-[#A855F7] text-white font-semibold text-sm hover:shadow-[0_0_30px_rgba(123,59,255,0.6)] transition-all duration-200 hover:scale-105"
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl bg-[#7B3BFF] text-white font-semibold text-sm hover:bg-[#6929e8] hover:shadow-[0_0_30px_rgba(123,59,255,0.6)] transition-all duration-200 hover:scale-105"
                   >
                     Start free — no credit card
                   </button>
                   <button
-                    onClick={() => navigate('/Features')}
-                    className="w-full sm:w-auto px-8 py-3 rounded-xl border border-white/10 text-slate-300 font-medium text-sm hover:border-[#7B3BFF]/50 hover:text-white transition-all duration-200"
+                    onClick={() => navigate('/Dashboard')}
+                    className="w-full sm:w-auto px-8 py-3 rounded-xl border border-white/30 text-white font-medium text-sm hover:border-[#A855F7] hover:bg-white/5 transition-all duration-200"
                   >
-                    See how it works →
+                    See it on real data →
                   </button>
                 </div>
               </motion.div>
