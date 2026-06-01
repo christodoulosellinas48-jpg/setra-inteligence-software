@@ -10,7 +10,7 @@ import { debounce } from 'lodash';
 import { 
   Upload, TrendingUp, DollarSign, Percent, 
   Target, Calculator, Sliders, FileText,
-  ChevronRight, Mail, Building2, Trash2, Sparkles, Save, CheckCircle2, RefreshCw
+  ChevronRight, Mail, Building2, Trash2, Sparkles, Save, CheckCircle2, RefreshCw, Info
 } from 'lucide-react';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import AICounselorChat from '@/components/AICounselorChat';
@@ -259,6 +259,26 @@ function DashboardContent() {
   const healthStatusColor = financials?.overallStatus === 'healthy' ? 'text-emerald-400'
     : financials?.overallStatus === 'warning' ? 'text-amber-400' : 'text-rose-400';
 
+  // True when no revenue has been entered for the current period
+  const noRevenue = !localBusinessData?.monthly_revenue || localBusinessData.monthly_revenue === 0;
+
+  // Most recent snapshot WITH revenue, for auto-fill
+  const lastRevenueSnapshot = snapshots.find(s => s.monthly_revenue > 0);
+
+  const handleAutoFillFromSnapshot = () => {
+    if (!lastRevenueSnapshot) return;
+    const data = {
+      monthly_revenue: lastRevenueSnapshot.monthly_revenue,
+      rent_fixed_costs: lastRevenueSnapshot.rent_fixed_costs,
+      staff_costs: lastRevenueSnapshot.staff_costs,
+      purchases_food_bev: lastRevenueSnapshot.purchases_food_bev,
+      utilities: lastRevenueSnapshot.utilities,
+      other_operating: lastRevenueSnapshot.other_operating,
+    };
+    setLocalBusinessData(prev => ({ ...prev, ...data }));
+    Object.entries(data).forEach(([key, value]) => debouncedSave({ [key]: value }));
+  };
+
   return (
     <div ref={containerRef} className="min-h-screen bg-[#0B0B12]">
       <PullToRefreshIndicator isRefreshing={isRefreshing} pullDistance={pullDistance} />
@@ -277,37 +297,62 @@ function DashboardContent() {
           />
         )}
 
-        {/* Health + Key Profit metrics at the top — always shown, empty state when no data */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-1">
-            <HealthIndicator
-              status={financials?.overallStatus}
-              score={financials?.healthScore}
-              noData={!financials || (currentBusiness?.monthly_revenue || 0) === 0}
-            />
+        {/* Health + Key Profit metrics at the top */}
+        {noRevenue ? (
+          /* ── Empty-period banner ── */
+          <div className="rounded-2xl border border-dashed border-[#7B3BFF]/30 bg-[#0F0F1E]/80 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-[#7B3BFF]/10 border border-[#7B3BFF]/20 flex items-center justify-center">
+              <Info className="w-5 h-5 text-[#C084FC]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white mb-1">No revenue entered for this period yet</p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Add this month's sales — or auto-fill from your last snapshot — to see your profit and health score.
+              </p>
+            </div>
+            {canEdit() && lastRevenueSnapshot && (
+              <Button
+                onClick={handleAutoFillFromSnapshot}
+                size="sm"
+                className="shrink-0 bg-[#7B3BFF] hover:bg-[#6930E8] text-white text-xs h-9 px-4"
+              >
+                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                Auto-fill from last snapshot
+              </Button>
+            )}
           </div>
-          <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-            <MetricCard
-              title="Net Profit"
-              value={financials?.netProfit ?? 0}
-              prefix={currencySymbol}
-              status={financials ? (financials.netProfit >= 0 ? 'healthy' : 'risk') : 'neutral'}
-              icon={DollarSign}
-              delay={0}
-              noData={!financials}
-            />
-            <MetricCard
-              title="Profit Margin"
-              value={financials?.profitMargin ?? 0}
-              suffix="%"
-              status={financials?.profitMarginStatus ?? 'neutral'}
-              benchmark={financials ? `Target: ${financials.benchmarks.profitMargin.healthy}%+` : undefined}
-              icon={Percent}
-              delay={0.1}
-              noData={!financials}
-            />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-1">
+              <HealthIndicator
+                status={financials?.overallStatus}
+                score={financials?.healthScore}
+                noData={false}
+              />
+            </div>
+            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+              <MetricCard
+                title="Net Profit"
+                value={financials?.netProfit ?? 0}
+                prefix={currencySymbol}
+                status={financials ? (financials.netProfit >= 0 ? 'healthy' : 'risk') : 'neutral'}
+                icon={DollarSign}
+                delay={0}
+                noData={!financials}
+              />
+              <MetricCard
+                title="Profit Margin"
+                value={financials?.profitMargin ?? 0}
+                suffix="%"
+                status={financials?.profitMarginStatus ?? 'neutral'}
+                benchmark={financials ? `Target: ${financials.benchmarks.profitMargin.healthy}%+` : undefined}
+                icon={Percent}
+                delay={0.1}
+                noData={!financials}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Section Divider */}
         <div className="flex items-center gap-3">
@@ -358,8 +403,8 @@ function DashboardContent() {
           <div className="h-px flex-1 bg-white/[0.05]" />
         </div>
 
-        {/* Full Metrics Grid — always rendered, empty state when no data */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* Full Metrics Grid — hidden when no revenue to avoid misleading 0% ratios */}
+        <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 ${noRevenue ? 'hidden' : ''}`}>
           <MetricCard
             title="Tax Amount"
             value={financials?.taxAmount ?? 0}
