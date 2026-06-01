@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  ArrowLeft, Plug, Search, CreditCard, Package, Users,
+  Plug, Search, CreditCard, Package, Users,
   FileText, ShoppingCart, Database, Check, ExternalLink,
   Bell, Building2, Zap, ChevronRight, MapPin
 } from 'lucide-react';
@@ -334,13 +334,10 @@ export default function Integrations() {
 
   return (
     <div className="min-h-screen bg-[#0B0B12]">
-      {/* Header */}
-      <header className="border-b border-white/5 backdrop-blur-2xl sticky top-0 z-40 bg-[#0B0B12]/95 shadow-[0_4px_30px_rgba(123,59,255,0.1)]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/Dashboard')} className="text-slate-400 hover:text-white">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Dashboard
-            </Button>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Page title row */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7B3BFF]/20 to-[#A855F7]/20 flex items-center justify-center">
               <Plug className="w-5 h-5 text-[#C084FC]" />
             </div>
@@ -356,9 +353,6 @@ export default function Integrations() {
             Vote for next POS →
           </a>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
         {/* Hero */}
         <Card className="bg-gradient-to-r from-[#7B3BFF]/10 to-[#A855F7]/10 border-[#7B3BFF]/20 p-6 sm:p-8">
