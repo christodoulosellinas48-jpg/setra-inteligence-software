@@ -27,13 +27,11 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       setIsAuthenticated(false);
       setUser(null);
-      if (error?.message === 'auth_timeout') {
-        setAuthError({ type: 'auth_required', message: 'Authentication required' });
-      } else if (error?.status === 403 && error?.data?.extra_data?.reason === 'user_not_registered') {
+      if (error?.status === 403 && error?.data?.extra_data?.reason === 'user_not_registered') {
         setAuthError({ type: 'user_not_registered', message: 'User not registered for this app' });
-      } else if (error?.status === 401 || error?.status === 403) {
-        setAuthError({ type: 'auth_required', message: 'Authentication required' });
       }
+      // 401/403/timeout = simply not logged in; public pages handle this gracefully
+      // Do NOT set auth_required — that triggers a redirect to login
     } finally {
       setIsLoadingAuth(false);
     }
