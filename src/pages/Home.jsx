@@ -140,6 +140,24 @@ export default function Home() {
                     See it on real data →
                   </button>
                 </div>
+
+                {/* ROI micro-line */}
+                <p className="mt-4 text-[11px] text-slate-500 leading-relaxed max-w-sm">
+                  Setra pays for itself the first time it catches a 1.5% slip on €5,000/month of purchases —{' '}
+                  <span className="text-slate-400">a €75/month saving.</span>
+                </p>
+
+                {/* Trust strip */}
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <span className="text-[11px] text-slate-600">Built with HoReCa operators across Cyprus</span>
+                  <span className="text-slate-700 hidden sm:inline">·</span>
+                  {['Lightspeed', 'Square', 'Toast', 'Xero', 'QuickBooks'].map((name, i, arr) => (
+                    <React.Fragment key={name}>
+                      <span className="text-[11px] text-slate-500 font-medium">{name}</span>
+                      {i < arr.length - 1 && <span className="text-slate-700 text-[10px]">·</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
               </motion.div>
             </div>
 
