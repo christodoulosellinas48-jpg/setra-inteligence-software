@@ -144,14 +144,18 @@ const AuthenticatedApp = () => {
 
       {/* ── Today (post-login landing) ── */}
       <Route path="/Today" element={
-        <LayoutWrapper currentPageName="Today">
-          <Today />
-        </LayoutWrapper>
+        isAuthenticated ? (
+          <LayoutWrapper currentPageName="Today">
+            <Today />
+          </LayoutWrapper>
+        ) : <Navigate to="/" replace />
       } />
       <Route path="/Today/alerts" element={
-        <LayoutWrapper currentPageName="TodayAlerts">
-          <TodayAlerts />
-        </LayoutWrapper>
+        isAuthenticated ? (
+          <LayoutWrapper currentPageName="TodayAlerts">
+            <TodayAlerts />
+          </LayoutWrapper>
+        ) : <Navigate to="/" replace />
       } />
 
       {/* ── Financial Data (canonical) ── */}
