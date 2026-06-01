@@ -1,0 +1,48 @@
+{
+  "name": "PurchaseOrder",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "received",
+        "cancelled"
+      ],
+      "default": "draft"
+    },
+    "items_json": {
+      "type": "string",
+      "description": "JSON array of {ingredient_name, qty, unit, unit_cost, inventory_item_id}"
+    },
+    "total_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expected_delivery": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "business_id",
+    "supplier_name"
+  ]
+}

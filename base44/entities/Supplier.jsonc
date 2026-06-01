@@ -1,0 +1,55 @@
+{
+  "name": "Supplier",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "food_beverage",
+        "utilities",
+        "fixed_costs",
+        "staff_costs",
+        "operating_expenses",
+        "other"
+      ],
+      "default": "other"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "total_spend": {
+      "type": "number",
+      "default": 0
+    },
+    "invoice_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_order_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "business_id",
+    "name"
+  ]
+}

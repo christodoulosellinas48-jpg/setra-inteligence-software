@@ -1,0 +1,74 @@
+{
+  "name": "LedgerEntry",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "entry_type": {
+      "type": "string",
+      "enum": [
+        "sale",
+        "expense",
+        "asset",
+        "liability",
+        "adjustment"
+      ],
+      "default": "expense"
+    },
+    "category_code": {
+      "type": "string",
+      "description": "Chart of accounts code"
+    },
+    "net_amount": {
+      "type": "number"
+    },
+    "vat_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "gross_amount": {
+      "type": "number"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "document",
+        "bank",
+        "manual"
+      ],
+      "default": "document"
+    },
+    "source_id": {
+      "type": "string",
+      "description": "Document or transaction ID"
+    },
+    "posted": {
+      "type": "boolean",
+      "default": false
+    },
+    "vat_direction": {
+      "type": "string",
+      "enum": [
+        "input",
+        "output",
+        "none"
+      ],
+      "default": "input"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "date",
+    "entry_type",
+    "gross_amount"
+  ]
+}

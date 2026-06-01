@@ -47,12 +47,15 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
 
+  const publicPaths = ['/', '/Home', '/Features', '/Pricing', '/AboutUs', '/About', '/about', '/ForAccountants', '/Accountants'];
+  const isPublicPath = publicPaths.includes(location.pathname);
+
   // Redirect to login as a side effect, not during render
   React.useEffect(() => {
-    if (!isLoadingAuth && authError?.type === 'auth_required') {
+    if (!isLoadingAuth && authError?.type === 'auth_required' && !isPublicPath) {
       navigateToLogin();
     }
-  }, [isLoadingAuth, authError]);
+  }, [isLoadingAuth, authError, isPublicPath]);
 
   // Redirect root (/) to Today after login
   React.useEffect(() => {
@@ -74,7 +77,7 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
+    } else if (authError.type === 'auth_required' && !isPublicPath) {
       return null; // useEffect above handles redirect
     }
   }

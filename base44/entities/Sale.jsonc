@@ -1,0 +1,41 @@
+{
+  "name": "Sale",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "Reference to menu item"
+    },
+    "units_sold": {
+      "type": "number",
+      "description": "Number of units sold"
+    },
+    "net_revenue": {
+      "type": "number",
+      "description": "Optional: actual revenue if different from price x units"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "dine_in",
+        "takeaway",
+        "delivery"
+      ],
+      "default": "dine_in"
+    }
+  },
+  "required": [
+    "business_id",
+    "date",
+    "item_id",
+    "units_sold"
+  ]
+}

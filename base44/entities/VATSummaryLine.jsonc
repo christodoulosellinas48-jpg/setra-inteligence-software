@@ -1,0 +1,40 @@
+{
+  "name": "VATSummaryLine",
+  "type": "object",
+  "properties": {
+    "vat_period_id": {
+      "type": "string",
+      "description": "Reference to VAT period"
+    },
+    "vat_rate_code": {
+      "type": "string",
+      "enum": [
+        "0",
+        "5",
+        "19",
+        "exempt",
+        "reverse_charge"
+      ]
+    },
+    "taxable_base": {
+      "type": "number",
+      "description": "Net amount subject to VAT"
+    },
+    "vat_amount": {
+      "type": "number"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "output",
+        "input"
+      ],
+      "description": "Sales (output) or purchases (input)"
+    }
+  },
+  "required": [
+    "vat_period_id",
+    "vat_rate_code",
+    "direction"
+  ]
+}

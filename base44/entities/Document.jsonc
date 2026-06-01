@@ -1,0 +1,78 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "invoice",
+        "receipt",
+        "credit_note"
+      ],
+      "default": "invoice",
+      "description": "Document type"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_vat_number": {
+      "type": "string"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "invoice_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "gross_total": {
+      "type": "number",
+      "description": "Total including VAT"
+    },
+    "net_total": {
+      "type": "number",
+      "description": "Total excluding VAT"
+    },
+    "vat_total": {
+      "type": "number",
+      "description": "Total VAT amount"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "parsed",
+        "needs_review",
+        "approved",
+        "posted"
+      ],
+      "default": "new"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL to uploaded document"
+    },
+    "raw_text": {
+      "type": "string",
+      "description": "OCR extracted text"
+    },
+    "confidence_score": {
+      "type": "number",
+      "default": 0,
+      "description": "AI confidence 0-1"
+    }
+  },
+  "required": [
+    "business_id",
+    "type",
+    "supplier_name"
+  ]
+}

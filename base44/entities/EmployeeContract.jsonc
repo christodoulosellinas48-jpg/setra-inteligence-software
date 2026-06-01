@@ -1,0 +1,73 @@
+{
+  "name": "EmployeeContract",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string"
+    },
+    "employee_name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "chef",
+        "waiter",
+        "bartender",
+        "manager",
+        "cleaner",
+        "other"
+      ],
+      "default": "waiter"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "hourly",
+        "monthly",
+        "part_time"
+      ],
+      "default": "hourly"
+    },
+    "hourly_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_salary": {
+      "type": "number",
+      "default": 0
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "terminated"
+      ],
+      "default": "active"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "employee_name",
+    "role",
+    "contract_type"
+  ]
+}

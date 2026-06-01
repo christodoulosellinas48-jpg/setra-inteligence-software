@@ -1,0 +1,66 @@
+{
+  "name": "AuditFinding",
+  "type": "object",
+  "properties": {
+    "audit_run_id": {
+      "type": "string",
+      "description": "Reference to audit run"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "pricing",
+        "foodcost",
+        "waste",
+        "menu",
+        "labor",
+        "supplier"
+      ],
+      "description": "Type of audit finding"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "estimated_monthly_impact_eur": {
+      "type": "number",
+      "default": 0
+    },
+    "recommendation": {
+      "type": "string"
+    },
+    "metric_snapshot_json": {
+      "type": "string",
+      "description": "JSON string with supporting metrics"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "ignored",
+        "needs_data",
+        "fixed"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "audit_run_id",
+    "type",
+    "title",
+    "description",
+    "recommendation"
+  ]
+}

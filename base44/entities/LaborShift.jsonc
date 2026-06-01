@@ -1,0 +1,44 @@
+{
+  "name": "LaborShift",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "chef",
+        "waiter",
+        "bartender",
+        "manager",
+        "cleaner",
+        "other"
+      ],
+      "default": "waiter"
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "hours": {
+      "type": "number",
+      "description": "Hours worked"
+    },
+    "total_cost": {
+      "type": "number",
+      "description": "Total labor cost for this shift"
+    }
+  },
+  "required": [
+    "business_id",
+    "date",
+    "role",
+    "hours",
+    "total_cost"
+  ]
+}

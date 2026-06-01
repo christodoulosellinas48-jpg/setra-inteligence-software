@@ -1,0 +1,64 @@
+{
+  "name": "DocumentLine",
+  "type": "object",
+  "properties": {
+    "document_id": {
+      "type": "string",
+      "description": "Reference to document"
+    },
+    "description": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "number",
+      "default": 1
+    },
+    "unit_price_net": {
+      "type": "number"
+    },
+    "line_net": {
+      "type": "number"
+    },
+    "vat_rate_code": {
+      "type": "string",
+      "enum": [
+        "0",
+        "5",
+        "19",
+        "exempt",
+        "reverse_charge"
+      ],
+      "default": "19"
+    },
+    "vat_amount": {
+      "type": "number"
+    },
+    "line_gross": {
+      "type": "number"
+    },
+    "category_code": {
+      "type": "string",
+      "description": "Chart of accounts code"
+    },
+    "confidence_score": {
+      "type": "number",
+      "default": 0,
+      "description": "AI confidence 0-1"
+    },
+    "categorization_reason": {
+      "type": "string",
+      "enum": [
+        "rule_supplier",
+        "rule_keyword",
+        "ai",
+        "manual"
+      ],
+      "description": "How was this categorized"
+    }
+  },
+  "required": [
+    "document_id",
+    "description",
+    "line_net"
+  ]
+}

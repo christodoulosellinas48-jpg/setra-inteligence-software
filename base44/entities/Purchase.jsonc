@@ -1,0 +1,47 @@
+{
+  "name": "Purchase",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "ingredient_name": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "g",
+        "l",
+        "ml",
+        "pc",
+        "lb",
+        "oz"
+      ],
+      "default": "kg"
+    },
+    "total_cost": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "business_id",
+    "supplier_name",
+    "date",
+    "ingredient_name",
+    "qty",
+    "total_cost"
+  ]
+}

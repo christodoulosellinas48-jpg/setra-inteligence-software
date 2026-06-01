@@ -1,0 +1,64 @@
+{
+  "name": "IntegrationConnection",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string"
+    },
+    "integration_type": {
+      "type": "string",
+      "enum": [
+        "toast_pos",
+        "square",
+        "lightspeed",
+        "quickbooks",
+        "xero",
+        "gusto",
+        "adp",
+        "upserve",
+        "marketman",
+        "shopify"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "disconnected",
+        "error",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "Encrypted/stored OAuth access token"
+    },
+    "refresh_token": {
+      "type": "string"
+    },
+    "token_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "restaurant_guid": {
+      "type": "string",
+      "description": "Toast: restaurant GUID"
+    },
+    "config_json": {
+      "type": "string",
+      "description": "JSON blob for extra provider config"
+    },
+    "last_synced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "integration_type"
+  ]
+}

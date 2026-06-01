@@ -1,0 +1,42 @@
+{
+  "name": "InventoryAdjustment",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "ingredient_name": {
+      "type": "string"
+    },
+    "adjustment_qty": {
+      "type": "number",
+      "description": "Positive or negative adjustment"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "waste",
+        "stocktake",
+        "transfer",
+        "spoilage",
+        "other"
+      ],
+      "default": "waste"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "date",
+    "ingredient_name",
+    "adjustment_qty",
+    "reason"
+  ]
+}

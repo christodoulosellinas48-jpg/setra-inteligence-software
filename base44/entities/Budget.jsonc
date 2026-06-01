@@ -1,0 +1,69 @@
+{
+  "name": "Budget",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "period_type": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "quarterly"
+      ],
+      "default": "monthly"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "food_beverage_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "staff_costs_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "fixed_costs_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "utilities_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "operating_expenses_budget": {
+      "type": "number",
+      "default": 0
+    },
+    "revenue_target": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_by_email": {
+      "type": "string"
+    },
+    "last_edited_by": {
+      "type": "string"
+    },
+    "last_edited_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "business_id",
+    "period_type",
+    "period_start",
+    "period_end"
+  ]
+}

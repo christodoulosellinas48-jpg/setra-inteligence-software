@@ -1,0 +1,55 @@
+{
+  "name": "BankTransaction",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "description": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "in",
+        "out"
+      ],
+      "description": "Money in or out"
+    },
+    "counterparty": {
+      "type": "string",
+      "description": "Other party name"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unmatched",
+        "matched",
+        "ignored"
+      ],
+      "default": "unmatched"
+    },
+    "matched_document_id": {
+      "type": "string",
+      "description": "Linked document ID"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Bank reference"
+    }
+  },
+  "required": [
+    "business_id",
+    "date",
+    "amount",
+    "direction"
+  ]
+}

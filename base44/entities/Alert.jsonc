@@ -1,0 +1,63 @@
+{
+  "name": "Alert",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the user who should see this alert"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "vat_deadline",
+        "payroll_deadline",
+        "price_spike",
+        "low_stock",
+        "missing_recipe",
+        "margin_alert",
+        "setup_gap"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "info"
+      ],
+      "default": "info"
+    },
+    "headline": {
+      "type": "string",
+      "description": "Short alert headline"
+    },
+    "context": {
+      "type": "string",
+      "description": "One-line context / detail"
+    },
+    "deeplink_url": {
+      "type": "string",
+      "description": "URL to the relevant module"
+    },
+    "target_entity": {
+      "type": "string",
+      "description": "Identifier of the entity that triggered this alert (for deduplication)"
+    },
+    "dismissed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user dismissed this alert (null = active)"
+    }
+  },
+  "required": [
+    "business_id",
+    "user_id",
+    "type",
+    "severity",
+    "headline"
+  ]
+}

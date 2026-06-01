@@ -1,0 +1,58 @@
+{
+  "name": "Recipe",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "Reference to menu item"
+    },
+    "ingredient_name": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "g",
+        "l",
+        "ml",
+        "pc",
+        "lb",
+        "oz"
+      ],
+      "default": "kg"
+    },
+    "unit_cost": {
+      "type": "number",
+      "description": "Cost per unit"
+    },
+    "yield_pct": {
+      "type": "number",
+      "default": 100,
+      "description": "Usable yield percentage"
+    },
+    "waste_pct": {
+      "type": "number",
+      "default": 0,
+      "description": "Expected waste percentage"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "business_id",
+    "item_id",
+    "ingredient_name",
+    "qty",
+    "unit_cost"
+  ]
+}

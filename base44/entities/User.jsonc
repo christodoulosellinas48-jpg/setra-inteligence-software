@@ -15,5 +15,6 @@
       "default": false,
       "description": "Whether the user has completed or skipped the guided onboarding tour"
     }
-  }
+  },
+  "required": []
 }

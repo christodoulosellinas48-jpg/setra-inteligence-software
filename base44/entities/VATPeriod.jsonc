@@ -1,0 +1,60 @@
+{
+  "name": "VATPeriod",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "Reference to the business"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "filing_deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "Typically 10th of 2nd month after period end"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "review",
+        "final"
+      ],
+      "default": "open"
+    },
+    "output_vat": {
+      "type": "number",
+      "default": 0,
+      "description": "VAT on sales"
+    },
+    "input_vat": {
+      "type": "number",
+      "default": 0,
+      "description": "VAT on purchases"
+    },
+    "net_vat_payable": {
+      "type": "number",
+      "default": 0,
+      "description": "Output VAT - Input VAT"
+    },
+    "finalized_by": {
+      "type": "string",
+      "description": "User email who finalized"
+    },
+    "finalized_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "business_id",
+    "period_start",
+    "period_end"
+  ]
+}
