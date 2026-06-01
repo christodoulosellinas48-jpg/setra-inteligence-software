@@ -44,7 +44,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const navigate = useNavigate();
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, isAuthenticated } = useAuth();
   const location = useLocation();
 
   const publicPaths = ['/', '/Home', '/Features', '/Pricing', '/AboutUs', '/About', '/about', '/ForAccountants', '/Accountants'];
@@ -57,12 +57,12 @@ const AuthenticatedApp = () => {
     }
   }, [isLoadingAuth, authError, isPublicPath]);
 
-  // Redirect root (/) to Today after login
+  // Redirect root (/) to Today only when authenticated
   React.useEffect(() => {
-    if (!isLoadingAuth && !authError && location.pathname === '/') {
+    if (!isLoadingAuth && !authError && isAuthenticated && location.pathname === '/') {
       navigate('/Today', { replace: true });
     }
-  }, [isLoadingAuth, authError, location.pathname, navigate]);
+  }, [isLoadingAuth, authError, isAuthenticated, location.pathname, navigate]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
