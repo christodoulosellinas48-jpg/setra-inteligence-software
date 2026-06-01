@@ -31,10 +31,6 @@ export default function BusinessSwitcherPill() {
   const handleSelectGroup = (groupId) => {
     selectGroup(groupId);
     setOpen(false);
-    setTimeout(() => {
-      navigate(`/ConsolidatedView?group=${groupId}`);
-      window.location.href = `/ConsolidatedView?group=${groupId}`;
-    }, 50);
   };
 
   if (businesses.length === 0) return null;
@@ -67,14 +63,22 @@ export default function BusinessSwitcherPill() {
                 <Layers className="w-3 h-3" /> Groups
               </div>
               {groups.map(group => (
-                <button
-                  key={group.id}
-                  onClick={() => handleSelectGroup(group.id)}
-                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/5 text-sm text-[#C084FC] transition-colors"
-                >
-                  <span className="truncate">{group.name}</span>
-                  {selectedGroupId === group.id && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
-                </button>
+                <div key={group.id} className="flex items-center">
+                  <button
+                    onClick={() => handleSelectGroup(group.id)}
+                    className="flex-1 flex items-center justify-between px-3 py-2 hover:bg-white/5 text-sm text-[#C084FC] transition-colors"
+                  >
+                    <span className="truncate">{group.name}</span>
+                    {selectedGroupId === group.id && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
+                  </button>
+                  <button
+                    onClick={() => { setOpen(false); navigate(`/ConsolidatedView?group=${group.id}`); }}
+                    title="View group overview"
+                    className="px-2 py-2 hover:bg-white/5 text-slate-500 hover:text-[#C084FC] transition-colors text-[10px] font-medium"
+                  >
+                    ↗
+                  </button>
+                </div>
               ))}
               <div className="h-px bg-white/5 mx-3" />
             </>
