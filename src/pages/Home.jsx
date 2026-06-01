@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,11 +6,59 @@ import { Card } from '@/components/ui/card';
 import MarketingHeader from '@/components/layout/MarketingHeader';
 import { Check, Zap } from 'lucide-react';
 
+function useInView(threshold = 0.15) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); obs.disconnect(); } },
+      { threshold, root: null }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, inView];
+}
+
 const STARS = Array.from({ length: 50 }, (_, i) => ({
   left: `${(i * 37 + 13) % 100}%`,
   top: `${(i * 53 + 7) % 100}%`,
   opacity: ((i % 5) * 0.1) + 0.2,
 }));
+
+function ShowcaseCard() {
+  const [ref, inView] = useInView(0.1);
+  return (
+    <div
+      ref={ref}
+      className="relative max-w-2xl mx-auto"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translateY(0) scale(1)' : 'translateY(60px) scale(0.92)',
+        transition: 'opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1)',
+      }}
+    >
+      <div className="absolute inset-0 blur-[80px] opacity-30 pointer-events-none">
+        <div className="w-full h-full bg-gradient-to-br from-[#7B3BFF] via-[#A855F7] to-transparent rounded-3xl" />
+      </div>
+      <div className="relative rounded-2xl border border-[#7B3BFF]/40 bg-[#0D0D1A]/80 backdrop-blur-xl overflow-hidden shadow-[0_0_60px_rgba(123,59,255,0.2)]">
+        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/5 bg-[#0A0A14]/60">
+          <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+          <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+          <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+          <span className="ml-3 text-xs text-slate-500">setra.app / Today</span>
+        </div>
+        <img
+          src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/ac7d3cc0c_generated_image.png"
+          alt="Setra Today — daily briefing screen"
+          className="w-full block"
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -244,33 +292,7 @@ export default function Home() {
           </motion.div>
 
           {/* Screenshot card */}
-          <motion.div
-            initial={{ opacity: 0, y: 60, scale: 0.92 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            viewport={{ once: true, amount: 0.2 }}
-            className="relative max-w-2xl mx-auto"
-          >
-            {/* Glow behind the card */}
-            <div className="absolute inset-0 blur-[80px] opacity-30 pointer-events-none">
-              <div className="w-full h-full bg-gradient-to-br from-[#7B3BFF] via-[#A855F7] to-transparent rounded-3xl" />
-            </div>
-            {/* The card */}
-            <div className="relative rounded-2xl border border-[#7B3BFF]/40 bg-[#0D0D1A]/80 backdrop-blur-xl overflow-hidden shadow-[0_0_60px_rgba(123,59,255,0.2)]">
-              {/* Fake window chrome */}
-              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/5 bg-[#0A0A14]/60">
-                <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-                <span className="ml-3 text-xs text-slate-500">setra.app / Today</span>
-              </div>
-              <img
-                src="https://media.base44.com/images/public/698f4ecdefcf4d820e54e33f/ac7d3cc0c_generated_image.png"
-                alt="Setra Today — daily briefing screen"
-                className="w-full block"
-              />
-            </div>
-          </motion.div>
+          <ShowcaseCard />
 
           {/* Three captions */}
           <motion.div
